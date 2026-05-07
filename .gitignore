@@ -1,3 +1,6 @@
 *.retry
 .vault_pass
 *.swp
+
+# Local Controller / SMTP secrets (copy from extras/approval-email.vars.example.yml)
+extras/approval-email.vars.yml

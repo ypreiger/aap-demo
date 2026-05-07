@@ -1,0 +1,22 @@
+---
+# Copy to approval-email.vars.yml (gitignored or local only) — do NOT commit SMTP secrets.
+controller_host: https://REPLACE_CONTROLLER_ROUTE
+controller_validate_certs: false
+
+controller_oauth_token: REPLACE_WITH_PAT_FROM_CONTROLLER
+
+notification_name: bom-approval-email
+workflow_name: bom-project-deploy
+organization_name: Default
+
+email_sender: REPLACE_SENDER_ALIAS@YOUR_DOMAIN
+smtp_host: REPLACE_SMTP_HOST
+smtp_port: 587
+smtp_username: REPLACE_OR_EMPTY_STRING
+smtp_password: REPLACE_OR_EMPTY_STRING
+smtp_use_tls: true
+smtp_use_ssl: false
+
+# List of inbox addresses notified when workflow approval is required
+approval_email_recipients:
+  - ypreiger@redhat.com

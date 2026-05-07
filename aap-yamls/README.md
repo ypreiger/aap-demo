@@ -79,6 +79,8 @@ oc apply -k aap-yamls/tower/
 
 Re-sync Git project in Controller after pushing, then **`oc apply -k aap-yamls/tower/`** if you reconcile from Git.
 
+Approval email (SMTP + workflow **Approval** notifications): see repository **[`documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`](../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md)**.
+
 ```bash
 oc apply -k aap-yamls/tower/
 ```

@@ -1,0 +1,174 @@
+---
+# Creates or updates an Email notification template and associates it with workflow
+# "bom-project-deploy" for Approval events (pending human approval gates).
+#
+# Required extra vars — see extras/approval-email.vars.example.yml
+# Either pass -e file or export CONTROLLER_* for token/host overrides.
+#
+# Variables (all via -e @file or extravars unless noted):
+#   controller_host               HTTPS base URL (no trailing slash)
+#   controller_oauth_token        Bearer token (or set env CONTROLLER_OAUTH_TOKEN / CONTROLLER_TOKEN)
+#   controller_validate_certs     default false
+#   notification_name
+#   workflow_name                 default bom-project-deploy
+#   organization_name             default Default
+#   approval_email_recipients     list[str]
+#   email_sender / smtp_host / smtp_port / smtp_username / smtp_password / smtp_use_tls / smtp_use_ssl
+#
+- name: Associate approval email notification with BOM workflow
+  hosts: localhost
+  gather_facts: false
+  vars:
+    controller_host: "{{ controller_host | default(lookup('env', 'CONTROLLER_HOST', default='')) | trim | regex_replace('/$', '') }}"
+    controller_oauth_token: >-
+      {{
+        controller_oauth_token
+        | default(lookup('env', 'CONTROLLER_OAUTH_TOKEN', default=''))
+        | default(lookup('env', 'CONTROLLER_TOKEN', default=''))
+        | default(lookup('env', 'TOWER_OAUTH_TOKEN', default=''))
+        | trim
+      }}
+    workflow_name: "{{ workflow_name | default('bom-project-deploy') }}"
+    organization_name: "{{ organization_name | default('Default') }}"
+    notification_name: "{{ notification_name | default('bom-approval-email') }}"
+    controller_validate_certs: "{{ controller_validate_certs | default(false) | bool }}"
+  tasks:
+    - name: Sanity check vars
+      ansible.builtin.assert:
+        that:
+          - controller_host | length > 8
+          - controller_oauth_token | length > 10
+          - approval_email_recipients is defined
+          - approval_email_recipients | length > 0
+        quiet: true
+
+    - name: Resolve organization id
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/v2/organizations/?name={{ organization_name | urlencode }}"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        return_content: true
+        status_code: [200]
+      register: org_lookup
+
+    - name: Fail if organization missing
+      ansible.builtin.assert:
+        that:
+          - org_lookup.json.results | default([]) | length > 0
+        fail_msg: "Organization '{{ organization_name }}' not found in Controller."
+
+    - ansible.builtin.set_fact:
+        organization_id: "{{ org_lookup.json.results[0].id }}"
+
+    - name: Upsert notification template (email)
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/v2/notification_templates/"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+          Content-Type: application/json
+        body_format: json
+        validate_certs: "{{ controller_validate_certs }}"
+        body:
+          name: "{{ notification_name }}"
+          description: "Email approvers when {{ workflow_name }} needs approval."
+          organization: "{{ organization_id | int }}"
+          notification_type: email
+          notification_configuration:
+            username: "{{ smtp_username | default('') }}"
+            password: "{{ smtp_password | default('') }}"
+            sender: "{{ email_sender }}"
+            recipients: "{{ approval_email_recipients }}"
+            host: "{{ smtp_host }}"
+            port: "{{ smtp_port | int }}"
+            use_tls: "{{ smtp_use_tls | default(true) | bool }}"
+            use_ssl: "{{ smtp_use_ssl | default(false) | bool }}"
+        status_code: [200, 201]
+      register: notif_create
+      ignore_errors: true
+
+    - name: Find notification by name (after create or on duplicate)
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/v2/notification_templates/?name={{ notification_name | urlencode }}&organization={{ organization_id | int }}"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        return_content: true
+        status_code: [200]
+      register: notif_find
+
+    - ansible.builtin.set_fact:
+        notification_id: "{{ notif_find.json.results[0].id | default(none) }}"
+
+    - name: Fail without notification id
+      ansible.builtin.assert:
+        that:
+          - notification_id is not none
+        fail_msg: "Could not create or resolve notification '{{ notification_name }}'."
+
+    - name: Patch SMTP recipients on notification (idempotent refresh)
+      when: notif_find.json.results | default([]) | length > 0
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/v2/notification_templates/{{ notification_id }}/"
+        method: PATCH
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+          Content-Type: application/json
+        validate_certs: "{{ controller_validate_certs }}"
+        body_format: json
+        body:
+          notification_configuration:
+            username: "{{ smtp_username | default('') }}"
+            password: "{{ smtp_password | default('') }}"
+            sender: "{{ email_sender }}"
+            recipients: "{{ approval_email_recipients }}"
+            host: "{{ smtp_host }}"
+            port: "{{ smtp_port | int }}"
+            use_tls: "{{ smtp_use_tls | default(true) | bool }}"
+            use_ssl: "{{ smtp_use_ssl | default(false) | bool }}"
+        status_code: [200]
+      register: notif_patch
+
+    - name: Resolve workflow job template id
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/v2/workflow_job_templates/?name={{ workflow_name | urlencode }}&organization={{ organization_id | int }}"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        return_content: true
+        status_code: [200]
+      register: wfj_lookup
+
+    - name: Fail if workflow missing
+      ansible.builtin.assert:
+        that:
+          - wfj_lookup.json.results | default([]) | length > 0
+        fail_msg: "Workflow job template '{{ workflow_name }}' not found — sync/update Git-backed templates first."
+
+    - ansible.builtin.set_fact:
+        workflow_id: "{{ wfj_lookup.json.results[0].id }}"
+
+    - name: Attach notification to workflow (approval channel)
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/v2/workflow_job_templates/{{ workflow_id }}/notification_templates_approvals/"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+          Content-Type: application/json
+        validate_certs: "{{ controller_validate_certs }}"
+        body_format: json
+        body:
+          id: "{{ notification_id | int }}"
+        status_code: [200, 201, 204]
+      register: approve_assoc
+      ignore_errors: true
+
+    - name: Associate output (ignore if already linked)
+      ansible.builtin.debug:
+        msg: >-
+          approvals association HTTP {{ approve_assoc.status | default('n/a') }} —
+          {{ approve_assoc.json | default(approve_assoc.msg | default('ok')) }}
