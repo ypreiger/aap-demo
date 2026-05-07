@@ -8,6 +8,5 @@ metadata:
 spec:
   connection_secret: aap-controller-api
   workflow_template_name: bom-project-deploy
-  inventory: Demo Inventory
   extra_vars:
     project_name: proj2

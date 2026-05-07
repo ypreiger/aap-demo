@@ -14,7 +14,9 @@ spec:
   description: >-
     Generic BOM deploy for any Git folder aap-demo/projects/{project_name}/bom (launch survey).
     Order: foundation → manual approval → VM provisioning. Not tied to proj1 or proj2 by name.
-  ask_variables_on_launch: false
+  # Required for AnsibleWorkflow / API launches that pass survey keys in extra_vars (e.g. project_name).
+  # UI launches can still use the survey; this also allows the variables prompt when desired.
+  ask_variables_on_launch: true
   survey_enabled: true
   survey_spec:
     name: Project selection

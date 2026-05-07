@@ -10,6 +10,7 @@ metadata:
 spec:
   connection_secret: aap-controller-api
   workflow_template_name: bom-project-deploy
-  inventory: Demo Inventory
+  # Do not set inventory here: Controller rejects WFJT launches that override inventory
+  # when the Workflow Job Template does not allow overrides (bom-project-deploy pins Demo Inventory).
   extra_vars:
     project_name: proj1
