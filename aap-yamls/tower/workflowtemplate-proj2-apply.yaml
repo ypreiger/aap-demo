@@ -1,0 +1,24 @@
+---
+apiVersion: tower.ansible.com/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: wjt-proj2-apply-workflow
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  state: present
+  name: proj2-apply-bom-workflow
+  organization: Default
+  inventory: Demo Inventory
+  description: Create proj2 namespace, SA proj2-sa, netpol, and two Fedora VMs.
+  workflow_nodes:
+    - identifier: step-apply-bom
+      unified_job_template:
+        type: job_template
+        name: proj2-apply-bom
+        organization:
+          name: Default
+      related:
+        success_nodes: []
+        failure_nodes: []
+        always_nodes: []

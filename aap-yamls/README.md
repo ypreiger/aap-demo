@@ -52,7 +52,12 @@ EDA and Controller URLs are wired by the platform operator when deployed from th
 
 ## BOM / namespaces (`projects/`)
 
-Example OpenShift artefacts live under **`projects/proj1/bom/`** (`namespace.yaml`, `serviceaccount.yaml`, `networkpolicy.yaml`). Automation controller applies them via **`playbooks/apply_proj1_bom.yml`** (Job Template **`proj1-apply-bom`** / Workflow **`proj1-apply-bom-workflow`** in **`tower/`**). Attach an OpenShift bearer-token credential that can apply these resources before launching the job.
+Example OpenShift artefacts:
+
+- **`projects/proj1/bom/`** — namespace, **`proj1-sa`**, restrictive **NetworkPolicy**, two Fedora **VirtualMachine**s (KubeVirt/CNV).
+- **`projects/proj2/bom/`** — same layout for **`proj2`**.
+
+Automation applies them via **`playbooks/apply_proj1_bom.yml`** / **`apply_proj2_bom.yml`** (tower JTs **`proj1-apply-bom`**, **`proj2-apply-bom`**). **OpenShift Virtualization** must be installed for VM CRDs. Rotate **cloud-init** passwords in YAML before production. Attach an OpenShift bearer token with sufficient RBAC before launching jobs.
 
 Re-apply tower picks after edits:
 

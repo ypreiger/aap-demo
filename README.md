@@ -1,6 +1,6 @@
 # Red Hat Ansible Automation Platform — minimal workflow demo
 
-**Layout:** playbook content at repo root (`playbooks/`, `inventory/`, **`collections/requirements.yml`**). OpenShift BOM / manifests for optional automation live in **`projects/`** (example: `projects/proj1/bom`). Platform operator + tower CR examples are in **`aap-yamls/`** ([README](aap-yamls/README.md)).
+**Layout:** playbook content at repo root (`playbooks/`, **`playbooks/tasks/`**, `inventory/`, **`collections/requirements.yml`**). OpenShift BOM manifests live under **`projects/proj1/bom`** and **`projects/proj2/bom`** (namespaces + SAs + policies + Fedora VMs via KubeVirt). Platform operator + tower CR examples sit in **`aap-yamls/`** ([README](aap-yamls/README.md)).
 
 ---
 

@@ -1,0 +1,10 @@
+---
+# Expects callers to define: bom_dir_abs (absolute dir of bom files), bom_files (ordered list)
+- name: Apply BOM manifests
+  kubernetes.core.k8s:
+    definition: "{{ lookup('file', bom_dir_abs ~ '/' ~ item) | from_yaml }}"
+  loop: "{{ bom_files }}"
+  loop_control:
+    label: "{{ item }}"
+  tags:
+    - bom

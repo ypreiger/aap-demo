@@ -12,3 +12,5 @@ resources:
   - workflowtemplate-demo.yaml
   - jobtemplate-proj1-apply-bom.yaml
   - workflowtemplate-proj1-apply.yaml
+  - jobtemplate-proj2-apply-bom.yaml
+  - workflowtemplate-proj2-apply.yaml

@@ -1,10 +1,11 @@
 ---
-# Default deny for selected pods + allow TCP 443 ingress and egress only.
+# Default deny for selected pods + TCP 443 ingress; egress allows DNS (:53 to openshift-dns), API (:6443), HTTPS (:443).
 # Pods that match no NetworkPolicy remain unrestricted unless other policies apply;
 # once this policy selects all pods in the namespace (podSelector: {}), only the
 # rules below are allowed and all other ingress/egress is denied for those pods.
 #
-# Tip: workloads often need UDP/TCP 53 to cluster DNS — add egress rules if needed.
+# Egress: cluster DNS (OpenShift CoreDNS), Kubernetes API (:6443), and HTTPS (:443).
+# Fedoras /KubeVirt launcher pods otherwise break on cloud-init and guest registration.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -23,6 +24,18 @@ spec:
           port: 443
       # Omitting "from" allows any source allowed by the cluster (typical deny-all-but-port pattern).
   egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - ports:
+        - protocol: TCP
+          port: 6443
     - ports:
         - protocol: TCP
           port: 443
