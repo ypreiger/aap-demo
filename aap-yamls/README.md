@@ -35,6 +35,15 @@ References: [Installing AAP on OpenShift 2.6](https://docs.redhat.com/en/documen
    oc apply -k aap-yamls/tower/
    ```
 
+   **Definitions only** (`WorkflowTemplate` / `JobTemplate` sync to Controller). To also **submit a workflow job** from OpenShift (Tech Preview **`AnsibleWorkflow`**), use an overlay that layers a run on top of `tower/`:
+
+   ```bash
+   oc apply -k aap-yamls/tower-full-run-proj1/
+   # or: oc apply -k aap-yamls/tower-full-run-proj2/
+   ```
+
+   That expands to everything in `tower/` plus one **`AnsibleWorkflow`** with `extra_vars.project_name` set. Treat **`AnsibleWorkflow`** like any job trigger: repeating `oc apply` after deleting the CR can launch again; CI/GitOps loops may resubmit depending on controller/operator behaviour—prefer **`tower/`** alone for reconcile-only manifests and launch manually from Controller when you want a human survey.
+
 ## Configuration you may need to change
 
 | File | knob |
@@ -69,6 +78,9 @@ Tower (YAML in **`tower/`**):
 | **`bom-project-foundation`** | Job template → foundation playbook. |
 | **`bom-project-vms`** | Job template → VM playbook **only after** foundation succeeds. |
 | **`bom-project-deploy`** | Generic workflow (**not** proj1/proj2-specific). **Survey** presents a launch dialog for **`project_name`** (Git path `aap-demo/projects/{project_name}/bom`). Then: foundation → **`workflow_approval`** `bom-approve-before-vms` → VMs. |
+| **`AnsibleWorkflow` `awf-bom-project-deploy-proj1`** (overlay) | Submits **one Workflow Job** to Controller for **`bom-project-deploy`** with **`project_name: proj1`** (survey values via `extra_vars`). Declared under **`tower-full-run-proj1/`**; **`proj2`** variant in **`tower-full-run-proj2/`**. |
+
+`WorkflowTemplate` (CR kind) maps to Automation Controller **Workflow Job Template**; **`AnsibleWorkflow`** maps to a **Workflow Job execution** initiated from OpenShift once the CR is reconciled.
 
 **Remove legacy Controller objects** (e.g. UI name `proj1-apply-bom-workflow` from deleted CRs):
 

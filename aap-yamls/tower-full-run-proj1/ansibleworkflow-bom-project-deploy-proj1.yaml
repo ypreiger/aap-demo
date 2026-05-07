@@ -1,0 +1,15 @@
+---
+# Launches ONE Automation Controller Workflow Job against workflow_template_name bom-project-deploy.
+# Survey answers are supplied via extra_vars (same as API launch). Tech Preview: AnsibleWorkflow.
+# Apply after `oc apply -k ../tower/` and the Controller has synced the Git project + WFJT.
+apiVersion: tower.ansible.com/v1alpha1
+kind: AnsibleWorkflow
+metadata:
+  name: awf-bom-project-deploy-proj1
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  workflow_template_name: bom-project-deploy
+  inventory: Demo Inventory
+  extra_vars:
+    project_name: proj1

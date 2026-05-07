@@ -1,0 +1,13 @@
+---
+# Same pattern as tower-full-run-proj1 for projects/proj2/bom.
+apiVersion: tower.ansible.com/v1alpha1
+kind: AnsibleWorkflow
+metadata:
+  name: awf-bom-project-deploy-proj2
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  workflow_template_name: bom-project-deploy
+  inventory: Demo Inventory
+  extra_vars:
+    project_name: proj2

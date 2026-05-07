@@ -1,0 +1,9 @@
+---
+# Full stack: sync all tower CRs (projects, JTs, WorkflowTemplate) AND submit a workflow run for proj1.
+# Tech Preview AnsibleWorkflow may resubmit if the CR is deleted/recreated; use with care in GitOps.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: aap
+resources:
+  - ../tower
+  - ansibleworkflow-bom-project-deploy-proj1.yaml
