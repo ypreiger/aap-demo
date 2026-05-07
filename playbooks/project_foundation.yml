@@ -1,6 +1,6 @@
 ---
 # Creates namespace → validates → SA → validates → NetworkPolicy → validates.
-# Inventory var / extra-var: project_name (e.g. proj1 or proj2). BOM path: ../projects/{{ project_name }}/bom/
+# Extra var project_name (survey on workflow bom-project-deploy). BOM path in Git: aap-demo/projects/{project_name}/bom/
 #
 - name: Project BOM — foundation layer
   hosts: localhost

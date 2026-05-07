@@ -1,5 +1,5 @@
 ---
-# Applies Fedora VirtualMachines only — run after foundation workflow step succeeds (same project_name).
+# Fedora VirtualMachines only. Same project_name as workflow survey; Git aap-demo/projects/{project_name}/bom/
 #
 - name: Project BOM — virtual machines layer
   hosts: localhost

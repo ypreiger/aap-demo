@@ -12,12 +12,26 @@ spec:
   organization: Default
   inventory: Demo Inventory
   description: >-
-    Parameterized BOM deploy for any project folder under projects/(project_name)/bom.
-    Prompt for project_name at launch. Order: foundation (namespace → SA → netpol),
-    mandatory approval gate, then VM provisioning. VMs never run unless foundation succeeds and the approval is granted.
-  ask_variables_on_launch: true
-  extra_vars:
-    project_name: proj1
+    Generic BOM deploy for any Git folder aap-demo/projects/{project_name}/bom (launch survey).
+    Order: foundation → manual approval → VM provisioning. Not tied to proj1 or proj2 by name.
+  ask_variables_on_launch: false
+  survey_enabled: true
+  survey_spec:
+    name: Project selection
+    description: >-
+      BOM path on the sync'd Git project: aap-demo/projects/{project_name}/bom
+    spec:
+      - type: text
+        question_name: Project name
+        question_description: >-
+          Directory under aap-demo/projects/ on the Git repository (e.g. proj1).
+          Manifests are loaded from aap-demo/projects/{project_name}/bom/.
+        variable: project_name
+        choices: ""
+        min: ""
+        max: ""
+        required: true
+        default: proj1
   workflow_nodes:
     - identifier: step-foundation
       unified_job_template:

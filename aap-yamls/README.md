@@ -68,9 +68,14 @@ Tower (YAML in **`tower/`**):
 |------|---------|
 | **`bom-project-foundation`** | Job template → foundation playbook. |
 | **`bom-project-vms`** | Job template → VM playbook **only after** foundation succeeds. |
-| **`bom-project-deploy`** | Workflow (**project-agnostic** name); **prompts for `project_name`**. Chains foundation **On Success** → **`workflow_approval`** (`bom-approve-before-vms`) → VMs **only after approval**. |
+| **`bom-project-deploy`** | Generic workflow (**not** proj1/proj2-specific). **Survey** presents a launch dialog for **`project_name`** (Git path `aap-demo/projects/{project_name}/bom`). Then: foundation → **`workflow_approval`** `bom-approve-before-vms` → VMs. |
 
-If an older **`proj*-apply-bom-workflow`** still appears in Controller, delete it manually; the maintained workflow is **`bom-project-deploy`**.
+**Remove legacy Controller objects** (e.g. UI name `proj1-apply-bom-workflow` from deleted CRs):
+
+```bash
+./aap-yamls/scripts/cleanup-legacy-bom-resources.sh
+oc apply -k aap-yamls/tower/
+```
 
 Re-sync Git project in Controller after pushing, then **`oc apply -k aap-yamls/tower/`** if you reconcile from Git.
 
