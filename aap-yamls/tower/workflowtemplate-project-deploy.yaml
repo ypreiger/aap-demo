@@ -1,0 +1,41 @@
+---
+# Single entry point: prompts for project_name once, runs foundation then VMs (On Success only).
+apiVersion: tower.ansible.com/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: wjt-bom-project-deploy
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  state: present
+  name: bom-project-deploy
+  organization: Default
+  inventory: Demo Inventory
+  description: >-
+    Parameterized project deploy (namespace/SA/netpol then VMs). Prompt for project_name at launch
+    (proj1 or proj2). VM job runs only after foundation completes successfully.
+  ask_variables_on_launch: true
+  extra_vars:
+    project_name: proj1
+  workflow_nodes:
+    - identifier: step-foundation
+      unified_job_template:
+        type: job_template
+        name: bom-project-foundation
+        organization:
+          name: Default
+      related:
+        success_nodes:
+          - identifier: step-vms
+        failure_nodes: []
+        always_nodes: []
+    - identifier: step-vms
+      unified_job_template:
+        type: job_template
+        name: bom-project-vms
+        organization:
+          name: Default
+      related:
+        success_nodes: []
+        failure_nodes: []
+        always_nodes: []

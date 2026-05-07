@@ -1,0 +1,17 @@
+---
+# Same project_name as foundation step. Runs only after workflow predecessor succeeds.
+apiVersion: tower.ansible.com/v1alpha1
+kind: JobTemplate
+metadata:
+  name: jt-bom-project-vms
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  name: bom-project-vms
+  organization: Default
+  project: AAP Demo (GitHub)
+  playbook: playbooks/project_vms.yml
+  inventory: Demo Inventory
+  ask_variables_on_launch: false
+  extra_vars:
+    project_name: proj1

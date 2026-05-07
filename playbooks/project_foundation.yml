@@ -1,0 +1,91 @@
+---
+# Creates namespace → validates → SA → validates → NetworkPolicy → validates.
+# Inventory var / extra-var: project_name (e.g. proj1 or proj2). BOM path: ../projects/{{ project_name }}/bom/
+#
+- name: Project BOM — foundation layer
+  hosts: localhost
+  gather_facts: false
+  vars:
+    bom_dir: "{{ playbook_dir }}/../projects/{{ project_name }}/bom"
+  tasks:
+    - name: Ensure project_name is set
+      ansible.builtin.assert:
+        that:
+          - project_name is defined
+          - (project_name | string | length) > 0
+        fail_msg: "Provide extra var project_name (e.g. proj1 or proj2)."
+
+    - name: Load namespace manifest header for consistency check
+      ansible.builtin.set_fact:
+        bom_ns: "{{ lookup('file', bom_dir ~ '/namespace.yaml') | from_yaml }}"
+
+    - name: BOM namespace metadata must match project_name
+      ansible.builtin.assert:
+        that:
+          - bom_ns.metadata.name == project_name
+        fail_msg: >-
+          BOM namespace.yaml defines '{{ bom_ns.metadata.name | default("?") }}' but project_name={{ project_name }}.
+
+    - name: Apply Namespace
+      kubernetes.core.k8s:
+        definition: "{{ bom_ns }}"
+
+    - name: Validate Namespace exists (active)
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Namespace
+        name: "{{ project_name }}"
+      register: ns_chk
+      failed_when: >-
+        ((ns_chk.resources | default([]) | length) < 1) or
+        (ns_chk.resources[0].status.phase | default("") != 'Active')
+
+    - name: Load ServiceAccount manifest
+      ansible.builtin.set_fact:
+        bom_sa: "{{ lookup('file', bom_dir ~ '/serviceaccount.yaml') | from_yaml }}"
+
+    - name: BOM ServiceAccount naming must align with convention {{ project_name }}-sa
+      ansible.builtin.assert:
+        that:
+          - bom_sa.metadata.namespace == project_name
+          - bom_sa.metadata.name == project_name ~ '-sa'
+        fail_msg: >-
+          BOM serviceaccount.yaml must use namespace '{{ project_name }}' and metadata.name '{{ project_name }}-sa'.
+
+    - name: Apply ServiceAccount
+      kubernetes.core.k8s:
+        definition: "{{ bom_sa }}"
+
+    - name: Validate ServiceAccount
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: ServiceAccount
+        name: "{{ project_name }}-sa"
+        namespace: "{{ project_name }}"
+      register: sa_chk
+      failed_when: sa_chk.resources | default([]) | length < 1
+
+    - name: Load NetworkPolicy manifest
+      ansible.builtin.set_fact:
+        bom_np: "{{ lookup('file', bom_dir ~ '/networkpolicy.yaml') | from_yaml }}"
+
+    - name: BOM NetworkPolicy must target this project namespace
+      ansible.builtin.assert:
+        that:
+          - bom_np.metadata.namespace == project_name
+          - bom_np.metadata.name == 'deny-all-open-443'
+        fail_msg: >-
+          BOM networkpolicy.yaml must use namespace '{{ project_name }}' and metadata.name deny-all-open-443.
+
+    - name: Apply NetworkPolicy
+      kubernetes.core.k8s:
+        definition: "{{ bom_np }}"
+
+    - name: Validate NetworkPolicy
+      kubernetes.core.k8s_info:
+        api_version: networking.k8s.io/v1
+        kind: NetworkPolicy
+        name: deny-all-open-443
+        namespace: "{{ project_name }}"
+      register: np_chk
+      failed_when: np_chk.resources | default([]) | length < 1

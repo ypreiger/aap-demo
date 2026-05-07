@@ -1,0 +1,65 @@
+---
+# Applies Fedora VirtualMachines only — run after foundation workflow step succeeds (same project_name).
+#
+- name: Project BOM — virtual machines layer
+  hosts: localhost
+  gather_facts: false
+  vars:
+    bom_dir: "{{ playbook_dir }}/../projects/{{ project_name }}/bom"
+    vm_files:
+      - vm-fedora-01.yaml
+      - vm-fedora-02.yaml
+  tasks:
+    - name: Ensure project_name is set
+      ansible.builtin.assert:
+        that:
+          - project_name is defined
+          - (project_name | string | length) > 0
+        fail_msg: "Provide extra var project_name (e.g. proj1 or proj2)."
+
+    - name: Prerequisites — Namespace must exist
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Namespace
+        name: "{{ project_name }}"
+      register: prereq_ns
+      failed_when: >-
+        ((prereq_ns.resources | default([]) | length) < 1) or
+        (prereq_ns.resources[0].status.phase | default("") != 'Active')
+
+    - name: Prerequisites — foundation ServiceAccount expected
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: ServiceAccount
+        name: "{{ project_name }}-sa"
+        namespace: "{{ project_name }}"
+      register: prereq_sa
+      failed_when: prereq_sa.resources | default([]) | length < 1
+
+    - name: Prerequisites — baseline NetworkPolicy expected
+      kubernetes.core.k8s_info:
+        api_version: networking.k8s.io/v1
+        kind: NetworkPolicy
+        name: deny-all-open-443
+        namespace: "{{ project_name }}"
+      register: prereq_np
+      failed_when: prereq_np.resources | default([]) | length < 1
+
+    - name: Apply VirtualMachine "{{ item }}"
+      kubernetes.core.k8s:
+        definition: "{{ lookup('file', bom_dir ~ '/' ~ item) | from_yaml }}"
+      loop: "{{ vm_files }}"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Validate VirtualMachine "{{ item }}"
+      kubernetes.core.k8s_info:
+        api_version: kubevirt.io/v1
+        kind: VirtualMachine
+        namespace: "{{ project_name }}"
+        name: "{{ (lookup('file', bom_dir ~ '/' ~ item) | from_yaml).metadata.name }}"
+      register: vm_chk
+      failed_when: vm_chk.resources | default([]) | length < 1
+      loop: "{{ vm_files }}"
+      loop_control:
+        label: "{{ item }}"

@@ -52,14 +52,25 @@ EDA and Controller URLs are wired by the platform operator when deployed from th
 
 ## BOM / namespaces (`projects/`)
 
-Example OpenShift artefacts:
+BOM layouts:
 
-- **`projects/proj1/bom/`** — namespace, **`proj1-sa`**, restrictive **NetworkPolicy**, two Fedora **VirtualMachine**s (KubeVirt/CNV).
-- **`projects/proj2/bom/`** — same layout for **`proj2`**.
+- **`projects/<project_name>/bom/`** — `namespace.yaml`, `serviceaccount.yaml` (**`<project_name>-sa`**), **`networkpolicy.yaml`**, **`vm-fedora-01.yaml`** / **`vm-fedora-02.yaml`**.
+- Repo ships **`projects/proj1`** and **`projects/proj2`**; names in YAML files must match the folder (**`project_name`** extra var equals that folder).
 
-Automation applies them via **`playbooks/apply_proj1_bom.yml`** / **`apply_proj2_bom.yml`** (tower JTs **`proj1-apply-bom`**, **`proj2-apply-bom`**). **OpenShift Virtualization** must be installed for VM CRDs. Rotate **cloud-init** passwords in YAML before production. Attach an OpenShift bearer token with sufficient RBAC before launching jobs.
+Automation:
 
-Re-apply tower picks after edits:
+- **`playbooks/project_foundation.yml`** — create namespace → **validate Active** → SA → **validate exists** → NetworkPolicy → **validate exists**.
+- **`playbooks/project_vms.yml`** — prerequisite checks foundation objects, then applies & validates Fedora **VirtualMachine** CRs (**CNV/KubeVirt** required).
+
+Tower (YAML in **`tower/`**):
+
+| Name | Purpose |
+|------|---------|
+| **`bom-project-foundation`** | Job template → foundation playbook. |
+| **`bom-project-vms`** | Job template → VM playbook **only after** foundation succeeds. |
+| **`bom-project-deploy`** | Workflow; **prompts for `project_name`**, chains foundation **On Success** → VMs |
+
+Re-sync Git project in Controller after pushing, then **`oc apply -k aap-yamls/tower/`** if you reconcile from Git.
 
 ```bash
 oc apply -k aap-yamls/tower/

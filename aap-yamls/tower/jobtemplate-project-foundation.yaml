@@ -1,0 +1,17 @@
+---
+# Extra var on launch: project_name (e.g. proj1 or proj2). Must match projects/<name>/bom manifests.
+apiVersion: tower.ansible.com/v1alpha1
+kind: JobTemplate
+metadata:
+  name: jt-bom-project-foundation
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  name: bom-project-foundation
+  organization: Default
+  project: AAP Demo (GitHub)
+  playbook: playbooks/project_foundation.yml
+  inventory: Demo Inventory
+  ask_variables_on_launch: false
+  extra_vars:
+    project_name: proj1
