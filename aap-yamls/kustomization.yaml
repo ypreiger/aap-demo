@@ -1,0 +1,8 @@
+---
+# Apply from repo root: oc apply -k aap-yamls/
+# Tune storage / hostname in overlays/ or patch 01-ansibleautomationplatform.yaml before apply.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: aap
+resources:
+  - 01-ansible-automationplatform.yaml

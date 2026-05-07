@@ -1,0 +1,12 @@
+---
+# Apply AFTER `demo-aap` is healthy and you created `Secret/aap-controller-api` (see ../secrets/).
+# Run: oc apply -k aap-yamls/tower/
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: aap
+resources:
+  - ansibleproject-aap-demo.yaml
+  - jobtemplate-01-validate.yaml
+  - jobtemplate-02-publish.yaml
+  - jobtemplate-03-finalize.yaml
+  - workflowtemplate-demo.yaml

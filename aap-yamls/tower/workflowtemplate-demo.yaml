@@ -1,0 +1,49 @@
+---
+# Tech Preview CR — chains the three GitHub-backed job templates using success_nodes.
+# Requires resource operator (awx/ansible resource operator) pods running in namespace `aap`.
+#
+apiVersion: tower.ansible.com/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: wjt-aap-demo-workflow
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  state: present
+  name: aap-demo-workflow-from-git
+  organization: Default
+  description: Validates → publishes set_stats artifact → consumes it in finalize (GitHub demo)
+  inventory: Demo Inventory
+  workflow_nodes:
+    - identifier: step-validate
+      unified_job_template:
+        type: job_template
+        name: aap-demo-01-validate
+        organization:
+          name: Default
+      related:
+        success_nodes:
+          - identifier: step-publish
+        failure_nodes: []
+        always_nodes: []
+    - identifier: step-publish
+      unified_job_template:
+        type: job_template
+        name: aap-demo-02-publish
+        organization:
+          name: Default
+      related:
+        success_nodes:
+          - identifier: step-finalize
+        failure_nodes: []
+        always_nodes: []
+    - identifier: step-finalize
+      unified_job_template:
+        type: job_template
+        name: aap-demo-03-finalize
+        organization:
+          name: Default
+      related:
+        success_nodes: []
+        failure_nodes: []
+        always_nodes: []

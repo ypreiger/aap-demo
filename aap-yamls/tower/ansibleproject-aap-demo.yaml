@@ -1,0 +1,14 @@
+---
+apiVersion: tower.ansible.com/v1alpha1
+kind: AnsibleProject
+metadata:
+  name: aap-demo-project
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  name: AAP Demo (GitHub)
+  organization: Default
+  description: Public demo playbooks from github.com/ypreiger/aap-demo
+  scm_type: git
+  repo: https://github.com/ypreiger/aap-demo
+  branch: main

@@ -1,0 +1,13 @@
+---
+apiVersion: tower.ansible.com/v1alpha1
+kind: JobTemplate
+metadata:
+  name: jt-aap-demo-02-publish
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  name: aap-demo-02-publish
+  organization: Default
+  project: AAP Demo (GitHub)
+  playbook: playbooks/02_publish_workflow_stats.yml
+  inventory: Demo Inventory

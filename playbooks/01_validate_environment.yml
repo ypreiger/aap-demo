@@ -1,0 +1,11 @@
+---
+# Workflow step 1: establish context (facts, timestamps) for the pipeline narrative.
+- name: AAP demo — validate execution context
+  hosts: localhost
+  gather_facts: true
+  tasks:
+    - name: Show where this job runs
+      ansible.builtin.debug:
+        msg: >-
+          Step 1 OK: controller-driven job on host {{ ansible_hostname | default('localhost') }},
+          OS {{ ansible_distribution | default('unknown') }} {{ ansible_distribution_version | default('') }}

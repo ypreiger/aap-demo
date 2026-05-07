@@ -1,0 +1,11 @@
+---
+# Workflow step 3: consume data published by upstream set_stats (when run inside a Workflow Job Template).
+- name: AAP demo — finalize and report
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Summary (batch id appears when chained after playbook 02 in a workflow)
+      ansible.builtin.debug:
+        msg: >-
+          Step 3 OK: demo complete.
+          demo_batch_id={{ demo_batch_id | default('n/a — run this playbook standalone or after step 2 in a workflow') }}

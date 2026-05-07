@@ -1,0 +1,18 @@
+---
+# Workflow step 2: publish identifiers for downstream jobs (Workflow Job Template consumes set_stats).
+- name: AAP demo — publish workflow artifact via set_stats
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Compute a deterministic-enough correlation id for the demo
+      ansible.builtin.command: date -u +%Y%m%dT%H%M%SZ
+      register: demo_ts
+      changed_when: false
+
+    - name: Surface variables to downstream workflow nodes
+      ansible.builtin.set_stats:
+        per_host: false
+        data:
+          demo_batch_id: "DEMO-{{ demo_ts.stdout }}"
+          demo_step2_note: >-
+            Passed from playbook 02; next template can reference demo_batch_id as an extra var.

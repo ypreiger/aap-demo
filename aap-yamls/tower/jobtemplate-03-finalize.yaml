@@ -1,0 +1,13 @@
+---
+apiVersion: tower.ansible.com/v1alpha1
+kind: JobTemplate
+metadata:
+  name: jt-aap-demo-03-finalize
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  name: aap-demo-03-finalize
+  organization: Default
+  project: AAP Demo (GitHub)
+  playbook: playbooks/03_finalize.yml
+  inventory: Demo Inventory

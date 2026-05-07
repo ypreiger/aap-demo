@@ -1,0 +1,13 @@
+---
+apiVersion: tower.ansible.com/v1alpha1
+kind: JobTemplate
+metadata:
+  name: jt-aap-demo-01-validate
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  name: aap-demo-01-validate
+  organization: Default
+  project: AAP Demo (GitHub)
+  playbook: playbooks/01_validate_environment.yml
+  inventory: Demo Inventory

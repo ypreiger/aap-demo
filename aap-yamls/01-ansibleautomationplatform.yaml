@@ -1,0 +1,66 @@
+---
+# Full-stack Ansible Automation Platform 2.x gateway topology for OpenShift:
+# Automation Controller, Hub, Event-Driven Ansible (EDA), MCP, optional Lightspeed.
+# Platform UI is exposed via an OpenShift Route (ingress_type + route_tls_termination_mechanism).
+#
+# Prerequisites:
+# - Namespace `aap` exists and AAP Operator 2.6 is installed there.
+# - Valid default / RWX storage classes for Postgres (implicit) and Hub file storage below.
+#
+# AFTER APPLY:
+# - oc get routes -n aap
+# - oc extract secret/demo-aap-admin-password -n aap --keys=password --to=-
+# - Apply tower/*.yaml ONLY after gateway is reachable and you optionally enable preload data.
+#
+# Lightspeed requires IBM watsonx Code Assistant auth/model secrets BEFORE enabling;
+# overlay `secrets/lightspeed-*.yaml` is provided as template only.
+#
+# Derived from appendix examples in RH AAP 2.6 Installing on OpenShift Container Platform:
+# https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.6/html/installing_on_openshift_container_platform/
+#
+apiVersion: aap.ansible.com/v1alpha1
+kind: AnsibleAutomationPlatform
+metadata:
+  name: demo-aap
+  namespace: aap
+spec:
+  no_log: false
+  ingress_type: Route
+  route_tls_termination_mechanism: Edge
+  # Optional: pin a deterministic hostname instead of letting the Route default.
+  # hostname: demo-aap-gateway-gateway.apps.cluster-jx4b7.dynamic.redhatworkshops.io
+  image_pull_policy: IfNotPresent
+  # Platform API / redis / shared DB sizing — adjust for your quota.
+  api:
+    replicas: 1
+  redis:
+    replicas: 1
+  database:
+    resource_requirements:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+    storage_requirements:
+      requests:
+        storage: 8Gi
+  controller:
+    disabled: false
+    create_preload_data: true
+  eda:
+    disabled: false
+  hub:
+    disabled: false
+    storage_type: file
+    file_storage_storage_class: ocs-external-storagecluster-cephfs
+    file_storage_size: 50Gi
+  # Ansible Lightspeed (IBM watsonx Code Assistant) — opt-in; needs secrets (see secrets/).
+  lightspeed:
+    disabled: true
+    # When you have valid secrets, set disabled: false and uncomment:
+    # auth_config_secret_name: aap-demo-lightspeed-auth
+    # api:
+    #   model_pipeline_secret: aap-demo-lightspeed-model
+  # Ansible MCP server (read-only by default for safer demos).
+  mcp:
+    disabled: false
+    allow_write_operations: false
