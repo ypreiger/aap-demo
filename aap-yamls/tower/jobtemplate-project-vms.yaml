@@ -12,6 +12,8 @@ spec:
   project: AAP Demo (GitHub)
   playbook: playbooks/project_vms.yml
   inventory: Demo Inventory
+  credentials:
+    - openshift-bom-target
   ask_variables_on_launch: false
   extra_vars:
     project_name: proj1

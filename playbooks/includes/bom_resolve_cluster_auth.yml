@@ -1,0 +1,48 @@
+---
+# Resolves API URL + token for kubernetes.core inside Automation Controller (no ~/.kube/config).
+# Prefer an attached "OpenShift or Kubernetes API Bearer Token" credential (injects K8S_AUTH_*).
+# Fallback extra vars (testing only): bom_target_ocp_api, bom_target_ocp_token
+- name: BOM — read OpenShift/Kubernetes credential from environment (Controller-injected)
+  ansible.builtin.set_fact:
+    _bom_env_api: "{{ lookup('ansible.builtin.getenv', 'K8S_AUTH_HOST', default='', True) | trim }}"
+    _bom_env_token: "{{ lookup('ansible.builtin.getenv', 'K8S_AUTH_API_KEY', default='', True) | trim }}"
+    _bom_env_verify: "{{ lookup('ansible.builtin.getenv', 'K8S_AUTH_VERIFY_SSL', default='true', True) }}"
+    _bom_env_ca: "{{ lookup('ansible.builtin.getenv', 'K8S_AUTH_SSL_CA_CERT', default='', True) | trim }}"
+
+- name: BOM — optional alternate env names (some injectors)
+  ansible.builtin.set_fact:
+    _bom_env_api: "{{ lookup('ansible.builtin.getenv', 'K8S_API_SERVER', default='', True) | trim }}"
+  when: (_bom_env_api | length) == 0
+
+- name: BOM — optional alternate token env name
+  ansible.builtin.set_fact:
+    _bom_env_token: "{{ lookup('ansible.builtin.getenv', 'K8S_API_TOKEN', default='', True) | trim }}"
+  when: (_bom_env_token | length) == 0
+
+- name: BOM — choose API host (env wins over extra vars)
+  ansible.builtin.set_fact:
+    _bom_ocp_api: "{{ _bom_env_api if (_bom_env_api | length) > 0 else (bom_target_ocp_api | default('') | trim) }}"
+
+- name: BOM — choose API token
+  ansible.builtin.set_fact:
+    _bom_ocp_token: "{{ _bom_env_token if (_bom_env_token | length) > 0 else (bom_target_ocp_token | default('') | trim) }}"
+
+- name: BOM — SSL verify flag
+  ansible.builtin.set_fact:
+    _bom_verify_ssl: "{{ _bom_env_verify | lower in ['1', 'true', 'yes'] }}"
+
+- name: BOM — bearer auth must be complete or omitted (omit → kubernetes.core uses ~/.kube or in-cluster config)
+  ansible.builtin.assert:
+    that:
+      - ((_bom_ocp_api | length) > 0) == ((_bom_ocp_token | length) > 0)
+    fail_msg: >-
+      Provide both API URL and bearer token (Automation Controller credential 'OpenShift or Kubernetes API Bearer Token',
+      injecting K8S_AUTH_* — use openshift-bom-target on the BOM job templates; or extra vars bom_target_ocp_api and bom_target_ocp_token together),
+      or omit both for local Ansible runs driven by kubeconfig.
+
+- name: BOM — Automation Controller hint (no bearer auth resolved)
+  ansible.builtin.debug:
+    msg: >-
+      No OpenShift Bearer Token env/K8S_AUTH_* or bom_target_* extra vars detected; assuming kubeconfig-based client defaults.
+      If this job ran from Automation Controller, attach credential openshift-bom-target (Openshift/Kubernetes Bearer Token) to bom-project-foundation and bom-project-vms.
+  when: (_bom_ocp_api | length) == 0

@@ -12,6 +12,9 @@ spec:
   project: AAP Demo (GitHub)
   playbook: playbooks/project_foundation.yml
   inventory: Demo Inventory
+  # Create "OpenShift or Kubernetes API Bearer Token" credential openshift-bom-target (Default org) before apply.
+  credentials:
+    - openshift-bom-target
   ask_variables_on_launch: false
   extra_vars:
     project_name: proj1
