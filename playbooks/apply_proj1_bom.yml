@@ -1,0 +1,29 @@
+---
+# Applies projects/proj1/bom/*.yaml to an OpenShift cluster (same cluster as Controller).
+#
+# Prerequisites in AAP:
+# - Execution Environment with kubernetes.core collection (see collections/requirements.yml).
+# - Job template credential: Kubernetes / OpenShift (Bearer token) scoped to namespace creation
+#   (typically cluster-admin or a Namespace-creating RBAC Role). Map the credential on the JT.
+#
+# Optional extra vars / env (depends on credential plugin): kubeconfig present in EE, or standard
+# K8S_AUTH_* vars set by OpenShift credential type — kubernetes.core resolves connection when kubeconfig/token is wired.
+#
+- name: Apply proj1 BOM manifests
+  hosts: localhost
+  gather_facts: false
+  vars:
+    bom_dir_rel: "{{ playbook_dir }}/../projects/proj1/bom"
+    bom_files:
+      - namespace.yaml
+      - serviceaccount.yaml
+      - networkpolicy.yaml
+  tasks:
+    - name: Apply BOM object
+      kubernetes.core.k8s:
+        definition: "{{ lookup('file', bom_dir_rel ~ '/' ~ item) | from_yaml }}"
+      loop: "{{ bom_files }}"
+      loop_control:
+        label: "{{ item }}"
+      tags:
+        - bom

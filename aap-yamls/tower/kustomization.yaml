@@ -10,3 +10,5 @@ resources:
   - jobtemplate-02-publish.yaml
   - jobtemplate-03-finalize.yaml
   - workflowtemplate-demo.yaml
+  - jobtemplate-proj1-apply-bom.yaml
+  - workflowtemplate-proj1-apply.yaml

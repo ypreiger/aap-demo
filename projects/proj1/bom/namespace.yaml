@@ -1,0 +1,12 @@
+---
+# Namespace manifest for proj1 BOM.
+# Customize metadata.name / annotations below.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: proj1
+  labels:
+    app.kubernetes.io/managed-by: aap-demo
+  annotations:
+    openshift.io/description: "Demo workload namespace (proj1 BOM)"
+    openshift.io/display-name: "Proj1 Demo"

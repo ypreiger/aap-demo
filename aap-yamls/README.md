@@ -50,6 +50,16 @@ References: [Installing AAP on OpenShift 2.6](https://docs.redhat.com/en/documen
 
 EDA and Controller URLs are wired by the platform operator when deployed from the bundled CR; no standalone `EDA` CR is needed for this layout.
 
+## BOM / namespaces (`projects/`)
+
+Example OpenShift artefacts live under **`projects/proj1/bom/`** (`namespace.yaml`, `serviceaccount.yaml`, `networkpolicy.yaml`). Automation controller applies them via **`playbooks/apply_proj1_bom.yml`** (Job Template **`proj1-apply-bom`** / Workflow **`proj1-apply-bom-workflow`** in **`tower/`**). Attach an OpenShift bearer-token credential that can apply these resources before launching the job.
+
+Re-apply tower picks after edits:
+
+```bash
+oc apply -k aap-yamls/tower/
+```
+
 ## Repository
 
 This folder is tracked in **[ypreiger/aap-demo](https://github.com/ypreiger/aap-demo)** at path **`aap-yamls/`**. From clone root:
