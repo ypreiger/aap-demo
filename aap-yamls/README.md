@@ -91,7 +91,12 @@ oc apply -k aap-yamls/tower/
 
 Re-sync Git project in Controller after pushing, then **`oc apply -k aap-yamls/tower/`** if you reconcile from Git.
 
-Approval email (SMTP + workflow **Approval** notifications): see repository **[`documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`](../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md)**.
+Approval email (SMTP + workflow **Approval** notifications): see repository **[`documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`](../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md)**. SMTP and notification association are **not** applied automatically from Git; configure them in Controller (or run `playbooks/controller_configure_bom_approval_email.yml` with your `extras/approval-email.vars.yml`).
+
+If **`bom-project-deploy`** shows an **empty Workflow Visualizer** or `WorkflowTemplate` status reports an error:
+
+- **`JobTemplate` playbooks**: the Controller Git project (**`AAP Demo (GitHub)`**) must be **synced** so `playbooks/project_foundation.yml` and `project_vms.yml` exist on disk (otherwise `bom-project-foundation` / `bom-project-vms` fail to create and the workflow graph cannot build). Run **Projects → Sync** after pushing new playbook paths if needed.
+- **Survey**: Workflow survey questions must **not** use empty-string **`min`** / **`max`** (Tower expects integers); see `workflowtemplate-project-deploy.yaml`.
 
 ```bash
 oc apply -k aap-yamls/tower/

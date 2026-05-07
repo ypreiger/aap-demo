@@ -29,9 +29,7 @@ spec:
           Directory under aap-demo/projects/ on the Git repository (e.g. proj1).
           Manifests are loaded from aap-demo/projects/{project_name}/bom/.
         variable: project_name
-        choices: ""
-        min: ""
-        max: ""
+        # Do not use empty-string min/max: Controller rejects ("expected to be integer") and WFJT/visualizer fails to sync.
         required: true
         default: proj1
   workflow_nodes:
