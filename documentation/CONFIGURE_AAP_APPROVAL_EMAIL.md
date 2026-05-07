@@ -1,50 +1,80 @@
-# Email when a BOM workflow waits for approval
+# BOM workflow approvals with email-plugin (recommended) or Controller SMTP
 
-Automation Controller sends mail using **SMTP-based notification templates**. You associate one of those templates with workflow event **Approval** so approvers receive a message when **`bom-project-before-vms`** (or similar) enters *pending* state.
+Two supported patterns:
 
-References: [Red Hat Ansible Automation Platform — Notifications](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.4/html/automation_controller_user_guide/controller-notifications) (events include workflow **Approval** alongside Start / Success / Failure).
+1. **`email-plugin` (recommended)** — a small HTTPS service deployed in **`aap`** (see [`aap-demo/email-plugin/README`](../email-plugin/README.md)). Automation Controller emits a **webhook on Workflow Approval** → the pod sends Gmail (or compatible SMTP) with **signed Approve / Deny buttons** → clicking calls Controller REST to finish the waiting approval task.  
+   Defaults: **`DEFAULT_TO_EMAIL=yaakovpreiger@gmail.com`** (ConfigMap env in the plugin manifest); override per message with optional JSON keys `to_email` / `recipient` if you customize the webhook body.
 
-## Prerequisites
+2. **Native Controller email notification** — built-in SMTP template on Workflow **Approval** (no clickable REST bridge; relies on Notification template copy + Controller base URL). Use when you cannot run the pod.
 
-1. **Controller base URL**  
-   **Settings → Subscription / Miscellaneous (System)** → **Base URL of the service** → set to your real Controller HTTPS hostname.  
-   Notification links and some templates use this value.
+References: [Red Hat — Notifications](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.4/html/automation_controller_user_guide/controller-notifications) (approval events beside Start/Success/Failure).
 
-2. **Outbound SMTP** your cluster is allowed to use (corporate relay, Amazon SES, etc.).  
-   Red Hat’s internal relay host and auth are **not** in this repo—use your IT-provided values.
+## Path A — `email-plugin` (Gmail SMTP + clickable Approve/Deny)
 
-## Option A — UI (recommended first time)
+### Controller settings
 
-1. **Administration → Notifications** (or **Access → Notifications**, depending on AAP revision) → **Notification templates** → **Create notification template**.
-2. **Organization:** `Default` (or yours). **Type:** **Email**.
-3. Complete **SMTP host**, **Port**, TLS/SSL, **Username/password** if required, **Sender**, **Recipients** — include **`ypreiger@redhat.com`** (comma-separated allowed where the UI permits multiple recipients).
-4. **Test notification** using the wizard’s Test button; fix SMTP until mail arrives.
+Under **Administration → Settings → System** (“Miscellaneous”), set **Base URL of the service** to your real Automation Controller HTTPS URL so links rendered by Controller stay correct.
 
-5. **Automation Execution → Templates** → open workflow **`bom-project-deploy`** (`wjt-bom-project-deploy`).
-6. Open the **Notifications** tab / section.
-7. Under **Approval** (workflow templates with approvals expose this alongside Start/Success/Failure), **enable** or **associate** your new email notification template.
+### Deploy the plugin (this repo)
 
-Save. Launch **`bom-project-deploy`**; after the foundation step, when approval is **pending**, you should receive mail with a link back to the job (exact body follows the default template described in Red Hat docs; you may customize optional message templates on the notification object).
+```bash
+# After oc login targeting the cluster hosting AAP (from your clone of aap-demo)
+cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+SMTP_PASSWORD='<gmail-app-password>' DISABLE_SMTP=false ./email-plugin/scripts/deploy-email-plugin.sh
+```
 
-## Option B — API playbook from this repo
+The script reapplies manifests from `email-plugin/openshift/`, patches **`CONTROLLER_HOST`** from **`Secret/aap-controller-api`**, runs an OpenShift Source **binary Docker build**, and sets **`PUBLIC_BASE_URL`** from **`Route/email-plugin`**.
 
-If you prefer GitOps-friendly automation:
+### Register the webhook on `bom-project-deploy`
 
-1. Copy `extras/approval-email.vars.example.yml` → e.g. `extras/approval-email.vars.yml` (keep **outside** Git; do **not** commit SMTP passwords).
+```bash
+EP=$(oc get route email-plugin -n aap -o jsonpath='{.spec.host}')
+WH="https://${EP}/v1/hooks/controller"
+CH="$(oc get secret aap-controller-api -n aap -o jsonpath='{.data.host}' | base64 -d)"
+TK="$(oc get secret aap-controller-api -n aap -o jsonpath='{.data.token}' | base64 -d)"
 
-2. Run from repository root:
+ansible-playbook email-plugin/playbooks/register_controller_webhook_notification.yml \
+  -e controller_host="$CH" \
+  -e controller_oauth_token="$TK" \
+  -e webhook_target_url="$WH"
+```
+
+This creates notification **`bom-email-plugin-webhook`** and associates it with workflow **`bom-project-deploy`** approvals. The default Jinja outputs JSON with **`approval_job_id`** only (AAP 4.7 webhook validation); the service resolves **`workflow_job_id`** via the Controller API.
+
+### Gmail specifics
+
+Use **SMTP App Password**, not your normal password. Populate **`Secret/email-plugin-secrets`** key **`SMTP_PASSWORD`** (deploy script forwards `SMTP_PASSWORD=...`). TLS stays enabled on **`smtp.gmail.com:587`**.
+
+### Optional inbound HMAC (`WEBHOOK_HMAC_SECRET`)
+
+If you set **`WEBHOOK_HMAC_SECRET`** in the Secret, configure the webhook template’s **Additional headers** (`headers` dict) **or** a reverse proxy — the plugin verifies:
+
+```
+X-Email-Plugin-Signature: sha256=<hex_hmac_sha256(secret, raw_body)>
+```
+
+### Troubleshooting (`email-plugin`)
+
+| Symptom | Action |
+|---------|--------|
+| Gmail auth errors | Rotate App Password; confirm `SMTP_USER` matches Gmail account owning the App Password |
+| Buttons 400/401 | Signing secret mismatch / expired token (`TOKEN_MAX_AGE_HOURS`); restart Deployment after patching Secret |
+| Webhook JSON parse errors | Controller version may render different fields — override **`wf_approve_body_template`** in the registration playbook extras |
+| Egress failures | Namespace NetworkPolicy/firewall blocking `smtp.gmail.com:587` or Controller HTTPS |
+
+## Path B — Native Controller SMTP (no Approve buttons)
+
+Follow the Ansible playbook path if you skip `email-plugin`.
+
+1. Copy `extras/approval-email.vars.example.yml` → `extras/approval-email.vars.yml` (never commit SMTP secrets).
+
+2. Run from **aap-demo** repository root:
 
    ```bash
    export CONTROLLER_HOST='https://<your-controller-route>'
-   export CONTROLLER_TOKEN='<OAuth personal access token with admin or notification rights>'
+   export CONTROLLER_TOKEN='<OAuth PAT with notification privileges>'
    ansible-playbook playbooks/controller_configure_bom_approval_email.yml \
      -e @extras/approval-email.vars.yml
    ```
 
-The playbook creates-or-updates notification **`bom-approval-email`** and associates it with workflow **`bom-project-deploy`** for **approval** events only.
-
-## Troubleshooting
-
-- No mail: verify SMTP from a **Test** in the UI; check spam; confirm pods can reach the relay (egress / NetworkPolicy).
-- Link in email wrong: fix **Base URL of the service** in Controller settings.
-- **403** on API: token needs rights to create notification templates and modify the workflow job template.
+The playbook associates notification **`bom-approval-email`** with workflow **`bom-project-deploy`** for **Approval** events only.

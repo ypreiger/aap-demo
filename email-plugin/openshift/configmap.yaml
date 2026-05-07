@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/name: email-plugin
+  name: email-plugin-env
+data:
+  # Scripts/patch-email-plugin-routes.sh fills both from your cluster (Route + aap-controller-api secret).
+  PUBLIC_BASE_URL: "https://unset-email-plugin.invalid"
+  CONTROLLER_HOST: "https://unset-controller.invalid"
+  CONTROLLER_VERIFY_SSL: "false"
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: "587"
+  SMTP_USE_TLS: "true"
+  SMTP_USER: "yaakovpreiger@gmail.com"
+  MAIL_FROM: "yaakovpreiger@gmail.com"
+  DEFAULT_TO_EMAIL: "yaakovpreiger@gmail.com"
+  TOKEN_MAX_AGE_HOURS: "72"
+  # Set true until Secret email-plugin-secrets includes SMTP_PASSWORD (Gmail App Password).
+  DISABLE_SMTP: "true"

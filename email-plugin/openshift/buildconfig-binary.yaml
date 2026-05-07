@@ -1,0 +1,25 @@
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    app.kubernetes.io/name: email-plugin
+  name: email-plugin
+spec:
+  successfulBuildsHistoryLimit: 2
+  failedBuildsHistoryLimit: 5
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile
+      # Overrides the Dockerfile FROM when building on-cluster (mirrored istag; avoids broken external registry egress).
+      from:
+        kind: ImageStreamTag
+        namespace: openshift
+        name: python:3.12-ubi9
+  output:
+    to:
+      kind: ImageStreamTag
+      name: email-plugin:latest

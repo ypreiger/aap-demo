@@ -1,0 +1,1 @@
+# email-plugin approval bridge

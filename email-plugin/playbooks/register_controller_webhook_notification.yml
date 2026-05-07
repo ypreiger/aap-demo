@@ -1,0 +1,191 @@
+---
+# Registers a webhook notification on Automation Controller and associates it with a
+# Workflow Job Template approvals channel so Controller POSTs JSON to email-plugin when
+# a human approval gate is reached.
+#
+# Required extra vars / env:
+#   controller_host               (or CONTROLLER_HOST / CONTROLLER_OAUTH_TOKEN)
+#   controller_oauth_token        (OAuth app / PAT — same privileges as notification admin)
+#   webhook_target_url            full URL POST .../v1/hooks/controller
+# Optional:
+#   notification_name             default bom-email-plugin-webhook
+#   workflow_name                default bom-project-deploy
+#   organization_name             default Default
+#   controller_validate_certs     default false (bool)
+#
+- name: Register email-plugin webhook for workflow approvals
+  hosts: localhost
+  gather_facts: false
+  vars:
+    controller_host: >-
+      {{
+        controller_host
+        | default(lookup('env', 'CONTROLLER_HOST', default=''))
+        | trim
+        | regex_replace('/$', '')
+      }}
+    controller_oauth_token: >-
+      {{
+        controller_oauth_token
+        | default(lookup('env', 'CONTROLLER_OAUTH_TOKEN', default=''))
+        | default(lookup('env', 'CONTROLLER_TOKEN', default=''))
+        | trim
+      }}
+    webhook_target_url: "{{ webhook_target_url | default('') | trim }}"
+    notification_name: "{{ notification_name | default('bom-email-plugin-webhook') }}"
+    workflow_name: "{{ workflow_name | default('bom-project-deploy') }}"
+    organization_name: "{{ organization_name | default('Default') }}"
+    controller_validate_certs: "{{ controller_validate_certs | default(false) | bool }}"
+    # Controller validates Jinja names against the approval context. Use only fields that exist there;
+    # `summary_fields.*` is not accepted for webhook workflow_approval on AAP 4.7+. Nested under
+    # messages.workflow_approval.running.body (webhook notification type).
+    wf_approve_body_template: >-
+      {% raw %}{"approval_job_id": {{ job.id }}}{% endraw %}
+  tasks:
+    - ansible.builtin.assert:
+        that:
+          - controller_host | length > 8
+          - controller_oauth_token | length > 10
+          - webhook_target_url | length > 10
+        fail_msg: "Set controller_host, controller_oauth_token, webhook_target_url (see README)."
+
+    - name: Lookup organization id
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/v2/organizations/?name={{ organization_name | urlencode }}"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        return_content: true
+        status_code: [200]
+      register: org_lookup
+
+    - ansible.builtin.set_fact:
+        organization_id: "{{ org_lookup.json.results[0].id }}"
+
+    - name: Find notification by name
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/v2/notification_templates/?organization={{ organization_id | int }}&name={{ notification_name | urlencode }}"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        return_content: true
+        status_code: [200]
+      register: nfind
+
+    - ansible.builtin.set_fact:
+        notification_id: "{{ nfind.json.results[0].id | default('') }}"
+        notification_exists: "{{ (nfind.json.results | default([])) | length > 0 }}"
+
+    - name: Create webhook notification
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/v2/notification_templates/"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+          Content-Type: application/json
+        validate_certs: "{{ controller_validate_certs }}"
+        body_format: json
+        body:
+          name: "{{ notification_name }}"
+          description: >-
+            webhook → {{ webhook_target_url }} (email-plugin BOM approve/deny)
+          organization: "{{ organization_id | int }}"
+          notification_type: webhook
+          notification_configuration:
+            url: "{{ webhook_target_url }}"
+            http_method: POST
+            headers: {}
+            disable_ssl_verification: true
+            username: ""
+            password: ""
+          messages:
+            started: null
+            success: null
+            error: null
+            workflow_approval:
+              running:
+                body: "{{ wf_approve_body_template }}"
+        status_code: [200, 201]
+      register: ncreate
+      when: not notification_exists | bool
+
+    - name: Refresh notification lookup after create
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/v2/notification_templates/?organization={{ organization_id | int }}&name={{ notification_name | urlencode }}"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        return_content: true
+        status_code: [200]
+      register: nfind2
+
+    - ansible.builtin.set_fact:
+        notification_id: "{{ nfind2.json.results[0].id }}"
+
+    - name: Patch webhook target + approval message template
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/v2/notification_templates/{{ notification_id }}/"
+        method: PATCH
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+          Content-Type: application/json
+        validate_certs: "{{ controller_validate_certs }}"
+        body_format: json
+        body:
+          notification_configuration:
+            url: "{{ webhook_target_url }}"
+            http_method: POST
+            headers: {}
+            disable_ssl_verification: true
+            username: ""
+            password: ""
+          messages:
+            started: null
+            success: null
+            error: null
+            workflow_approval:
+              running:
+                body: "{{ wf_approve_body_template }}"
+        status_code: [200]
+
+    - name: Resolve workflow job template id
+      ansible.builtin.uri:
+        url: >-
+          {{ controller_host }}/api/v2/workflow_job_templates/?name={{ workflow_name | urlencode }}&organization={{ organization_id | int }}
+        method: GET
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+        validate_certs: "{{ controller_validate_certs }}"
+        return_content: true
+        status_code: [200]
+      register: wfj
+
+    - ansible.builtin.assert:
+        that:
+          - wfj.json.results | default([]) | length > 0
+
+    - ansible.builtin.set_fact:
+        workflow_id: "{{ wfj.json.results[0].id }}"
+
+    - name: Associate webhook with WFJT approval channel
+      ansible.builtin.uri:
+        url: "{{ controller_host }}/api/v2/workflow_job_templates/{{ workflow_id }}/notification_templates_approvals/"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ controller_oauth_token }}"
+          Content-Type: application/json
+        validate_certs: "{{ controller_validate_certs }}"
+        body_format: json
+        body:
+          id: "{{ notification_id | int }}"
+      register: assoc
+      ignore_errors: true
+
+    - ansible.builtin.debug:
+      msg: >-
+        Webhook '{{ notification_name }}' id={{ notification_id }} targeting {{ webhook_target_url }}
+        attached to WFJT '{{ workflow_name }}' approvals (HTTP {{ assoc.status | default('n/a') }}).
+        If duplicate or already linked you may safely ignore errors on this POST.

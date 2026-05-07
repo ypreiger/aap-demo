@@ -1,0 +1,17 @@
+---
+# ansible-playbook email-plugin/playbooks/register_controller_webhook_notification.yml \
+#   -e @email-plugin/extras/register-webhook.example.yml
+#
+controller_validate_certs: false
+workflow_name: bom-project-deploy
+notification_name: bom-email-plugin-webhook
+
+# Mandatory:
+controller_host: "https://demo-aap-controller-aap.apps.example.cluster.com"
+controller_oauth_token: "REPLACE_WITH_CONTROLLER_OAUTH_PAT_OR_APP_TOKEN"
+webhook_target_url: "https://email-plugin-apps-host/v1/hooks/controller"
+
+# Optional: override Approval message body Tower renders as HTTP JSON (advanced)
+#
+# wf_approve_body_template: >-
+#   {% raw %}{"approval_job_id": {{ job.id }}, "workflow_job_id": {{ job.workflow_job }}}{% endraw %}

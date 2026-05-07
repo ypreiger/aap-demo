@@ -4,3 +4,8 @@
 
 # Local Controller / SMTP secrets (copy from extras/approval-email.vars.example.yml)
 extras/approval-email.vars.yml
+
+# email-plugin local Python / tooling
+email-plugin/.venv/
+email-plugin/**/__pycache__/
+email-plugin/.venv-e2e/

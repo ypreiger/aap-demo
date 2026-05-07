@@ -92,7 +92,7 @@ oc apply -k aap-yamls/tower/
 
 Re-sync Git project in Controller after pushing, then **`oc apply -k aap-yamls/tower/`** if you reconcile from Git.
 
-Approval email (SMTP + workflow **Approval** notifications): see repository **[`documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`](../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md)**. SMTP and notification association are **not** applied automatically from Git; configure them in Controller (or run `playbooks/controller_configure_bom_approval_email.yml` with your `extras/approval-email.vars.yml`).
+Approval email (**click Approve/Deny**, Gmail SMTP): this repo’s [`email-plugin/`](../email-plugin/README.md) plus [`documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`](../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md). Native Controller-only SMTP playbook: **`playbooks/controller_configure_bom_approval_email.yml`** (`extras/approval-email.vars.yml`).
 
 If **`bom-project-deploy`** shows an **empty Workflow Visualizer** or `WorkflowTemplate` status reports an error:
 

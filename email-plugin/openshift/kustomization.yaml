@@ -1,0 +1,24 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: aap
+
+resources:
+  - imagestream.yaml
+  - buildconfig-binary.yaml
+  - configmap.yaml
+  - service.yaml
+  - route.yaml
+  - deployment.yaml
+
+# Secrets are not bundled in GitOps (credentials). Apply once:
+#
+# oc create secret generic email-plugin-secrets -n aap \
+#   --from-literal=SIGNING_SECRET="$(openssl rand -hex 24)" \
+#   --from-literal=CONTROLLER_TOKEN="$(kubectl -n aap get secret aap-controller-api -o jsonpath='{.data.token}' | base64 -d)" \
+#   --from-literal=SMTP_PASSWORD='<gmail-app-password>' \
+#   --dry-run=client -o yaml | oc apply -f -
+#
+# After `oc apply -k .` build the image binary:
+# oc start-build email-plugin --follow -n aap --from-dir="$(git rev-parse --show-toplevel)/email-plugin"
