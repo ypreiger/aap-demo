@@ -4,19 +4,19 @@
 # Fallback extra vars (testing only): bom_target_ocp_api, bom_target_ocp_token
 - name: BOM — read OpenShift/Kubernetes credential from environment (Controller-injected)
   ansible.builtin.set_fact:
-    _bom_env_api: "{{ lookup('ansible.builtin.getenv', 'K8S_AUTH_HOST', default='', True) | trim }}"
-    _bom_env_token: "{{ lookup('ansible.builtin.getenv', 'K8S_AUTH_API_KEY', default='', True) | trim }}"
-    _bom_env_verify: "{{ lookup('ansible.builtin.getenv', 'K8S_AUTH_VERIFY_SSL', default='true', True) }}"
-    _bom_env_ca: "{{ lookup('ansible.builtin.getenv', 'K8S_AUTH_SSL_CA_CERT', default='', True) | trim }}"
+    _bom_env_api: "{{ lookup('ansible.builtin.env', 'K8S_AUTH_HOST', default='') | trim }}"
+    _bom_env_token: "{{ lookup('ansible.builtin.env', 'K8S_AUTH_API_KEY', default='') | trim }}"
+    _bom_env_verify: "{{ lookup('ansible.builtin.env', 'K8S_AUTH_VERIFY_SSL', default='true') | trim }}"
+    _bom_env_ca: "{{ lookup('ansible.builtin.env', 'K8S_AUTH_SSL_CA_CERT', default='') | trim }}"
 
 - name: BOM — optional alternate env names (some injectors)
   ansible.builtin.set_fact:
-    _bom_env_api: "{{ lookup('ansible.builtin.getenv', 'K8S_API_SERVER', default='', True) | trim }}"
+    _bom_env_api: "{{ lookup('ansible.builtin.env', 'K8S_API_SERVER', default='') | trim }}"
   when: (_bom_env_api | length) == 0
 
 - name: BOM — optional alternate token env name
   ansible.builtin.set_fact:
-    _bom_env_token: "{{ lookup('ansible.builtin.getenv', 'K8S_API_TOKEN', default='', True) | trim }}"
+    _bom_env_token: "{{ lookup('ansible.builtin.env', 'K8S_API_TOKEN', default='') | trim }}"
   when: (_bom_env_token | length) == 0
 
 - name: BOM — choose API host (env wins over extra vars)
