@@ -77,7 +77,7 @@ Tower (YAML in **`tower/`**):
 |------|---------|
 | **`bom-project-foundation`** | Job template → foundation playbook. |
 | **`bom-project-vms`** | Job template → VM playbook **only after** foundation succeeds. |
-| **`bom-project-deploy`** | Generic workflow (**not** proj1/proj2-specific). **Survey** presents a launch dialog for **`project_name`** (Git path `aap-demo/projects/{project_name}/bom`). Then: foundation → **`workflow_approval`** `bom-approve-before-vms` → VMs. |
+| **`bom-project-deploy`** | Generic workflow (**not** proj1/proj2-specific). **Survey** presents a launch dialog for **`project_name`** (Git path `aap-demo/projects/{project_name}/bom`). **Prompt on launch → Variables** is enabled so API / **`AnsibleWorkflow`** launches can supply **`extra_vars`** (inventory stays on the WFJT only—do not set **`inventory`** on **`AnsibleWorkflow`**). Order: foundation → **`workflow_approval`** `bom-approve-before-vms` → VMs. |
 | **`AnsibleWorkflow` `awf-bom-project-deploy-proj1`** (overlay) | Submits **one Workflow Job** to Controller for **`bom-project-deploy`** with **`project_name: proj1`** (survey values via `extra_vars`). Declared under **`tower-full-run-proj1/`**; **`proj2`** variant in **`tower-full-run-proj2/`**. |
 
 `WorkflowTemplate` (CR kind) maps to Automation Controller **Workflow Job Template**; **`AnsibleWorkflow`** maps to a **Workflow Job execution** initiated from OpenShift once the CR is reconciled.
