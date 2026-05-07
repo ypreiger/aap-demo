@@ -1,6 +1,6 @@
 # Red Hat Ansible Automation Platform — minimal workflow demo
 
-**Layout:** playbook content under **`playbooks/`** (plus **`inventory/`**, **`collections/requirements.yml`**). OpenShift BOM artefacts live under **`projects/<project_name>/bom`** (currently **`proj1`** and **`proj2`**). **`playbooks/project_foundation.yml`** creates namespace / SA / netpol each with validation; **`playbooks/project_vms.yml`** creates Fedora VMs (KubeVirt). The controller workflow **`bom-project-deploy`** prompts for **`project_name`** then runs foundation **before** VMs. Operator examples in **`aap-yamls/`** ([README](aap-yamls/README.md)).
+**Layout:** playbook content under **`playbooks/`** (plus **`inventory/`**, **`collections/requirements.yml`**). OpenShift BOM artefacts live under **`projects/<project_name>/bom`** (currently **`proj1`** and **`proj2`**). **`playbooks/project_foundation.yml`** creates namespace / SA / netpol each with validation; **`playbooks/project_vms.yml`** creates Fedora VMs (KubeVirt). The controller workflow **`bom-project-deploy`** (generic name — not tied to proj1/proj2) prompts for **`project_name`**, runs foundation, waits for **manual workflow approval**, then provisions VMs **only after approval**. Operator examples in **`aap-yamls/`** ([README](aap-yamls/README.md)).
 
 ---
 

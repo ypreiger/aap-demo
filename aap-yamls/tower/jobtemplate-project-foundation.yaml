@@ -1,5 +1,5 @@
 ---
-# Extra var on launch: project_name (e.g. proj1 or proj2). Must match projects/<name>/bom manifests.
+# project_name supplied by workflow survey (bom-project-deploy); default below is illustrative only when run standalone.
 apiVersion: tower.ansible.com/v1alpha1
 kind: JobTemplate
 metadata:

@@ -12,8 +12,9 @@ spec:
   organization: Default
   inventory: Demo Inventory
   description: >-
-    Parameterized project deploy (namespace/SA/netpol then VMs). Prompt for project_name at launch
-    (proj1 or proj2). VM job runs only after foundation completes successfully.
+    Parameterized BOM deploy for any project folder under projects/(project_name)/bom.
+    Prompt for project_name at launch. Order: foundation (namespace → SA → netpol),
+    mandatory approval gate, then VM provisioning. VMs never run unless foundation succeeds and the approval is granted.
   ask_variables_on_launch: true
   extra_vars:
     project_name: proj1
@@ -24,6 +25,21 @@ spec:
         name: bom-project-foundation
         organization:
           name: Default
+      related:
+        success_nodes:
+          - identifier: approve-before-vms
+        failure_nodes: []
+        always_nodes: []
+    - identifier: approve-before-vms
+      unified_job_template:
+        organization:
+          name: Default
+        type: workflow_approval
+        name: bom-approve-before-vms
+        description: >-
+          Foundation finished for the project from the workflow survey (project_name).
+          Approve to create Fedora VMs; deny stops the workflow with no VM changes.
+        timeout: 0
       related:
         success_nodes:
           - identifier: step-vms
