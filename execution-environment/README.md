@@ -6,6 +6,7 @@ Prerequisites on your build machine:
 
 - **Podman** or **Docker**
 - **`ansible-builder`** matching your AAP-supported major version (`pip install ansible-builder`)
+- **`ansible-core` 2.16+** (`kubernetes.core` in this repo’s Galaxy file is tested with 2.16–2.18 — see **`execution-environment.yml`**)
 
 From this directory:
 

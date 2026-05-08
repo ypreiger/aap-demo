@@ -10,3 +10,5 @@ This directory holds **`requirements.yml`** for **Galaxy-published** Ansible col
 | **Blue Coat / ProxySG** | *No mainstream Galaxy collection — see canonical doc.* |
 
 Full checklist, pinning, Automation Hub substitutes, EE build notes: **[`../documentation/ANSIBLE_COLLECTIONS.md`](../documentation/ANSIBLE_COLLECTIONS.md)**.
+
+Automated verification (**Galaxy install**, **ansible-builder introspect/create**, **`--syntax-check`**): run **`../scripts/verify-collections-and-ee.sh`** from the repo root (see doc — also **GitHub Actions**).

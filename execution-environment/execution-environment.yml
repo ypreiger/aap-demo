@@ -9,7 +9,8 @@ version: 3
 
 dependencies:
   ansible_core:
-    package_pip: ansible-core
+    # kubernetes.core 6.x requires ansible-core 2.16+ (see ansible-galaxy install warnings on older cores).
+    package_pip: ansible-core>=2.16.0,<2.19.0
   ansible_runner:
     package_pip: ansible-runner
   galaxy: ../collections/requirements.yml

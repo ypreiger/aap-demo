@@ -17,6 +17,34 @@ Controller users usually **embed** dependencies in an **Execution Environment** 
 
 ---
 
+## Execution & verification (CI + local)
+
+**ansible-core version:** **`kubernetes.core`** 6.x expects **ansible-core 2.16+**. The Execution Environment definition and GitHub Actions workflow install **`ansible-core>=2.16,<2.19`** to match.
+
+### Local (one command)
+
+Requires **Python 3**, **PyYAML**, **ansible-core** (2.16+), and **ansible-builder** on `PATH`:
+
+```bash
+python3 -m pip install --user PyYAML "ansible-core>=2.16.0,<2.19.0" ansible-builder
+cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+./scripts/verify-collections-and-ee.sh
+```
+
+The script:
+
+1. Validates **`collections/requirements.yml`** structure  
+2. Runs **`ansible-galaxy collection install`** into a temp directory  
+3. Runs **`ansible-builder introspect`** on that tree (Python / `bindep` footprint)  
+4. Runs **`ansible-builder create`** for **`execution-environment/`** (writes a **Containerfile** context only — **no** `podman`/`docker` image build)  
+5. Runs **`ansible-playbook --syntax-check`** on the demo + BOM playbooks with **`ANSIBLE_COLLECTIONS_PATHS`** pointing at the temp install  
+
+### GitHub Actions
+
+Workflow **`.github/workflows/verify-collections.yml`** runs the same script on every **push** / **pull_request** to **`main`**.
+
+---
+
 ## OpenShift virtualization (KubeVirt / CNV)
 
 | Galaxy collection | Purpose in this ecosystem |

@@ -1,0 +1,32 @@
+---
+# Verifies Galaxy collection install, EE introspection/context generation, and playbook syntax.
+name: Verify collections & EE
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyYAML "ansible-core>=2.16.0,<2.19.0" ansible-builder
+
+      - name: Run verification script
+        run: |
+          chmod +x scripts/verify-collections-and-ee.sh
+          ./scripts/verify-collections-and-ee.sh
