@@ -66,13 +66,20 @@ curl_hub() {
   local method="$1"
   local path="$2"
   local data="${3:-}"
+  local url
+  # Pulp task/remotes often return absolute pulp_href — do not double-prefix gateway.
+  if [[ "${path}" == http://* || "${path}" == https://* ]]; then
+    url="${path}"
+  else
+    url="${HUB_GATEWAY_URL}${path}"
+  fi
   local opts=( -sS "${AUTH[@]}" -X "${method}" -H "Content-Type: application/json" )
   # shellcheck disable=SC2206
   opts+=( ${CURL_EXTRA} )
   if [[ -n "${data}" ]]; then
-    curl "${opts[@]}" -d "${data}" "${HUB_GATEWAY_URL}${path}"
+    curl "${opts[@]}" -d "${data}" "${url}"
   else
-    curl "${opts[@]}" "${HUB_GATEWAY_URL}${path}"
+    curl "${opts[@]}" "${url}"
   fi
 }
 
