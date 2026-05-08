@@ -14,6 +14,7 @@ Use this index to open the right guide. All paths are relative to the repository
 | Document | Purpose |
 |----------|---------|
 | [CONFIGURE_AAP_APPROVAL_EMAIL.md](CONFIGURE_AAP_APPROVAL_EMAIL.md) | Deploy **`email-plugin`**, register approval webhook, Controller base URL |
+| [EMAIL_APPROVAL_EDA_END_TO_END.md](EMAIL_APPROVAL_EDA_END_TO_END.md) | Controller → **`email-plugin`** → mail → optional EDA → REST approve/deny (diagrams) |
 | [ANSIBLE_COLLECTIONS.md](ANSIBLE_COLLECTIONS.md) | Collection choices (KubeVirt, VMware, F5, ProxySG patterns) |
 | [CONTROLLER_COLLECTIONS_VISIBILITY.md](CONTROLLER_COLLECTIONS_VISIBILITY.md) | How job templates resolve collections |
 | [VIRTUALIZATION_WORKFLOW_SURVEY.md](VIRTUALIZATION_WORKFLOW_SURVEY.md) | Surveys for OpenShift Virtualization / instance types |

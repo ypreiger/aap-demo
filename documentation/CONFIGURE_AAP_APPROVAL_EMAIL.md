@@ -85,7 +85,7 @@ ansible-playbook email-plugin/playbooks/register_controller_webhook_notification
   -e notification_name=workshop-email-plugin-webhook
 ```
 
-Hands-on launcher steps for both workflows: **`workshop/CLIENT_RUNBOOK.md`** §5–6.
+Hands-on launcher steps for both workflows: **`workshop/CLIENT_RUNBOOK.md`** §5–6. End-to-end diagrams (mail + optional EDA): **[`documentation/EMAIL_APPROVAL_EDA_END_TO_END.md`](documentation/EMAIL_APPROVAL_EDA_END_TO_END.md)**.
 
 ### Gmail specifics
 
