@@ -32,10 +32,11 @@
         | trim
       }}
     webhook_target_url: "{{ webhook_target_url | default('') | trim }}"
-    notification_name: "{{ notification_name | default('bom-email-plugin-webhook') }}"
-    workflow_name: "{{ workflow_name | default('bom-project-deploy') }}"
-    organization_name: "{{ organization_name | default('Default') }}"
-    controller_validate_certs: "{{ controller_validate_certs | default(false) | bool }}"
+    # Resolve optional extra-vars without self-referential play vars (recursion on Ansible 2.15+).
+    controller_organization: "{{ organization_name | default('Default') }}"
+    notification_label: "{{ notification_name | default('bom-email-plugin-webhook') }}"
+    workflow_label: "{{ workflow_name | default('bom-project-deploy') }}"
+    awx_validate_ssl: "{{ controller_validate_certs | default(false) | bool }}"
     # Controller validates Jinja names against the approval context. Nested under
     # messages.workflow_approval.running.body (webhook notification type).
     #
@@ -54,11 +55,11 @@
 
     - name: Lookup organization id
       ansible.builtin.uri:
-        url: "{{ controller_host }}/api/v2/organizations/?name={{ organization_name | urlencode }}"
+        url: "{{ controller_host }}/api/v2/organizations/?name={{ controller_organization | urlencode }}"
         method: GET
         headers:
           Authorization: "Bearer {{ controller_oauth_token }}"
-        validate_certs: "{{ controller_validate_certs }}"
+        validate_certs: "{{ awx_validate_ssl }}"
         return_content: true
         status_code: [200]
       register: org_lookup
@@ -68,11 +69,11 @@
 
     - name: Find notification by name
       ansible.builtin.uri:
-        url: "{{ controller_host }}/api/v2/notification_templates/?organization={{ organization_id | int }}&name={{ notification_name | urlencode }}"
+        url: "{{ controller_host }}/api/v2/notification_templates/?organization={{ organization_id | int }}&name={{ notification_label | urlencode }}"
         method: GET
         headers:
           Authorization: "Bearer {{ controller_oauth_token }}"
-        validate_certs: "{{ controller_validate_certs }}"
+        validate_certs: "{{ awx_validate_ssl }}"
         return_content: true
         status_code: [200]
       register: nfind
@@ -88,10 +89,10 @@
         headers:
           Authorization: "Bearer {{ controller_oauth_token }}"
           Content-Type: application/json
-        validate_certs: "{{ controller_validate_certs }}"
+        validate_certs: "{{ awx_validate_ssl }}"
         body_format: json
         body:
-          name: "{{ notification_name }}"
+          name: "{{ notification_label }}"
           description: >-
             webhook → {{ webhook_target_url }} (email-plugin BOM approve/deny)
           organization: "{{ organization_id | int }}"
@@ -116,11 +117,11 @@
 
     - name: Refresh notification lookup after create
       ansible.builtin.uri:
-        url: "{{ controller_host }}/api/v2/notification_templates/?organization={{ organization_id | int }}&name={{ notification_name | urlencode }}"
+        url: "{{ controller_host }}/api/v2/notification_templates/?organization={{ organization_id | int }}&name={{ notification_label | urlencode }}"
         method: GET
         headers:
           Authorization: "Bearer {{ controller_oauth_token }}"
-        validate_certs: "{{ controller_validate_certs }}"
+        validate_certs: "{{ awx_validate_ssl }}"
         return_content: true
         status_code: [200]
       register: nfind2
@@ -135,7 +136,7 @@
         headers:
           Authorization: "Bearer {{ controller_oauth_token }}"
           Content-Type: application/json
-        validate_certs: "{{ controller_validate_certs }}"
+        validate_certs: "{{ awx_validate_ssl }}"
         body_format: json
         body:
           notification_configuration:
@@ -157,11 +158,11 @@
     - name: Resolve workflow job template id
       ansible.builtin.uri:
         url: >-
-          {{ controller_host }}/api/v2/workflow_job_templates/?name={{ workflow_name | urlencode }}&organization={{ organization_id | int }}
+          {{ controller_host }}/api/v2/workflow_job_templates/?name={{ workflow_label | urlencode }}&organization={{ organization_id | int }}
         method: GET
         headers:
           Authorization: "Bearer {{ controller_oauth_token }}"
-        validate_certs: "{{ controller_validate_certs }}"
+        validate_certs: "{{ awx_validate_ssl }}"
         return_content: true
         status_code: [200]
       register: wfj
@@ -180,15 +181,17 @@
         headers:
           Authorization: "Bearer {{ controller_oauth_token }}"
           Content-Type: application/json
-        validate_certs: "{{ controller_validate_certs }}"
+        validate_certs: "{{ awx_validate_ssl }}"
         body_format: json
-        body:
-          id: "{{ notification_id | int }}"
+        # AWX expects JSON number for id, not a quoted string — build dict in Jinja.
+        body: "{{ {'id': notification_id | int } }}"
+        status_code: [200, 204]
       register: assoc
       ignore_errors: true
 
-    - ansible.builtin.debug:
-      msg: >-
-        Webhook '{{ notification_name }}' id={{ notification_id }} targeting {{ webhook_target_url }}
-        attached to WFJT '{{ workflow_name }}' approvals (HTTP {{ assoc.status | default('n/a') }}).
-        If duplicate or already linked you may safely ignore errors on this POST.
+    - name: Summarize webhook association
+      ansible.builtin.debug:
+        msg: >-
+          Webhook '{{ notification_label }}' id={{ notification_id }} targeting {{ webhook_target_url }}
+          attached to WFJT '{{ workflow_label }}' approvals (HTTP {{ assoc.status | default('n/a') }}).
+          If duplicate or already linked you may safely ignore errors on this POST.

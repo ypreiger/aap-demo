@@ -10,7 +10,7 @@ WH="https://${EP}/v1/hooks/controller"
 CH="$(oc get secret aap-controller-api -n "${NS}" -o jsonpath='{.data.host}' | base64 -d)"
 TK="$(oc get secret aap-controller-api -n "${NS}" -o jsonpath='{.data.token}' | base64 -d)"
 
-ansible-playbook "${ROOT}/email-plugin/playbooks/register_controller_webhook_notification.yml" \
+ANSIBLE_STDOUT_CALLBACK="${ANSIBLE_STDOUT_CALLBACK:-default}" ansible-playbook "${ROOT}/email-plugin/playbooks/register_controller_webhook_notification.yml" \
   -e controller_host="$CH" \
   -e controller_oauth_token="$TK" \
   -e webhook_target_url="$WH" \
