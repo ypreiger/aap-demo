@@ -69,6 +69,21 @@ If your older Tower build truly passes the **approval** id as `job.id`, override
 
 Tokens expire after **`TOKEN_MAX_AGE_HOURS`** (default **72**).
 
+### Preview the approval email (same HTML as runtime)
+
+Without SMTP credentials you can render the HTML body locally:
+
+```bash
+cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)/email-plugin"
+python3 scripts/send_sample_approval_email.py --print-html > /tmp/sample-approval-mail.html
+# Open /tmp/sample-approval-mail.html in a browser.
+
+# Or send yourself one message (Gmail App Password):
+SMTP_USER='your@gmail.com' SMTP_PASSWORD='<app-password>' \\
+  MAIL_FROM='your@gmail.com' DEFAULT_TO_EMAIL='your@gmail.com' \\
+  python3 scripts/send_sample_approval_email.py
+```
+
 ### Security reminders
 
 Links are GET requests (email clients require navigable anchors). Tokens are signed and expiry-limited — treat links like capability URLs. Prefer TLS on the **`Route`** and least-privilege **Controller OAuth scopes** dedicated to approving workflows.

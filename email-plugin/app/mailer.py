@@ -7,11 +7,8 @@ from email.mime.text import MIMEText
 from .settings import Settings
 
 
-def send_approval_mail(
-    s: Settings,
+def build_approval_mail_bodies(
     *,
-    to_addr: str,
-    subject: str,
     workflow_job_id: int,
     approval_job_id: int,
     approve_url: str,
@@ -21,7 +18,8 @@ def send_approval_mail(
     workflow_job_name: str = "",
     approval_name: str = "",
     approval_description: str = "",
-) -> None:
+) -> tuple[str, str]:
+    """Return (plain_text, html) bodies — same content as runtime approval mail."""
     ctx_lines = [
         ("Workflow job", workflow_job_id),
         ("Approval job", approval_job_id),
@@ -71,6 +69,35 @@ def send_approval_mail(
     txt_bits.append(f"Approve: {approve_url}")
     txt_bits.append(f"Deny: {deny_url}")
     body_txt = "\n".join(txt_bits) + "\n"
+    return body_txt.strip() + "\n", body_html.strip() + "\n"
+
+
+def send_approval_mail(
+    s: Settings,
+    *,
+    to_addr: str,
+    subject: str,
+    workflow_job_id: int,
+    approval_job_id: int,
+    approve_url: str,
+    deny_url: str,
+    controller_job_url_hint: str = "",
+    workflow_template_name: str = "",
+    workflow_job_name: str = "",
+    approval_name: str = "",
+    approval_description: str = "",
+) -> None:
+    body_txt, body_html = build_approval_mail_bodies(
+        workflow_job_id=workflow_job_id,
+        approval_job_id=approval_job_id,
+        approve_url=approve_url,
+        deny_url=deny_url,
+        controller_job_url_hint=controller_job_url_hint,
+        workflow_template_name=workflow_template_name,
+        workflow_job_name=workflow_job_name,
+        approval_name=approval_name,
+        approval_description=approval_description,
+    )
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
