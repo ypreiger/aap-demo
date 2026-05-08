@@ -23,16 +23,19 @@ api() {
   curl -sS -k -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" "$@"
 }
 
+# Default API page size truncates lists; WT missing from results looks like operator never created nodes.
+PAGE="page_size=500"
+
 echo "==> Resolve org / project / inventory / credential (encode-safe; names may contain spaces)"
-ORG_ID=$(api "${HOST}/api/v2/organizations/" | jq -r --arg n "${ORG_NAME}" '[.results[]? | select(.name == $n)][0].id // empty')
-PROJ_JSON=$(api "${HOST}/api/v2/projects/")
+ORG_ID=$(api "${HOST}/api/v2/organizations/?${PAGE}" | jq -r --arg n "${ORG_NAME}" '[.results[]? | select(.name == $n)][0].id // empty')
+PROJ_JSON=$(api "${HOST}/api/v2/projects/?${PAGE}")
 PROJ_ID=$(echo "${PROJ_JSON}" | jq -r --arg n "${PROJ_NAME}" '[.results[]? | select(.name == $n)][0].id // empty')
-INV_JSON=$(api "${HOST}/api/v2/inventories/")
+INV_JSON=$(api "${HOST}/api/v2/inventories/?${PAGE}")
 INV_ID=$(echo "${INV_JSON}" | jq -r --arg n "${INV_NAME}" '[.results[]? | select(.name == $n)][0].id // empty')
-CRED_ID=$(api "${HOST}/api/v2/credentials/" | jq -r --arg n "${CRED_NAME}" '[.results[]? | select(.name == $n)][0].id // empty')
-WJT_ID=$(api "${HOST}/api/v2/workflow_job_templates/" | jq -r --arg n "${WJT_NAME}" '[.results[]? | select(.name == $n)][0].id // empty')
+CRED_ID=$(api "${HOST}/api/v2/credentials/?${PAGE}" | jq -r --arg n "${CRED_NAME}" '[.results[]? | select(.name == $n)][0].id // empty')
+WJT_ID=$(api "${HOST}/api/v2/workflow_job_templates/?${PAGE}" | jq -r --arg n "${WJT_NAME}" '[.results[]? | select(.name == $n)][0].id // empty')
 # Workflow approval UJT is not exposed reliably by name on all API versions; copy PK from bom-project-deploy graph.
-BOM_WT_ID=$(api "${HOST}/api/v2/workflow_job_templates/" | jq -r --arg n "bom-project-deploy" '[.results[]? | select(.name == $n)][0].id // empty')
+BOM_WT_ID=$(api "${HOST}/api/v2/workflow_job_templates/?${PAGE}" | jq -r --arg n "bom-project-deploy" '[.results[]? | select(.name == $n)][0].id // empty')
 APR_ID=$(api "${HOST}/api/v2/workflow_job_templates/${BOM_WT_ID}/workflow_nodes/" \
   | jq -r '.results[]? | select(.summary_fields.unified_job_template.unified_job_type == "workflow_approval") | .unified_job_template' | head -1)
 
@@ -45,7 +48,7 @@ fi
 jt_ensure() {
   local name="$1" playbook="$2"
   local jid
-  jid=$(api "${HOST}/api/v2/job_templates/" | jq -r --arg n "${name}" '[.results[]? | select(.name == $n)][0].id // empty')
+  jid=$(api "${HOST}/api/v2/job_templates/?${PAGE}" | jq -r --arg n "${name}" '[.results[]? | select(.name == $n)][0].id // empty')
   if [[ -z "${jid}" ]]; then
     echo "    creating JobTemplate ${name}"
     jid=$(jq -nc \
@@ -74,12 +77,14 @@ echo "    email-e2e-create-namespace id=${JT_CREATE}"
 echo "    email-e2e-apply-netpol id=${JT_NETPOL}"
 
 echo "==> Ensure workflow_job_template_nodes for ${WJT_NAME} (${WJT_ID})"
-CNT=$(api "${HOST}/api/v2/workflow_job_templates/${WJT_ID}/workflow_nodes/" | jq -r '.count // 0')
+WJ_NODES_JSON=$(api "${HOST}/api/v2/workflow_job_templates/${WJT_ID}/workflow_nodes/?${PAGE}")
+CNT=$(echo "${WJ_NODES_JSON}" | jq -r '.count // 0')
 NEED_GRAPH=1
-if [[ "${CNT}" -eq 3 ]]; then
-  S15=$(api "${HOST}/api/v2/workflow_job_templates/${WJT_ID}/workflow_nodes/" | jq -r \
-    '[.results[] | select(.identifier=="e2e-create-ns")] | .[0].success_nodes[]? // empty')
-  if [[ -n "${S15}" ]]; then
+HAVE_IDS="$(echo "${WJ_NODES_JSON}" | jq -r '[.results[]?.identifier // empty] | @json')"
+if [[ "${CNT}" -eq 3 ]] && [[ "${HAVE_IDS}" == *'"e2e-create-ns"'* ]] && [[ "${HAVE_IDS}" == *'"e2e-approve-mail"'* ]] && [[ "${HAVE_IDS}" == *'"e2e-netpol"'* ]]; then
+  S15=$(echo "${WJ_NODES_JSON}" | jq -r '[.results[] | select(.identifier == "e2e-create-ns")] | .[0].success_nodes[]? // empty')
+  S16=$(echo "${WJ_NODES_JSON}" | jq -r '[.results[] | select(.identifier == "e2e-approve-mail")] | .[0].success_nodes[]? // empty')
+  if [[ -n "${S15}" && -n "${S16}" ]]; then
     NEED_GRAPH=0
   fi
 fi
@@ -89,7 +94,7 @@ if [[ "${NEED_GRAPH}" -eq 1 ]]; then
   while IFS= read -r nid; do
     [[ -z "${nid}" ]] && continue
     api -X DELETE "${HOST}/api/v2/workflow_job_template_nodes/${nid}/" >/dev/null || true
-  done < <(api "${HOST}/api/v2/workflow_job_templates/${WJT_ID}/workflow_nodes/" | jq -r '.results[]?.id')
+  done < <(api "${HOST}/api/v2/workflow_job_templates/${WJT_ID}/workflow_nodes/?${PAGE}" | jq -r '.results[]?.id')
   sleep 2
   N1=$(jq -nc --argjson w "$WJT_ID" --argjson j "$JT_CREATE" \
     '{workflow_job_template:$w, unified_job_template:$j, identifier:"e2e-create-ns"}' \
@@ -100,11 +105,16 @@ if [[ "${NEED_GRAPH}" -eq 1 ]]; then
   N3=$(jq -nc --argjson w "$WJT_ID" --argjson j "$JT_NETPOL" \
     '{workflow_job_template:$w, unified_job_template:$j, identifier:"e2e-netpol"}' \
     | api -X POST -d @- "${HOST}/api/v2/workflow_job_template_nodes/" | jq -r '.id')
+  if [[ -z "${N1}" || "${N1}" == "null" ]] || [[ -z "${N2}" || "${N2}" == "null" ]] || [[ -z "${N3}" || "${N3}" == "null" ]]; then
+    echo "Failed to POST workflow_job_template_nodes (check Controller API stderr above)." >&2
+    exit 3
+  fi
   api -X POST -d "$(jq -nc --argjson id "$N2" '{associate:true,id:$id}')" \
     "${HOST}/api/v2/workflow_job_template_nodes/${N1}/success_nodes/" >/dev/null
   api -X POST -d "$(jq -nc --argjson id "$N3" '{associate:true,id:$id}')" \
     "${HOST}/api/v2/workflow_job_template_nodes/${N2}/success_nodes/" >/dev/null
-  echo "    nodes=${N1} -> ${N2} -> ${N3}"
+  echo "    nodes=${N1} -> ${N2} -> ${N3}; refresh Workflow Visualizer tab (count below)"
+  api "${HOST}/api/v2/workflow_job_templates/${WJT_ID}/workflow_nodes/?${PAGE}" | jq '{count}'
 else
   echo "    workflow graph already wired"
 fi

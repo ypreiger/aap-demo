@@ -13,19 +13,23 @@ Automators create **only** an empty **`Namespace`** with a workflow survey param
 
 **Tower operator caveat:** If **`oc describe jobtemplate … / workflowtemplate …`** in namespace **`aap`** shows **`There was an error in the job/workflow template`** (often right after the playbooks first land in Git), Controller may still lack the **Job Templates** or the **Workflow Visualizer** may be **empty**. Sync the project once, then run **`scripts/bootstrap-email-e2e-controller-api.sh`** (idempotent) — the launch script **`scripts/run-email-e2e-ns-netpol-workflow.sh`** calls it automatically after project sync.
 
+**Name mix-up:** In the UI search for **`email-e2e-ns-netpol`** (Workflow Job Template name). **`email-e2e-demo`** is only the **default survey answer** (**Target namespace**), not the workflow template.
+
 ## Instructions (Automation Controller UI)
 
 1. **Projects → AAP Demo (GitHub) → Sync** (until playbooks referenced by new templates are present).
 
-2. **Templates → Workflow Templates → `email-e2e-ns-netpol` → Launch**.
+2. **Templates → Workflow Templates** → select **`email-e2e-ns-netpol`** → **Visualizer**: expect **three** nodes (create namespace → approval → NetworkPolicy). If the graph is blank, run **`bootstrap-email-e2e-controller-api.sh`**, hard-refresh the tab, reopen the workflow.
 
-3. Survey **Target namespace name** — use a fresh name unless you reused an existing namespace (**default `email-e2e-demo`** is fine once; change if it already exists and you want repeat runs).
+3. Click **Launch** on **`email-e2e-ns-netpol`** (or run **`scripts/run-email-e2e-ns-netpol-workflow.sh`** from a shell).
 
-4. Watch **Jobs**: **`email-e2e-create-namespace`** must finish **successful**; workflow pauses on **`bom-approve-before-vms`**.
+4. Survey **Target namespace name** — use a fresh name unless you reused an existing namespace (**default `email-e2e-demo`** is fine once; change if it already exists and you want repeat runs).
 
-5. **Email:** open **`[AAP …] Approve …`** mail → **Approve** (or deny to stop before NetworkPolicy).
+5. Watch **Jobs**: **`email-e2e-create-namespace`** must finish **successful**; workflow pauses on **`bom-approve-before-vms`**.
 
-6. After approve: **`email-e2e-apply-netpol`** runs; **`NetworkPolicy`** **`email-e2e-deny-all`** appears in **`target_namespace`**.
+6. **Email:** open **`[AAP …] Approve …`** mail → **Approve** (or deny to stop before NetworkPolicy).
+
+7. After approve: **`email-e2e-apply-netpol`** runs; **`NetworkPolicy`** **`email-e2e-deny-all`** appears in **`target_namespace`**.
 
 ### Verify cluster (optional)
 
