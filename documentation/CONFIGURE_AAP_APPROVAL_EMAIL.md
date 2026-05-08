@@ -39,7 +39,7 @@ ansible-playbook email-plugin/playbooks/register_controller_webhook_notification
   -e webhook_target_url="$WH"
 ```
 
-This creates notification **`bom-email-plugin-webhook`** and associates it with workflow **`bom-project-deploy`** approvals. The default Jinja outputs JSON with **`approval_job_id`** only (AAP 4.7 webhook validation); the service resolves **`workflow_job_id`** via the Controller API.
+This creates notification **`bom-email-plugin-webhook`** and associates it with workflow **`bom-project-deploy`** approvals. The default Jinja outputs **`workflow_job_id`** from **`{{ job.id }}`** (parent workflow job id on current Controller — see **`email-plugin/README.md`**); **`email-plugin`** resolves the pending **`workflow_approvals/{id}`** via the API.
 
 ### Same webhook for **`workshop-multi-domain`**
 

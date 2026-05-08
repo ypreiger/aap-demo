@@ -96,7 +96,8 @@ If **`email-plugin` is intentionally not deployed**: use **fallback** approval i
 
 | Symptom | Hint |
 |---------|------|
-| No mail | **`DISABLE_SMTP`**, egress block, **`email-plugin`** pod CrashLoop, wrong **`DEFAULT_TO_EMAIL`**, webhook not associated with **your** WFJT. |
+| No mail | **`DISABLE_SMTP`**, empty **`SMTP_PASSWORD`** (Gmail **App Password** in **`Secret/email-plugin-secrets`**), egress block, **`email-plugin`** pod CrashLoop, wrong **`DEFAULT_TO_EMAIL`**, webhook not associated with **your** WFJT. |
+| Notification **Webhook 422** | Body must carry **`workflow_job_id`** from **`{{ job.id }}`** (parent workflow job) on modern Controller — re-run **`register_controller_webhook_notification.yml`** defaults; **`email-plugin/README.md`**. |
 | Mail but buttons 401/403/400 | Signing secret **`SIGNING_SECRET`**, token expiry (**`TOKEN_MAX_AGE_HOURS`**), stale Deployment after Secret edits. **`../../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`** table. |
 | Works for **`bom`** but not **workshop** | Run **Path B** registration snippet. |
 

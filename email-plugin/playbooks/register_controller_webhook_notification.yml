@@ -36,11 +36,14 @@
     workflow_name: "{{ workflow_name | default('bom-project-deploy') }}"
     organization_name: "{{ organization_name | default('Default') }}"
     controller_validate_certs: "{{ controller_validate_certs | default(false) | bool }}"
-    # Controller validates Jinja names against the approval context. Use only fields that exist there;
-    # `summary_fields.*` is not accepted for webhook workflow_approval on AAP 4.7+. Nested under
+    # Controller validates Jinja names against the approval context. Nested under
     # messages.workflow_approval.running.body (webhook notification type).
+    #
+    # On hosted AAP 4.8 / Controller 27.x, {{ job.id }} during workflow_approval.running is the *parent*
+    # workflow_job id (integer), NOT the workflow_approval id. email-plugin resolves the pending approval
+    # from workflow_job_id via the Controller API. Using approval_job_id: {{ job.id }} causes 422 (wrong id).
     wf_approve_body_template: >-
-      {% raw %}{"approval_job_id": {{ job.id }}}{% endraw %}
+      {% raw %}{"workflow_job_id": {{ job.id }}}{% endraw %}
   tasks:
     - ansible.builtin.assert:
         that:
