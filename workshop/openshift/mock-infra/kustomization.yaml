@@ -1,0 +1,10 @@
+---
+# In-cluster HTTP mock responses for VMware / F5 / Blue Coat exercise playbooks (no outbound SaaS dependency).
+namespace: aap
+commonLabels:
+  app.kubernetes.io/part-of: aap-demo-workshop
+resources:
+  - mock-configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - route.yaml

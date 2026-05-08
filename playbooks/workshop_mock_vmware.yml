@@ -1,0 +1,33 @@
+---
+# Simulated vCenter inventory excerpt — consumes JSON from workshop mock Route (vmware_guests.json).
+- name: Workshop — VMware inventory sync (mock)
+  hosts: localhost
+  gather_facts: false
+  vars:
+    workshop_mock_base_url: ""
+  tasks:
+    - ansible.builtin.assert:
+        that:
+          - workshop_mock_base_url is defined
+          - (workshop_mock_base_url | length) > 0
+        fail_msg: "Set workshop_mock_base_url to the mock Route URL."
+
+    - ansible.builtin.uri:
+        url: "{{ (workshop_mock_base_url | regex_replace('/$', '')) ~ '/vmware_guests.json' }}"
+        method: GET
+        validate_certs: false
+        return_content: true
+        status_code: [200]
+      register: _vmw
+
+    - ansible.builtin.set_fact:
+        workshop_vmware_mock: "{{ _vmw.content | from_json }}"
+
+    - ansible.builtin.assert:
+        that:
+          - workshop_vmware_mock.vms is defined
+          - workshop_vmware_mock.vms | length > 0
+
+    - ansible.builtin.debug:
+        msg: >-
+          Mock VMware view: DC={{ workshop_vmware_mock.datacenter }}, VMs={{ workshop_vmware_mock.vms | map(attribute='name') | list }}

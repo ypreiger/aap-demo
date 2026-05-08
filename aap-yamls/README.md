@@ -96,6 +96,10 @@ Re-sync Git project in Controller after pushing, then **`oc apply -k aap-yamls/t
 
 Approval email (**click Approve/Deny**, Gmail SMTP): this repo’s [`email-plugin/`](../email-plugin/README.md) plus [`documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`](../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md). Native Controller-only SMTP playbook: **`playbooks/controller_configure_bom_approval_email.yml`** (`extras/approval-email.vars.yml`).
 
+## Multi-domain workshop chain
+
+[`workshop/README.md`](../workshop/README.md) covers **`workshop-multi-domain`** (**`workflowtemplate-workshop-multi-domain.yaml`**) chaining Virt foundation → approval **`bom-approve-before-vms`** → **`workshop-bom-project-vms`** → netpol audit → mocked F5/VMware/Blue Coat playbooks driven by **`workshop/openshift/mock-infra`** Route. Apply mock kustomization into **`namespace: aap`**, sync Git, verify with **`bash workshop/scripts/run-e2e-multi-domain-workflow.sh`**.
+
 If **`bom-project-deploy`** shows an **empty Workflow Visualizer** or `WorkflowTemplate` status reports an error:
 
 - **`JobTemplate` playbooks**: the Controller Git project (**`AAP Demo (GitHub)`**) must be **synced** so `playbooks/project_foundation.yml` and `project_vms.yml` exist on disk (otherwise `bom-project-foundation` / `bom-project-vms` fail to create and the workflow graph cannot build). Run **Projects → Sync** after pushing new playbook paths if needed.

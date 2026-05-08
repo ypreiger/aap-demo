@@ -207,7 +207,13 @@ async def controller_hook(request: Request) -> dict[str, Any]:
     deny_url = f"{base}/v1/actions/deny?token={quote(deny_tok, safe='')}"
 
     to_addr = to_override or s.default_to_email
-    subj = f"[AAP] Approve workflow job {wf_job_id} (approval {approval_job_id})"
+    wft = ((wf_detail.get("summary_fields") or {}).get("workflow_job_template")) or {}
+    wft_name = str(wft.get("name") or "")
+    wf_job_name = str(wf_detail.get("name") or "")
+    appr_name = str(appr.get("name") or "")
+    appr_desc = str(appr.get("description") or "")
+    label = wf_job_name.strip() or wft_name.strip() or "workflow job"
+    subj = f"{s.email_subject_prefix} Approve {label} — wf #{wf_job_id} / approval {approval_job_id}"
 
     if s.disable_smtp or not ((s.smtp_user or "").strip() and (s.smtp_password or "").strip()):
         log.warning(
@@ -223,6 +229,10 @@ async def controller_hook(request: Request) -> dict[str, Any]:
             approve_url=approve_url,
             deny_url=deny_url,
             controller_job_url_hint=str(controller_url_hint),
+            workflow_template_name=wft_name,
+            workflow_job_name=wf_job_name,
+            approval_name=appr_name,
+            approval_description=appr_desc,
         )
         log.info("Sent approval mail to %s wf_job=%s approval=%s", to_addr, wf_job_id, approval_job_id)
     return {"ok": True, "to": to_addr, "workflow_job_id": wf_job_id, "approval_job_id": approval_job_id}

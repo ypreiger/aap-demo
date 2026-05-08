@@ -1,0 +1,37 @@
+---
+# Simulated ProxySG / Blue Coat style health envelope — consumes bluecoat_health.json from mock Route.
+- name: Workshop — Blue Coat ProxySG posture (mock)
+  hosts: localhost
+  gather_facts: false
+  vars:
+    workshop_mock_base_url: ""
+    workshop_bluecoat_skip: false
+  tasks:
+    - ansible.builtin.meta: end_play
+      when: workshop_bluecoat_skip | default(false) | bool
+
+    - ansible.builtin.assert:
+        that:
+          - workshop_mock_base_url is defined
+          - (workshop_mock_base_url | length) > 0
+        fail_msg: "Set workshop_mock_base_url to the mock Route URL."
+
+    - ansible.builtin.uri:
+        url: "{{ (workshop_mock_base_url | regex_replace('/$', '')) ~ '/bluecoat_health.json' }}"
+        method: GET
+        validate_certs: false
+        return_content: true
+        status_code: [200]
+      register: _bc
+
+    - ansible.builtin.set_fact:
+        workshop_bluecoat_mock: "{{ _bc.content | from_json }}"
+
+    - ansible.builtin.assert:
+        that:
+          - workshop_bluecoat_mock.overallHealth is defined
+
+    - ansible.builtin.debug:
+        msg: >-
+          Mock ProxySG management health = {{ workshop_bluecoat_mock.overallHealth.status.code | default('UNKNOWN') }}
+          — real installs use Ansible uri/expect paths; no certified Galaxy bundle ships here.

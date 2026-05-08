@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workshop-mock-content
+data:
+  f5_pool.json: |
+    {"name":"workshop-demo-pool","monitor":"/Common/tcp_echo","members":["10.42.10.99:8443"],"loadBalancingMode":"round-robin","mock_source":"nginx-static"}
+  vmware_guests.json: |
+    {"datacenter":"workshop-lab-vcenter","vms":[{"name":"fedora-mgmt-01","power_state":"running","hardware":{"num_cpu":4},"mock_source":"nginx-static"},{"name":"rhel-app-42","power_state":"poweredOff","mock_source":"nginx-static"}]}
+  bluecoat_health.json: |
+    {"subsystem":"management","overallHealth":{"status":{"code":"NORMAL","severity":"NORMAL"}},"appliances":[{"hostname":"proxysg-virtual.lab","license":"valid-until-eval","policyVersion":"policy-virtual-700"}],"mock_source":"nginx-static"}

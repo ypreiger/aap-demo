@@ -1,0 +1,37 @@
+---
+# Simulated F5 BIG-IP pool state — reads static JSON from workshop mock Route (no real iControl).
+- name: Workshop — F5 pool (mock)
+  hosts: localhost
+  gather_facts: false
+  vars:
+    workshop_mock_base_url: ""
+  tasks:
+    - ansible.builtin.assert:
+        that:
+          - workshop_mock_base_url is defined
+          - (workshop_mock_base_url | length) > 0
+        fail_msg: >-
+          Set workshop_mock_base_url to the HTTPS URL of Route/workshop-mock-infra
+          (e.g. https://workshop-mock-infra-aap.apps...).
+
+    - ansible.builtin.uri:
+        url: "{{ (workshop_mock_base_url | regex_replace('/$', '')) ~ '/f5_pool.json' }}"
+        method: GET
+        validate_certs: false
+        return_content: true
+        status_code: [200]
+      register: _f5mock
+
+    - ansible.builtin.set_fact:
+        workshop_f5_mock: "{{ _f5mock.content | from_json }}"
+
+    - ansible.builtin.assert:
+        that:
+          - workshop_f5_mock.name is defined
+          - workshop_f5_mock.members is defined
+
+    - name: Simulated declarative BIG-IP pool reconcile (logged only)
+      ansible.builtin.debug:
+        msg: >-
+          Would apply ASM/LTM declarative onboarding for pool {{ workshop_f5_mock.name }} with
+          {{ workshop_f5_mock.members | length }} members (mock-only run).

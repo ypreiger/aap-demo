@@ -16,6 +16,7 @@ data:
   SMTP_USER: "yaakovpreiger@gmail.com"
   MAIL_FROM: "yaakovpreiger@gmail.com"
   DEFAULT_TO_EMAIL: "yaakovpreiger@gmail.com"
+  EMAIL_SUBJECT_PREFIX: "[AAP Workshop]"
   TOKEN_MAX_AGE_HOURS: "72"
   # Set true until Secret email-plugin-secrets includes SMTP_PASSWORD (Gmail App Password).
   DISABLE_SMTP: "true"

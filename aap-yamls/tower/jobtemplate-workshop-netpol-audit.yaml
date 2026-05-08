@@ -1,0 +1,16 @@
+---
+apiVersion: tower.ansible.com/v1alpha1
+kind: JobTemplate
+metadata:
+  name: jt-workshop-networkpolicy-audit
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  name: workshop-networkpolicy-audit
+  organization: Default
+  project: AAP Demo (GitHub)
+  playbook: playbooks/workshop_networkpolicy_audit.yml
+  inventory: Demo Inventory
+  credentials:
+    - openshift-bom-target
+  ask_variables_on_launch: false

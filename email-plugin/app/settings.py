@@ -42,6 +42,7 @@ class Settings:
     default_to_email: str
     disable_smtp: bool
     token_max_age_hours: int
+    email_subject_prefix: str
 
 
 def load_settings() -> Settings:
@@ -64,4 +65,5 @@ def load_settings() -> Settings:
         ).strip(),
         disable_smtp=_bool_env("DISABLE_SMTP", False),
         token_max_age_hours=_int_env("TOKEN_MAX_AGE_HOURS", 72),
+        email_subject_prefix=os.getenv("EMAIL_SUBJECT_PREFIX", "[AAP]").strip() or "[AAP]",
     )

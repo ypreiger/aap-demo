@@ -13,3 +13,9 @@ resources:
   - jobtemplate-project-foundation.yaml
   - jobtemplate-project-vms.yaml
   - workflowtemplate-project-deploy.yaml
+  - jobtemplate-workshop-bom-project-vms.yaml
+  - jobtemplate-workshop-netpol-audit.yaml
+  - jobtemplate-workshop-mock-f5.yaml
+  - jobtemplate-workshop-mock-vmware.yaml
+  - jobtemplate-workshop-mock-bluecoat.yaml
+  - workflowtemplate-workshop-multi-domain.yaml

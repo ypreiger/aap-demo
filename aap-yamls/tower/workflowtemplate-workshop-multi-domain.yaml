@@ -1,0 +1,119 @@
+---
+# Multi-domain BOM lab: Virt + approvals + mocked network/load-balancer/virtualization/security APIs.
+apiVersion: tower.ansible.com/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: wjt-workshop-multi-domain
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  state: present
+  name: workshop-multi-domain
+  organization: Default
+  inventory: Demo Inventory
+  description: >-
+    OpenShiftVirt foundation + gated VM rollout + NP audit + F5 / VMware / Blue Coat mock integrations.
+    Register webhook Approval notification to email-plugin and provide workshop_mock_base_url at launch.
+  ask_variables_on_launch: true
+  survey_enabled: true
+  survey_spec:
+    name: Workshop launch
+    description: >-
+      project_name selects aap-demo/projects/{name}/bom. workshop_mock_base_url is the HTTPS Route serving /f5_pool.json …
+      (see workshop/openshift/mock-infra).
+    spec:
+      - type: text
+        question_name: Project name (BOM path)
+        question_description: |
+          Matches a folder under Git projects/ — e.g. proj1 — with bom/ artefacts.
+        variable: project_name
+        required: true
+        default: proj1
+      - type: text
+        question_name: Mock integrations base URL
+        question_description: |
+          HTTPS base (no trailing slash) for Route/workshop-mock-infra — files /f5_pool.json, /vmware_guests.json, /bluecoat_health.json.
+        variable: workshop_mock_base_url
+        required: true
+        default: "https://CHANGE-ME/apps-domain"
+
+  workflow_nodes:
+    - identifier: ws-foundation
+      unified_job_template:
+        type: job_template
+        name: bom-project-foundation
+        organization:
+          name: Default
+      related:
+        success_nodes:
+          - identifier: ws-approve-pre-vms
+        failure_nodes: []
+        always_nodes: []
+    - identifier: ws-approve-pre-vms
+      unified_job_template:
+        organization:
+          name: Default
+        type: workflow_approval
+        name: bom-approve-before-vms
+        description: >-
+          Workshop gate — VMs will be created once approved. Attach Approval webhook → email-plugin.
+        timeout: 0
+      related:
+        success_nodes:
+          - identifier: ws-vms
+        failure_nodes: []
+        always_nodes: []
+    - identifier: ws-vms
+      unified_job_template:
+        type: job_template
+        name: workshop-bom-project-vms
+        organization:
+          name: Default
+      related:
+        success_nodes:
+          - identifier: ws-netpol
+        failure_nodes: []
+        always_nodes: []
+    - identifier: ws-netpol
+      unified_job_template:
+        type: job_template
+        name: workshop-networkpolicy-audit
+        organization:
+          name: Default
+      related:
+        success_nodes:
+          - identifier: ws-f5
+        failure_nodes: []
+        always_nodes: []
+    - identifier: ws-f5
+      unified_job_template:
+        type: job_template
+        name: workshop-mock-f5
+        organization:
+          name: Default
+      related:
+        success_nodes:
+          - identifier: ws-vmware
+        failure_nodes: []
+        always_nodes: []
+    - identifier: ws-vmware
+      unified_job_template:
+        type: job_template
+        name: workshop-mock-vmware
+        organization:
+          name: Default
+      related:
+        success_nodes:
+          - identifier: ws-bluecoat
+        failure_nodes: []
+        always_nodes: []
+    - identifier: ws-bluecoat
+      unified_job_template:
+        type: job_template
+        name: workshop-mock-bluecoat
+        organization:
+          name: Default
+      related:
+        success_nodes: []
+        failure_nodes: []
+        always_nodes: []

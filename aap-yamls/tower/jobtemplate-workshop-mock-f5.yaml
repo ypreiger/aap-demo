@@ -1,0 +1,14 @@
+---
+apiVersion: tower.ansible.com/v1alpha1
+kind: JobTemplate
+metadata:
+  name: jt-workshop-mock-f5
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  name: workshop-mock-f5
+  organization: Default
+  project: AAP Demo (GitHub)
+  playbook: playbooks/workshop_mock_f5.yml
+  inventory: Demo Inventory
+  ask_variables_on_launch: false

@@ -1,0 +1,62 @@
+---
+# Verifies the BOM deny-all + open 443 pattern exists and tags namespace for workshop visibility.
+# Expects project_name (workflow survey) and OpenShift API credential (openshift-bom-target).
+- name: Workshop — network policy posture check
+  hosts: localhost
+  gather_facts: false
+  vars:
+    expected_np_name: deny-all-open-443
+  tasks:
+    - ansible.builtin.import_tasks:
+        file: "{{ playbook_dir }}/includes/bom_resolve_cluster_auth.yml"
+
+    - ansible.builtin.assert:
+        that:
+          - project_name is defined
+          - (project_name | string | length) > 0
+        fail_msg: "Set extra var project_name (e.g. proj1)."
+
+    - name: Inspect NetworkPolicies in project namespace
+      module_defaults:
+        group/k8s:
+          host: "{{ omit if ((_bom_ocp_api | length) == 0) else _bom_ocp_api }}"
+          api_key: "{{ omit if ((_bom_ocp_token | length) == 0) else _bom_ocp_token }}"
+          validate_certs: "{{ omit if ((_bom_ocp_api | length) == 0) else _bom_verify_ssl }}"
+          ssl_ca_cert: >-
+            {{ omit if ((_bom_ocp_api | length) == 0) or ((_bom_env_ca | length) == 0) else _bom_env_ca }}
+      kubernetes.core.k8s_info:
+        api_version: networking.k8s.io/v1
+        kind: NetworkPolicy
+        namespace: "{{ project_name }}"
+      register: _nps
+
+    - name: Baseline BOM policy must be present (ingress 443 egress DNS/API/https)
+      ansible.builtin.assert:
+        that:
+          - (_nps.resources | default([]) | map(attribute='metadata.name')) | select('equalto', expected_np_name) | list | length > 0
+        fail_msg: >-
+          Expected NetworkPolicy '{{ expected_np_name }}' in namespace '{{ project_name }}'.
+          Run bom-project-foundation first.
+
+    - ansible.builtin.command: date -u +%Y-%m-%dT%H:%M:%SZ
+      register: _ts
+      changed_when: false
+
+    - name: Annotate namespace (workshop observability ribbon)
+      kubernetes.core.k8s:
+        state: patched
+        api_version: v1
+        kind: Namespace
+        name: "{{ project_name }}"
+        merge_type: strategic-merge
+        definition:
+          metadata:
+            annotations:
+              workshop.aap-demo.github.io/network-audit: >-
+                verified={{ _ts.stdout }},policy={{ expected_np_name }}
+
+    - name: Report egress awareness (presentation note)
+      ansible.builtin.debug:
+        msg: >-
+          Namespace {{ project_name }} enforces egress DNS + :6443 + :443 for matched pods.
+          Adjust policies only with change control — see projects/{{ project_name }}/bom/networkpolicy.yaml.
