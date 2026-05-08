@@ -1,12 +1,12 @@
 # UC-04 — EDA awareness (Event-Driven Ansible)
 
-## Workshop stance
+## Scope
 
-The bundled **EDA** instance exposes an external Route even when the UI is disabled. Controllers can still **emit webhooks** (approvals, job failures) that an event bus could fan out—`email-plugin` already demonstrates HTTP ingress.
+EDA exposes a Route for webhook ingress even when the product UI is disabled. **`email-plugin`** uses similar HTTPS ingress for approvals.
 
 ## Prerequisites
 
-**`../PLAN.md`**; Hub browse (**[`UC-05-inspect-hub-collections-bluecoat.md`](UC-05-inspect-hub-collections-bluecoat.md)**) optional background.
+**`../PLAN.md`**. Optional: **[`UC-05-inspect-hub-collections-bluecoat.md`](UC-05-inspect-hub-collections-bluecoat.md)** for Hub layout.
 
 ---
 

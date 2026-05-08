@@ -1,8 +1,8 @@
 # UC-01 — OpenShift Virtualization + dual-control approval
 
-## Story
+## Goal
 
-Operators provision a BOM namespace and Fedora VMs for a tenant. A **manual approval gate** separates “platform prep” from “consumes IPs / CPU quotas” VM creation.
+Provision BOM namespace and Fedora VMs. A **manual approval** separates foundation jobs from VM creation.
 
 ## Prerequisites
 

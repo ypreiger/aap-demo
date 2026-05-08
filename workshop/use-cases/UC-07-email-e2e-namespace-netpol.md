@@ -1,8 +1,8 @@
 # UC-07 — Email E2E: create Namespace → Approve/Deny mail → deny-all NetworkPolicy
 
-## Story
+## Goal
 
-Automators create **only** an empty **`Namespace`** with a workflow survey parameter, wait on a gate that triggers **`email-plugin`**, approve from **mail**, then have automation apply a **deny‑all `NetworkPolicy`** inside that tenant namespace.
+Create an empty **`Namespace`** from survey input, stop at approval (**`email-plugin`** mail), **Approve** from email, then apply a **deny‑all `NetworkPolicy`** in that namespace.
 
 ## Prerequisites
 
@@ -38,7 +38,7 @@ kubectl get ns TARGET
 kubectl get networkpolicy email-e2e-deny-all -n TARGET -o yaml
 ```
 
-## Scripts (presenter)
+## Scripts
 
 Apply Tower CRs and register webhook (after **`email-plugin` Route exists):
 

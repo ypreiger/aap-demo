@@ -2,7 +2,7 @@
 
 Two supported patterns:
 
-1. **`email-plugin` (recommended)** — a small HTTPS service deployed in **`aap`** (see [`aap-demo/email-plugin/README`](../email-plugin/README.md)). Automation Controller emits a **webhook on Workflow Approval** → the pod sends Gmail (or compatible SMTP) with **signed Approve / Deny buttons** → clicking calls Controller REST to finish the waiting approval task.  
+1. **`email-plugin` (recommended)** — a small HTTPS service deployed in **`aap`** (see **[`email-plugin/README.md`](../email-plugin/README.md)**). Automation Controller emits a **webhook on Workflow Approval** → the pod sends Gmail (or compatible SMTP) with **signed Approve / Deny buttons** → clicking calls Controller REST to finish the waiting approval task.  
    Defaults: **`DEFAULT_TO_EMAIL=yaakovpreiger@gmail.com`** (ConfigMap env in the plugin manifest); override per message with optional JSON keys `to_email` / `recipient` if you customize the webhook body.
 
 2. **Native Controller email notification** — built-in SMTP template on Workflow **Approval** (no clickable REST bridge; relies on Notification template copy + Controller base URL). Use when you cannot run the pod.
@@ -60,9 +60,9 @@ ansible-playbook email-plugin/playbooks/register_controller_webhook_notification
   -e webhook_target_url="$WH"
 ```
 
-This creates notification **`bom-email-plugin-webhook`** and associates it with workflow **`bom-project-deploy`** approvals. The default Jinja outputs **`workflow_job_id`** from **`{{ job.id }}`** (parent workflow job id on current Controller — see **`email-plugin/README.md`**); **`email-plugin`** resolves the pending **`workflow_approvals/{id}`** via the API.
+This creates notification **`bom-email-plugin-webhook`** and associates it with workflow **`bom-project-deploy`** approvals. Default webhook body uses **`workflow_url`** (Controller workflow-approval context — see **`email-plugin/README.md`**). **`email-plugin`** resolves **`workflow_job_id`** and the pending **`workflow_approvals/{id}`** via the Controller API.
 
-### Same webhook for **`email-e2e-ns-netpol`** (UC-07 minimal mail demo)
+### Same webhook for **`email-e2e-ns-netpol`** (UC-07)
 
 Uses the **same** approval unified template (**`bom-approve-before-vms`**) as **`bom-project-deploy`**, but it is another **workflow job template** — Controller only fires webhooks tied to **that** template. Register once:
 

@@ -1,16 +1,12 @@
 # UC-06 — Approve (or deny) a workflow gate from email (**Approve / Deny** buttons)
 
-## Story
+## Goal
 
-An approver receives an **approval email** for a paused workflow. They **approve** or **deny** from the message using **HTTPS buttons** (**no need to hunt the Controller UI first**).
-
-This use case requires the **`email-plugin`** micro-service and a **Webhook** notification wired to **the same workflow template** you plan to launch.
+Approve or deny a paused workflow from the **email** message (**Approve** / **Deny** links). Requires **`email-plugin`** and a **Webhook** notification on the workflow template you launch.
 
 ---
 
-## Prerequisites (presenter checklist)
-
-Presenter actions (once per lab environment):
+## Prerequisites (one-time per environment)
 
 | # | Task | Detail |
 |---|------|--------|

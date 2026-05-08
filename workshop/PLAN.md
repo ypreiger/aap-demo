@@ -2,7 +2,7 @@
 
 Canonical repository: [ypreiger/aap-demo](https://github.com/ypreiger/aap-demo).
 
-This document is the **execution contract** for presenters and for **AI agents** coordinating the build. It merges content, cluster wiring, and QA.
+This document is the **execution contract** for operators and automation agents. It lists objectives, cluster wiring, and verification order.
 
 ## Objectives
 
@@ -25,7 +25,7 @@ This document is the **execution contract** for presenters and for **AI agents**
 
 ## Deliverables checklist
 
-- [x] **Client-facing steps per use case** (**[`use-cases/README.md`](use-cases/README.md)** **UC-01–UC-07**; **`UC-05`** Hub + Blue Coat, **`UC-06`** email approval, **`UC-07`** minimal email E2E namespace + netpol) plus consolidated **[`CLIENT_RUNBOOK.md`](CLIENT_RUNBOOK.md)**  
+- [x] **Use-case steps** (**[`use-cases/README.md`](use-cases/README.md)** UC-01–UC-07; UC-05 Hub + Blue Coat, UC-06 email approval, UC-07 namespace + netpol) and **[`CLIENT_RUNBOOK.md`](CLIENT_RUNBOOK.md)**  
 - [x] Mock infra Deployment + Route in `aap` namespace  
 - [x] Workshop job templates + workflow (Tower resource operator CRs)  
 - [x] E2E script with **auto-approve** for CI-like verification  
@@ -34,7 +34,7 @@ This document is the **execution contract** for presenters and for **AI agents**
 - [x] Per-domain narratives (`workshop/use-cases/`)  
 - [x] Email subject prefix + richer template context  
 
-## Execution order (operators / presenters)
+## Execution order
 
 1. **Automation Hub**: if **`/content/collections`** stays empty after install, mirror **`collections/requirements.yml`** into the **`community`** repo (**`documentation/HUB_COLLECTIONS.md`** + **`scripts/hub-sync-community-from-requirements.sh`**). In the gateway UI choose **Community** if **Published** is still blank (until **rh-certified** sync + token).  
 2. `collections` + EE: enable Galaxy sync (see **`documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`**).  
@@ -60,5 +60,5 @@ Incremental execution uses marker sets produced by **`app/classify.py`** (`opens
 |------|-------------|
 | CNV quotas / flavours missing | Workflow survey knobs + doc `VIRTUALIZATION_WORKFLOW_SURVEY.md`; pick `manual` sizing if instances types unavailable |
 | nginx image pull | Cluster pull-through; substitute mirrored `nginx-unprivileged` if deny-all |
-| EDA JWT / UI off | Smoke `curl` only; presenters show rulebook YAML in-repo |
+| EDA JWT / UI off | Smoke `curl`; rulebooks remain in **`workshop/rulebooks/`** |
 | RBAC granularity | Supplement script with Org Admin UI mapping |

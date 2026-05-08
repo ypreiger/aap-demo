@@ -15,7 +15,7 @@
 
 ## Grants (UI path)
 
-Organizations → **Default** → Access → Teams → `<team>` → Roles → assign **Workflow / Job Execute** scoped to **`workshop-multi-domain`** plus any split job templates presenters want segmented.
+Organizations → **Default** → Access → Teams → `<team>` → Roles → assign **Workflow / Job Execute** scoped to **`workshop-multi-domain`** and any additional job templates per team.
 
 Fine-grained DAB/API roles differ per patch level—use UI when scripts would be brittle.
 

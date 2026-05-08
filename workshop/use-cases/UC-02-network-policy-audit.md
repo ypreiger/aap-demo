@@ -1,14 +1,14 @@
 # UC-02 — Network policy posture audit
 
-## Story
+## Goal
 
-After virtualization assets land, a **read-only** Ansible pass validates the deny-all / selective egress policy and annotates the namespace for audit dashboards.
+Run a **read-only** playbook that validates NetworkPolicy posture and annotates the namespace for audit.
 
 ## Prerequisites
 
 Follow **`../PLAN.md`**. Hub + Controller collections: **[`UC-05-inspect-hub-collections-bluecoat.md`](UC-05-inspect-hub-collections-bluecoat.md)**, **`../../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`**.
 
-To run **only** this job template in isolation (advanced), ensure inventory + **OpenShift/K8s API credential** **`openshift-bom-target`** exist; in the standard workshop you run it **inside **`workshop-multi-domain`****.
+To run **only** this job template in isolation, ensure inventory and credential **`openshift-bom-target`** exist. In **`workshop-multi-domain`** it runs after earlier workflow nodes.
 
 ---
 

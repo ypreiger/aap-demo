@@ -1,6 +1,6 @@
 # Workshop use cases — index
 
-Each file below is **self-contained**: story, prerequisites, **numbered steps in AAP** (or browser), success criteria, and pointers to deeper docs.
+Each file below includes **Goal**, **Prerequisites**, **numbered steps** in Automation Controller or Hub, **success criteria**, and links to supporting docs.
 
 Deep cross-reference and cluster-specific examples also live in **[`../CLIENT_RUNBOOK.md`](../CLIENT_RUNBOOK.md)**.
 
@@ -10,6 +10,6 @@ Deep cross-reference and cluster-specific examples also live in **[`../CLIENT_RU
 | **UC-02** | NetworkPolicy audit stage | [`UC-02-network-policy-audit.md`](UC-02-network-policy-audit.md) |
 | **UC-03** | Mock F5 / VMware / Blue Coat (**URI**, not Galaxy modules) | [`UC-03-mock-f5-vmware-bluecoat.md`](UC-03-mock-f5-vmware-bluecoat.md) |
 | **UC-04** | EDA awareness (routes, rulebooks, discussion) | [`UC-04-eda-awareness.md`](UC-04-eda-awareness.md) |
-| **UC-05** | **Inspect Hub collections** (Published vs Community) **+ Blue Coat / ProxySG reality** | [`UC-05-inspect-hub-collections-bluecoat.md`](UC-05-inspect-hub-collections-bluecoat.md) |
+| **UC-05** | Hub collections (Published vs Community); ProxySG / Blue Coat (Hub vs mock URI) | [`UC-05-inspect-hub-collections-bluecoat.md`](UC-05-inspect-hub-collections-bluecoat.md) |
 | **UC-06** | **Approve (or deny) a workflow gate from email** (clickable buttons) | [`UC-06-approve-by-email-buttons.md`](UC-06-approve-by-email-buttons.md) |
 | **UC-07** | **Email E2E:** Namespace survey → approval mail → deny‑all **NetworkPolicy** | [`UC-07-email-e2e-namespace-netpol.md`](UC-07-email-e2e-namespace-netpol.md) |

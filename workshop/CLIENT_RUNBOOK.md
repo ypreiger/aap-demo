@@ -2,11 +2,18 @@
 
 Canonical repo: **[ypreiger/aap-demo](https://github.com/ypreiger/aap-demo)**.
 
-This guide is for **operators / client representatives** running the lab in the **Automation Controller** UI (and optionally **Automation Hub**). It answers: *which workflow do I launch?, what should I see?, where is “Blue Coat collection”?, how do I add collections?, how do I get email with Approve/Deny buttons?*
+This guide is for **operators** using **Automation Controller** and **Automation Hub**.
 
-**Canonical per-use-case steps:** numbered files and index **[`use-cases/README.md`](use-cases/README.md)** (**UC-01 … UC-07**).
+It covers:
 
-This **`CLIENT_RUNBOOK.md`** is the **single condensed** guide; each UC Markdown file carries the detailed **instructions** your client representative follows in order.
+- Which workflow template to launch  
+- Expected job output  
+- Where Hub lists collections (Community vs Published)  
+- Blue Coat / ProxySG (mock URI, not a Galaxy collection name)  
+- Adding collections and execution environments  
+- Email with Approve/Deny links (**`email-plugin`**)
+
+**Per-use-case procedures:** **[`use-cases/README.md`](use-cases/README.md)** (UC-01–UC-07). Each UC file is the step-by-step checklist for that scenario.
 
 ---
 
@@ -35,7 +42,9 @@ Use the **cluster / workshop** URL your admin gives you (example host pattern: `
 
 **Why Published can stay empty:** Certified content comes from the **rh-certified** remote and needs Red Hat subscription / token setup on the platform. The workshop content is satisfied by **Community** collections mirrored into Hub.
 
-**If Community is still empty:** A presenter must run a one-time sync — see **[`documentation/HUB_COLLECTIONS.md`](../documentation/HUB_COLLECTIONS.md)** and **`scripts/hub-sync-community-from-requirements.sh`**.
+**If Community is still empty:** Run **`scripts/hub-sync-community-from-requirements.sh`** (requires **`oc`** and Hub admin credentials). See **[`documentation/HUB_COLLECTIONS.md`](../documentation/HUB_COLLECTIONS.md)**.
+
+**If Published is empty:** Configure the offline token and sync **`rh-certified`** — **[`documentation/HUB_COLLECTIONS.md`](../documentation/HUB_COLLECTIONS.md)** §2.
 
 ### What you should see
 
@@ -98,8 +107,8 @@ The playbook **[`email-plugin/playbooks/register_controller_webhook_notification
 
 | Step | Action |
 |------|--------|
-| 1 | Deploy the plugin (presenter): see **[`email-plugin/README.md`](../email-plugin/README.md)** — e.g. `SMTP_PASSWORD='...' DISABLE_SMTP=false ./email-plugin/scripts/deploy-email-plugin.sh` |
-| 2 | Register webhook (presenter): **[`documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`](../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md)** — `ansible-playbook email-plugin/playbooks/register_controller_webhook_notification.yml` with `controller_host`, `controller_oauth_token`, `webhook_target_url` |
+| 1 | Deploy **`email-plugin`**: **[`email-plugin/README.md`](../email-plugin/README.md)** — `SMTP_PASSWORD='...' DISABLE_SMTP=false ./email-plugin/scripts/deploy-email-plugin.sh` |
+| 2 | Register webhook: **[`documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`](../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md)** — `ansible-playbook email-plugin/playbooks/register_controller_webhook_notification.yml` with `controller_host`, `controller_oauth_token`, `webhook_target_url` |
 | 3 | Confirm **Controller** → **Administration** → **Settings** → **System** → **Base URL of the service** is your real Controller URL |
 
 ### 5.2 Launch the workflow (you)
@@ -178,7 +187,7 @@ Example on a sandbox cluster *(replace with your route host)*:
 ### Prerequisites
 
 - **Collections:** Hub **Community** visible (section 2); Controller **collections download** wired ([`documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`](../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md)).
-- **Mock JSON Route:** Deploy **`workshop/openshift/mock-infra`** so Route **`workshop-mock-infra`** exists (presenter applies manifest).
+- **Mock JSON Route:** Apply **`workshop/openshift/mock-infra`** so Route **`workshop-mock-infra`** exists.
 - **Survey URL:** Obtain the HTTPS base (**no trailing slash**), e.g.:
   ```bash
   bash workshop/scripts/resolve-mock-route.sh
@@ -213,7 +222,7 @@ Failures usually mean: wrong **`workshop_mock_base_url`**, mock Route missing, V
 
 | Topic | Doc |
 |--------|-----|
-| UC-07 minimal email E2E (namespace + netpol) | [`use-cases/UC-07-email-e2e-namespace-netpol.md`](use-cases/UC-07-email-e2e-namespace-netpol.md) |
+| UC-07 email E2E (namespace + netpol) | [`use-cases/UC-07-email-e2e-namespace-netpol.md`](use-cases/UC-07-email-e2e-namespace-netpol.md) |
 | Hub empty UI | [`documentation/HUB_COLLECTIONS.md`](../documentation/HUB_COLLECTIONS.md) |
 | Controller + `requirements.yml` | [`documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`](../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md) |
 | Collection list & EE | [`documentation/ANSIBLE_COLLECTIONS.md`](../documentation/ANSIBLE_COLLECTIONS.md) |

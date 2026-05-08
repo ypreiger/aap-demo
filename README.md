@@ -1,16 +1,39 @@
-# Red Hat Ansible Automation Platform — minimal workflow demo
+# Ansible Automation Platform — `aap-demo`
 
-**Layout:** playbook content under **`playbooks/`** (plus **`inventory/`**, **`collections/requirements.yml`**). **Multi-domain presenter workshop (Virt + netpol + mock F5/VMware/Blue Coat + EDA/RBAC notes):** see **[workshop/README.md](workshop/README.md)** and **[workshop/CLIENT_RUNBOOK.md](workshop/CLIENT_RUNBOOK.md)** (*which Controller workflow to run and what you should see*); run **`workshop/scripts/run-e2e-multi-domain-workflow.sh`** after applying **`workshop/openshift/mock-infra`**. **Git `projects/` changes:** **[documentation/GIT_WEBHOOK_EDA.md](documentation/GIT_WEBHOOK_EDA.md)** + **`workshop/git-webhook-bridge`** (EDA envelope + SCM sync + gated workflow **workshop-projects-git-driven**); domain inputs use YAML under **`projects/*/domain/`** (**[DOMAIN_INPUT_YAML.md](documentation/DOMAIN_INPUT_YAML.md)**). **Infrastructure collections & EE:** see **[documentation/ANSIBLE_COLLECTIONS.md](documentation/ANSIBLE_COLLECTIONS.md)** (OpenShift Virtualization/KubeVirt, VMware, F5; Blue Coat / ProxySG has no mainstream Galaxy module—patterns documented). **Verify installs + EE context + playbook syntax:** `./scripts/verify-collections-and-ee.sh` (also runs in **GitHub Actions**). OpenShift BOM artefacts live under **`projects/<project_name>/bom`** (currently **`proj1`** and **`proj2`**). **`playbooks/project_foundation.yml`** creates namespace / SA / netpol each with validation; **`playbooks/project_vms.yml`** templates Fedora **VirtualMachine** CRs (KubeVirt) using **OpenShift Virtualization cluster instance types / preferences** or **manual** CPU+RAM, plus **survey‑driven** root / extra disks (**[documentation/VIRTUALIZATION_WORKFLOW_SURVEY.md](documentation/VIRTUALIZATION_WORKFLOW_SURVEY.md)**). **BOM playbooks need a cluster API:** in Automation Controller attach **OpenShift or Kubernetes API Bearer Token** credential **`openshift-bom-target`** to **`bom-project-foundation`** / **`bom-project-vms`** (no `~/.kube/config` in the execution environment). The controller workflow **`bom-project-deploy`** is **generic** (not named after a project). Launch opens a **survey** for **`project_name`**, which selects Git path **`aap-demo/projects/{project_name}/bom`**, then runs foundation, **approval**, then VMs. Operator examples in **`aap-yamls/`** ([README](aap-yamls/README.md)). **Approval email (click Approve/Deny in Gmail):** use this repo’s **`email-plugin/`** ([README](email-plugin/README.md)) plus [documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md](documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md); optional native Controller SMTP stays in `playbooks/controller_configure_bom_approval_email.yml`. **Short mail-only storyline (namespace survey → approve → deny‑all NetworkPolicy):** workflow **`email-e2e-ns-netpol`** ([workshop/use-cases/UC-07-email-e2e-namespace-netpol.md](workshop/use-cases/UC-07-email-e2e-namespace-netpol.md); apply **`oc apply -k aap-yamls/tower/`**, then **`scripts/register-webhook-email-e2e-ns-netpol.sh`**).
+## Repository layout
+
+| Path | Contents |
+|------|----------|
+| **`playbooks/`** | Playbooks; **`inventory/`** hosts; **`collections/requirements.yml`** Galaxy allow list |
+| **`workshop/`** | Multi-domain workflows, mock infra, E2E scripts — start at **[workshop/README.md](workshop/README.md)** and **[workshop/CLIENT_RUNBOOK.md](workshop/CLIENT_RUNBOOK.md)** |
+| **`documentation/`** | **[documentation/README.md](documentation/README.md)** — Hub, Controller, collections, webhooks |
+| **`aap-yamls/`** | Automation Controller / Tower Kubernetes manifests — **[aap-yamls/README.md](aap-yamls/README.md)** |
+| **`projects/`** | BOM and domain YAML (`proj1`, `proj2`) — **[documentation/DOMAIN_INPUT_YAML.md](documentation/DOMAIN_INPUT_YAML.md)** |
+| **`email-plugin/`** | Approval email service — **[email-plugin/README.md](email-plugin/README.md)** |
+
+**Git-driven workflows:** **[documentation/GIT_WEBHOOK_EDA.md](documentation/GIT_WEBHOOK_EDA.md)** and **`workshop/git-webhook-bridge/`**.
+
+**Collections and EE:** **[documentation/ANSIBLE_COLLECTIONS.md](documentation/ANSIBLE_COLLECTIONS.md)**. Verify locally: **`./scripts/verify-collections-and-ee.sh`**.
+
+**OpenShift Virtualization / surveys:** **[documentation/VIRTUALIZATION_WORKFLOW_SURVEY.md](documentation/VIRTUALIZATION_WORKFLOW_SURVEY.md)**.
+
+**BOM workflows** (`bom-project-deploy`, surveys): use **`project_name`** → **`aap-demo/projects/{project_name}/bom`**. Attach credential **`openshift-bom-target`** (OpenShift/Kubernetes API bearer token) to **`bom-project-foundation`** and **`bom-project-vms`**.
+
+**Approval email:** **`email-plugin/`** + **[documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md](documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md)**.
+
+**Namespace → approval email → NetworkPolicy:** workflow **`email-e2e-ns-netpol`** — **[workshop/use-cases/UC-07-email-e2e-namespace-netpol.md](workshop/use-cases/UC-07-email-e2e-namespace-netpol.md)**; apply **`oc apply -k aap-yamls/tower/`**, then **`scripts/register-webhook-email-e2e-ns-netpol.sh`**.
 
 ---
 
-This repository is a short, presenter-friendly automation **storyline** made for **Ansible Automation Platform (AAP)**:
+## Minimal three-playbook chain
 
-1. **Validate** execution context (`playbooks/01_validate_environment.yml`).
-2. **Publish** a workflow artifact using `set_stats` (`playbooks/02_publish_workflow_stats.yml`).
-3. **Finalize** and show the propagated `demo_batch_id` (`playbooks/03_finalize.yml`).
+Used as a smoke test for Workflow Job Templates passing **`set_stats`** variables:
 
-Run locally (optional sanity check):
+1. **`playbooks/01_validate_environment.yml`**
+2. **`playbooks/02_publish_workflow_stats.yml`**
+3. **`playbooks/03_finalize.yml`**
+
+Local run:
 
 ```bash
 cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
@@ -19,103 +42,82 @@ ansible-playbook playbooks/02_publish_workflow_stats.yml
 ansible-playbook playbooks/03_finalize.yml
 ```
 
-Inside a **Workflow Job Template**, step 3 receives `demo_batch_id` from step 2. Run alone, step 3 prints `n/a` for that variable by design.
+In a workflow, step 3 receives **`demo_batch_id`** from step 2. Running step 3 alone prints **`n/a`** for that variable.
 
 ---
 
-## AAP components to configure (checklist)
+## Automation Controller checklist
 
-Use **Automation Controller** (AAP’s control plane UI or API). Names below are suggestions; align with your org’s naming conventions.
+Configure objects in **Automation Controller** (UI or API). Use the names in the tables so this repository’s docs and CRs match your deployment.
 
-### Automation Hub (collections browser)
+### Automation Hub
 
-Presenters validating **`/content/collections`** should ensure the **`community`** repository is synced (**`requirements_file`** from this repo drives the allow list). Scripted path: **`documentation/HUB_COLLECTIONS.md`** and **`scripts/hub-sync-community-from-requirements.sh`**.
+Hub **`/content/collections`**:
 
-### 1. Organization (optional but typical)
+- Sync **Community** using **[documentation/HUB_COLLECTIONS.md](documentation/HUB_COLLECTIONS.md)** and **`scripts/hub-sync-community-from-requirements.sh`**.
+- Sync **Published** using an offline token — **§2** in the same file and **`scripts/hub-sync-rh-certified-from-secret.sh`**.
 
-Create or reuse an **Organization** (for example `Demo`).
+### Organization
 
-### 2. Execution environment (EE)
+Create or reuse an **Organization** (example name: **`Demo`**).
 
-- **Automation Execution Environments** → **Add**.
-- Use a supported image that includes **Ansible** and **ansible-runner** (for example a platform-provided **minimal** EE, or your own EE built with `ansible-builder`).
-- Attach the EE where policies allow (`Global` org or scoped to your org).
+### Execution environment
 
-Jobs need an EE whose Python/Ansible version matches content you intend to scale to later.
+**Automation Execution Environments** → **Add** → image with Ansible and ansible-runner (platform minimal EE or custom image from **`ansible-builder`**). Attach globally or per organization.
 
-### 3. Credentials
+### Credentials
 
-| Credential type | Purpose |
-|-----------------|--------|
+| Type | Use |
+|------|-----|
 | **Source Control** | Clone `https://github.com/ypreiger/aap-demo` |
-| *(optional)* **Machine / SSH / Vault** | Not required for `localhost`/local-connection demo |
+| **Machine / SSH / Vault** | Optional; not required for `localhost` demos |
 
-For GitHub HTTPS, prefer a **Personal Access Token** as the password and your Git username (or a dedicated automation user).
+For GitHub HTTPS, use a **Personal Access Token** as the password.
 
-### 4. Project
+### Project
 
-- **Projects** → **Add**.
-- **Source Control URL**: `https://github.com/ypreiger/aap-demo`
-- **Credential**: the Source Control credential from step 3.
-- Save and wait for initial **sync** to succeed (**green last job**).
+**Projects** → **Add** → URL **`https://github.com/ypreiger/aap-demo`** → attach Source Control credential → save → wait until sync succeeds.
 
-### 5. Inventory
+### Inventory
 
-- **Inventories** → **Add** → **Demo inventory**.
-- **Sources** tab is optional here; simplest path is **Hosts** → **Add** → `localhost`.
-- Variables for that host:
+**Inventories** → **Add** → add host **`localhost`** with variables:
 
 ```yaml
 ansible_connection: local
 ```
 
-(or import `inventory/hosts.yml` semantics manually as above.)
+### Job templates (three)
 
-### 6. Job Templates (three)
-
-Create **three** templates; each type **Ansible Playbook**:
+**Templates** → **Add** → **Job template** → type **Ansible Playbook**:
 
 | Field | Template A | Template B | Template C |
-|-------|------------|------------|------------|
+|-------|--------------|------------|------------|
 | Name | `aap-demo-01-validate` | `aap-demo-02-publish` | `aap-demo-03-finalize` |
-| Inventory | Demo inventory | same | same |
-| Project | Your `aap-demo` project | same | same |
+| Inventory | Your demo inventory | same | same |
+| Project | `aap-demo` project | same | same |
 | Playbook | `playbooks/01_validate_environment.yml` | `playbooks/02_publish_workflow_stats.yml` | `playbooks/03_finalize.yml` |
 | Execution environment | Your EE | same | same |
 
-Enable **Privilege escalation** only if your environment requires it (not needed for these playbooks).
+Enable **Privilege escalation** only if required.
 
-### 7. Workflow Job Template
+### Workflow job template
 
-- **Templates** → **Add** → **Workflow Job Template**.
-- Name: `aap-demo-workflow`.
-- Optionally set **Survey**, **Notifications**, and **Scheduling** afterward.
+**Templates** → **Add** → **Workflow Job Template** → name **`aap-demo-workflow`**.
 
-**Visualizer**: add nodes in order:
+Visualizer — chain on success:
 
-- Start → **`aap-demo-01-validate`** → **`aap-demo-02-publish`** → **`aap-demo-03-finalize`** → End
+**Start** → **`aap-demo-01-validate`** → **`aap-demo-02-publish`** → **`aap-demo-03-finalize`** → **End**
 
-Connect with **On Success** edges so failure stops the chain (good for live demos).
+Launch the workflow. Confirm step 3 output contains **`demo_batch_id`** from **`set_stats`** in step 2.
 
-Launch the **workflow** and show:
+### RBAC
 
-- Per-node **job output** in the workflow run view.
-- Step 3 output containing `demo_batch_id` populated from `set_stats` in step 2.
-
-### 8. RBAC (for shared platforms)
-
-Grant your demo **Team** (or user) minimally:
-
-- Read **Project**/sync, use **Inventory**, execute **Job Template** / **Workflow Job Template** on the demo objects.
-
-Avoid giving **Organization Admin** unless required.
+Grant the demo **Team** or user permission to read the **Project**, use the **Inventory**, and execute the **Job** / **Workflow** templates. Avoid **Organization Admin** unless required.
 
 ---
 
-## After this demo
+## Extensions
 
-Extend the storyline with:
-
-- **Galaxy collections** for OpenShift virtualization, VMware, F5 (and ProxySG posture): **`collections/requirements.yml`**, **`execution-environment/`**, **[documentation/ANSIBLE_COLLECTIONS.md](documentation/ANSIBLE_COLLECTIONS.md)**.
-- Remote **inventory** and **machine credentials**.
-- Configuration as code (for example **`ansible.controller`**) to reproducibly define Projects, JT, workflows, and RBAC ([Ansible Automation Platform documentation](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/)).
+- **Collections / EE:** [`collections/requirements.yml`](collections/requirements.yml), [`execution-environment/README.md`](execution-environment/README.md), **[documentation/ANSIBLE_COLLECTIONS.md](documentation/ANSIBLE_COLLECTIONS.md)**.
+- **Remote inventory and credentials** for non-local targets.
+- **Configuration as code:** e.g. **`ansible.controller`** collection — [Red Hat Ansible Automation Platform documentation](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/).

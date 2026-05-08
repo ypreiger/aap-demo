@@ -1,14 +1,14 @@
 # UC-03 — Mock F5 / VMware / Blue Coat day-2 operations
 
-## Story
+## Goal
 
-Once the cluster-side footprint exists, automation fans out to **classic infrastructure APIs**—here represented by static JSON over HTTPS to avoid lab dependencies.
+Run mock **F5 / VMware / Blue Coat** jobs over **`ansible.builtin.uri`** against JSON served by **`workshop-mock-infra`**.
 
 ## Prerequisites
 
-**`../PLAN.md`**, mock Route **`workshop-mock-infra`**, **`workshop_mock_base_url`** set correctly (see **UC-01** step **1**).
+**`../PLAN.md`**, Route **`workshop-mock-infra`**, survey **`workshop_mock_base_url`** set (see UC-01).
 
-**Blue Coat in Hub:** there is **no** standard Hub collection for ProxySG — discovery + narrative are **[`UC-05-inspect-hub-collections-bluecoat.md`](UC-05-inspect-hub-collections-bluecoat.md)**.
+ProxySG / Blue Coat: **[`UC-05-inspect-hub-collections-bluecoat.md`](UC-05-inspect-hub-collections-bluecoat.md)** (Hub search vs URI mock).
 
 ---
 

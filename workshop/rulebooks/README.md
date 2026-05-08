@@ -1,6 +1,6 @@
 # Event-Driven Ansible — workshop skeleton
 
-Real activations need a Decision Environment image, Controller credentials, and a chosen event source (webhook plugin, Kafka, etc.). Treat this folder as **presenter notes**.
+Production rulebooks require a **Decision Environment** image, Controller credentials, and an event source (webhook plugin, Kafka, etc.). Files here are a **skeleton** for adaptation to your EDA version.
 
 ## Skeleton (validate against your EDA/ansible-rulebook version)
 

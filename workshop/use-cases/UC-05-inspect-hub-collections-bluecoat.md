@@ -1,14 +1,16 @@
 # UC-05 — Inspect collections in Automation Hub (incl. Blue Coat / ProxySG)
 
-## Story
+## Goal
 
-Operators learn **where Ansible collections appear** inside **Automation Hub**, how **Published vs Community** differs, and why **Broadcom ProxySG (“Blue Coat”)** does **not** show up as a normal Hub collection—even though VMware and F5 collections do.
+- Locate collections in **Automation Hub** (Community vs Published).
+- Explain why **ProxySG (“Blue Coat”)** does not appear as a standard Galaxy collection like F5 or VMware.
 
 ## Prerequisites
 
-- Log in to your **Ansible Automation Platform gateway** URL (combined UI for Hub + Controller).
-- A presenter has ensured **Community** content exists in Hub (first-time labs: **`../../scripts/hub-sync-community-from-requirements.sh`** and **`../../documentation/HUB_COLLECTIONS.md`**).
-- Optional read: **`../../documentation/ANSIBLE_COLLECTIONS.md`** (supply chain + Blue Coat subsection).
+- Log in to the **AAP gateway** (Hub + Controller).
+- **Community** repository synced: **`../../scripts/hub-sync-community-from-requirements.sh`** and **`../../documentation/HUB_COLLECTIONS.md`**.
+- **Published** optional: **`../../documentation/HUB_COLLECTIONS.md`** §2 (offline token).
+- Optional: **`../../documentation/ANSIBLE_COLLECTIONS.md`** (ProxySG patterns).
 
 ---
 
