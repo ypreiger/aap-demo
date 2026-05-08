@@ -108,6 +108,7 @@ Otherwise the **`DEFAULT_TO_EMAIL`** env is used.
 - **`401` webhook** → HMAC mismatch; clear `WEBHOOK_HMAC_SECRET` or fix Controller headers.
 - **No mail but hook returns `{ok:true}`** → `DISABLE_SMTP=true` or empty `SMTP_PASSWORD`; check **`email-plugin`** pod logs (`kubectl logs deploy/email-plugin -n aap`).
 - **`422` webhook** → cannot resolve approvals; workflow may not yet be paused on an approval gate, or webhook JSON lacks ids (customize **`wf_approve_body_template`**).
+- **“Open in Controller” lands on API / SSO error** → Controller often exposes **`/api`** in **`CONTROLLER_HOST`**, but users must open the SPA through the gateway or trimmed host. Patch **`CONTROLLER_UI_PUBLIC_URL`** (**`CONTROLLER_WORKFLOW_JOB_UI_PATH_TEMPLATE`** optional) on **`email-plugin-env`** — see **[`documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`](../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md)** (*Open in Controller link* subsection).
 
 ## Repo layout
 

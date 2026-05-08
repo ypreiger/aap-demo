@@ -25,6 +25,27 @@ SMTP_PASSWORD='<gmail-app-password>' DISABLE_SMTP=false ./email-plugin/scripts/d
 
 The script reapplies manifests from `email-plugin/openshift/`, patches **`CONTROLLER_HOST`** from **`Secret/aap-controller-api`**, runs an OpenShift Source **binary Docker build**, and sets **`PUBLIC_BASE_URL`** from **`Route/email-plugin`**.
 
+### **`Open in Controller` link looks wrong**
+
+The mail footer uses a **browser** URL resolved from Automation Controller **`related.web_url` / `jobs_web_url`** when those look sane. If the API only exposes REST paths (or SSO expects the **gateway** host), synthesize links with ConfigMap **`email-plugin-env`**:
+
+| Env | Meaning |
+|-----|----------|
+| **`CONTROLLER_UI_PUBLIC_URL`** | HTTPS prefix you see in the address bar **before** the `#…` fragment when Jobs → workflow job is open (often the **gateway** route + `/…/automation-controller`, not necessarily the **`aap-controller-api` host** string). Optional. |
+| **`CONTROLLER_WORKFLOW_JOB_UI_PATH_TEMPLATE`** | Fragment path appended to that prefix. Default **`/#/jobs/workflow/{workflow_job_id}`**. If your build uses another Jobs path per product docs, substitute it (`{workflow_job_id}` stays available). |
+
+If unset, **`email-plugin`** falls back to **`CONTROLLER_HOST`** with a trailing **`/api`** stripped, then **`/#/jobs/workflow/{id}`** — sufficient for standalone Controller routes.
+
+```bash
+oc patch configmap/email-plugin-env -n aap --type merge -p '{
+  "data": {
+    "CONTROLLER_UI_PUBLIC_URL": "https://<YOUR-GATEWAY-OR-STANDALONE-ORIGIN>/<optional-automation-controller-subpath>",
+    "CONTROLLER_WORKFLOW_JOB_UI_PATH_TEMPLATE": "/#/jobs/workflow/{workflow_job_id}"
+  }
+}'
+oc rollout restart deployment/email-plugin -n aap
+```
+
 ### Register the webhook on `bom-project-deploy`
 
 ```bash
@@ -75,6 +96,7 @@ X-Email-Plugin-Signature: sha256=<hex_hmac_sha256(secret, raw_body)>
 | Gmail auth errors | Rotate App Password; confirm `SMTP_USER` matches Gmail account owning the App Password |
 | Buttons 400/401 | Signing secret mismatch / expired token (`TOKEN_MAX_AGE_HOURS`); restart Deployment after patching Secret |
 | Webhook JSON parse errors | Controller version may render different fields — override **`wf_approve_body_template`** in the registration playbook extras |
+| **Open in Controller** 404 / wrong host / SSO loop | Patch **`CONTROLLER_UI_PUBLIC_URL`** + optional **`CONTROLLER_WORKFLOW_JOB_UI_PATH_TEMPLATE`** (subsection *Open in Controller link* above); restart **`email-plugin`**. |
 | Egress failures | Namespace NetworkPolicy/firewall blocking `smtp.gmail.com:587` or Controller HTTPS |
 
 ## Path B — Native Controller SMTP (no Approve buttons)

@@ -10,6 +10,11 @@ data:
   PUBLIC_BASE_URL: "https://unset-email-plugin.invalid"
   CONTROLLER_HOST: "https://unset-controller.invalid"
   CONTROLLER_VERIFY_SSL: "false"
+  # Browser URL used in mail "Open in Controller" when API web_url is missing or REST-only:
+  # set to whatever you paste before # in the Jobs URL (often AAP gateway + /automation-controller).
+  CONTROLLER_UI_PUBLIC_URL: ""
+  # Path after CONTROLLER_UI_PUBLIC_URL (fallback: stripped CONTROLLER_HOST without /api). Default:
+  CONTROLLER_WORKFLOW_JOB_UI_PATH_TEMPLATE: "/#/jobs/workflow/{workflow_job_id}"
   SMTP_HOST: "smtp.gmail.com"
   SMTP_PORT: "587"
   SMTP_USE_TLS: "true"

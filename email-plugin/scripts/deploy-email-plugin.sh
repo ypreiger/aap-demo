@@ -57,6 +57,19 @@ PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://${ROUTE_HOST}}"
 jqpatch="$(jq -nc --arg u "${PUBLIC_BASE_URL}" '{data:{PUBLIC_BASE_URL:$u}}')"
 oc patch configmap/email-plugin-env -n "${NS}" --type merge -p "${jqpatch}" >/dev/null
 
+if [[ -n "${CONTROLLER_UI_PUBLIC_URL:-}" ]]; then
+  oc patch configmap/email-plugin-env -n "${NS}" --type merge -p "$(
+    jq -nc --arg u "${CONTROLLER_UI_PUBLIC_URL}" '{data:{CONTROLLER_UI_PUBLIC_URL:$u}}'
+  )" >/dev/null
+fi
+
+if [[ -n "${CONTROLLER_WORKFLOW_JOB_UI_PATH_TEMPLATE:-}" ]]; then
+  oc patch configmap/email-plugin-env -n "${NS}" --type merge -p "$(
+    jq -nc --arg u "${CONTROLLER_WORKFLOW_JOB_UI_PATH_TEMPLATE}" \
+      '{data:{CONTROLLER_WORKFLOW_JOB_UI_PATH_TEMPLATE:$u}}'
+  )" >/dev/null
+fi
+
 oc rollout restart deployment/email-plugin -n "${NS}"
 oc rollout status deployment/email-plugin -n "${NS}" --timeout=240s || true
 

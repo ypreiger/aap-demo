@@ -27,6 +27,8 @@ def _int_env(name: str, default: int) -> int:
 class Settings:
     public_base_url: str
     controller_host: str
+    controller_ui_public_url: str
+    controller_workflow_job_ui_path_template: str
     controller_token: str
     controller_verify_ssl: bool
     signing_secret: str
@@ -46,9 +48,16 @@ class Settings:
 
 
 def load_settings() -> Settings:
+    wf_path_template = (
+        os.getenv("CONTROLLER_WORKFLOW_JOB_UI_PATH_TEMPLATE", "").strip()
+        or "/#/jobs/workflow/{workflow_job_id}"
+    )
+
     return Settings(
         public_base_url=os.getenv("PUBLIC_BASE_URL", "").strip(),
         controller_host=os.getenv("CONTROLLER_HOST", "").strip().rstrip("/"),
+        controller_ui_public_url=os.getenv("CONTROLLER_UI_PUBLIC_URL", "").strip().rstrip("/"),
+        controller_workflow_job_ui_path_template=wf_path_template,
         controller_token=os.getenv("CONTROLLER_TOKEN", "").strip(),
         controller_verify_ssl=_bool_env("CONTROLLER_VERIFY_SSL", False),
         signing_secret=os.getenv("SIGNING_SECRET", "").strip() or "CHANGE_ME_SIGNING_SECRET",

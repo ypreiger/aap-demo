@@ -44,11 +44,12 @@ def main() -> None:
 
     from app.mailer import build_approval_mail_bodies, send_approval_mail
     from app.settings import load_settings
+    from app.ui_links import resolve_workflow_job_browser_url
 
     s = load_settings()
     subj = f"{s.email_subject_prefix} Sample — how approval mail looks — wf #99 / approval #999"
     wf_id, ap_id = 99, 999
-    ctrl_hint = f"{s.controller_host.rstrip('/')}/#/jobs/workflow/99" if s.controller_host else ""
+    ctrl_hint = resolve_workflow_job_browser_url(s, {}, wf_id)
 
     kw = dict(
         workflow_job_id=wf_id,

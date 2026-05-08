@@ -19,6 +19,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
 
 from . import controller as ctl
+from . import ui_links
 from .mailer import send_approval_mail
 from .settings import Settings, load_settings
 from .tokens import sign_action, verify
@@ -192,11 +193,8 @@ async def controller_hook(request: Request) -> dict[str, Any]:
             status_code=502,
             detail=f"Controller API HTTP {e.response.status_code} fetching workflow job.",
         ) from e
-    controller_url_hint = (
-        wf_detail.get("related", {}).get("web_url")
-        or wf_detail.get("url")
-        or (wf_detail.get("related", {}).get("ui_url") if isinstance(wf_detail.get("related"), dict) else "")
-        or ""
+    controller_url_hint = ui_links.resolve_workflow_job_browser_url(
+        s, wf_detail, wf_job_id
     )
 
     max_age = s.token_max_age_hours * 3600
@@ -256,7 +254,7 @@ async def approve_action(token: str) -> HTMLResponse:
         if wf_job_id is None:
             raise HTTPException(status_code=500, detail="Controller response missing workflow_job on approval.")
         wf = ctl.workflow_job_detail(s, wf_job_id)
-        hint = wf.get("related", {}).get("web_url") or wf.get("url") or ""
+        hint = ui_links.resolve_workflow_job_browser_url(s, wf, wf_job_id)
         return HTMLResponse(_html_result("Approved", f"Approval job {aid} was approved.", str(hint)))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -273,7 +271,7 @@ async def deny_action(token: str) -> HTMLResponse:
         if wf_job_id is None:
             raise HTTPException(status_code=500, detail="Controller response missing workflow_job on approval.")
         wf = ctl.workflow_job_detail(s, wf_job_id)
-        hint = wf.get("related", {}).get("web_url") or wf.get("url") or ""
+        hint = ui_links.resolve_workflow_job_browser_url(s, wf, wf_job_id)
         return HTMLResponse(_html_result("Denied", f"Approval job {aid} was denied.", str(hint)))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
