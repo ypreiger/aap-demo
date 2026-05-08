@@ -175,8 +175,8 @@ Hard-refresh the browser after long-running sync tasks finish.
 
 Controller does not populate Hub. For job templates that install collections from Galaxy or Hub, see:
 
-- [CONTROLLER_COLLECTIONS_VISIBILITY.md](CONTROLLER_COLLECTIONS_VISIBILITY.md)
-- [ANSIBLE_COLLECTIONS.md](ANSIBLE_COLLECTIONS.md)
+- [COLLECTION_CONTROLLER.md](COLLECTION_CONTROLLER.md)
+- [COLLECTION_REFERENCE.md](COLLECTION_REFERENCE.md)
 
 ---
 

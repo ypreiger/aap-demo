@@ -81,5 +81,5 @@ kubectl delete namespace/TARGET --ignore-not-found
 
 ## Related
 
-- UC-06 email approval pattern: [`UC-06-approve-by-email-buttons.md`](UC-06-approve-by-email-buttons.md)
+- UC-06 email approval pattern: [`UC-06-approve-by-email-buttons.md`](USECASE_UC06_approve_by_email_buttons.md)
 - Consolidated runbook: [`../CLIENT_RUNBOOK.md`](../CLIENT_RUNBOOK.md)

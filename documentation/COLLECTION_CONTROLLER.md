@@ -9,7 +9,7 @@ Controller does **not** show a separate “Collections” browser for everything
 
 If collections “are not there,” it is usually one of: **collection download disabled globally**, **no Galaxy / Automation Hub credential on the organization**, **project never synced successfully**, or the **EE** you selected does not contain the modules you expect.
 
-If Hub’s **browse** UI is empty despite a healthy Hub deployment, validate **published vs community** filters and **`community`** repo sync (**[HUB_COLLECTIONS.md](HUB_COLLECTIONS.md)**).
+If Hub’s **browse** UI is empty despite a healthy Hub deployment, validate **published vs community** filters and **`community`** repo sync (**[COLLECTION_HUB.md](COLLECTION_HUB.md)**).
 
 ---
 
@@ -48,7 +48,7 @@ Open the latest **Project Update** job → **Output**: confirm tasks tagged with
 
 For **repeatable** jobs, many teams **bake** collections into a **custom EE** using [`execution-environment/`](../execution-environment/) and point job templates at that image. That path does not replace project sync requirements if you rely on **dynamic** install from `requirements.yml`; it **does** give you a known-good image if project-side install is disabled or blocked.
 
-Details: [`documentation/ANSIBLE_COLLECTIONS.md`](ANSIBLE_COLLECTIONS.md).
+Details: [`documentation/COLLECTION_REFERENCE.md`](COLLECTION_REFERENCE.md).
 
 ---
 

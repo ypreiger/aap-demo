@@ -4,9 +4,9 @@ Canonical copy of this repository: **[https://github.com/ypreiger/aap-demo](http
 
 This repo’s **`collections/requirements.yml`** lists **Galaxy Ansible** collections for common infrastructure targets. It is oriented toward **Automation Controller**: either **sync Galaxy** into an Execution Environment image, or **`ansible-builder`** with the provided **`execution-environment/`** scaffolding.
 
-If jobs fail with **missing collections** or project updates never install them, start with [**Controller: collections visibility and sync**](CONTROLLER_COLLECTIONS_VISIBILITY.md) (Galaxy credential on the **organization**, global **Enable Collection(s) Download**, then **sync** the Git project—or run **`scripts/controller-wire-galaxy-for-default-org.sh`**).
+If jobs fail with **missing collections** or project updates never install them, start with [**Controller: collections visibility and sync**](COLLECTION_CONTROLLER.md) (Galaxy credential on the **organization**, global **Enable Collection(s) Download**, then **sync** the Git project—or run **`scripts/controller-wire-galaxy-for-default-org.sh`**).
 
-If **Automation Hub** itself lists **no** collections under the gateway **`/content/collections`** UI, mirror **`collections/requirements.yml`** into the **`community`** repository with **`scripts/hub-sync-community-from-requirements.sh`** — rationale and troubleshooting: [**Automation Hub collections (empty UI)**](HUB_COLLECTIONS.md).
+If **Automation Hub** itself lists **no** collections under the gateway **`/content/collections`** UI, mirror **`collections/requirements.yml`** into the **`community`** repository with **`scripts/hub-sync-community-from-requirements.sh`** — rationale and troubleshooting: [**Automation Hub collections (empty UI)**](COLLECTION_HUB.md).
 
 ---
 

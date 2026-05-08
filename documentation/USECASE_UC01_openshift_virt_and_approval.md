@@ -6,9 +6,9 @@ Provision BOM namespace and Fedora VMs. A **manual approval** separates foundati
 
 ## Prerequisites
 
-- **`../PLAN.md`** execution order (mock infra, tower CRs applied, project sync).
-- **Hub / collections:** **[`UC-05-inspect-hub-collections-bluecoat.md`](UC-05-inspect-hub-collections-bluecoat.md)** or **`../../documentation/HUB_COLLECTIONS.md`** + **`../../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`**.
-- **Mock route** for survey URL: `oc apply -k ../openshift/mock-infra` → `bash ../scripts/resolve-mock-route.sh`
+- **`../workshop/PLAN.md`** execution order (mock infra, tower CRs applied, project sync).
+- **Hub / collections:** **[`USECASE_UC05_inspect_hub_collections_bluecoat.md`](USECASE_UC05_inspect_hub_collections_bluecoat.md)** or **`./COLLECTION_HUB.md`** + **`./COLLECTION_CONTROLLER.md`**.
+- **Mock route** for survey URL: `oc apply -k workshop/openshift/mock-infra` (from repo root) → `bash workshop/scripts/resolve-mock-route.sh`
 
 ---
 
@@ -30,7 +30,7 @@ Provision BOM namespace and Fedora VMs. A **manual approval** separates foundati
 7. Wait until job **`bom-project-foundation`** completes (green) and the flow pauses at **`bom-approve-before-vms`**.
 8. **Approval**:
    - **UI:** open the approval node → **Approve** (or **Deny** to stop before VMs).
-   - **Email / buttons:** complete **[`UC-06-approve-by-email-buttons.md`](UC-06-approve-by-email-buttons.md)** **Path B** first, then use mail for the same gate when you re-run this workflow.
+   - **Email / buttons:** complete **[`UC-06-approve-by-email-buttons.md`](USECASE_UC06_approve_by_email_buttons.md)** **Path B** first, then use mail for the same gate when you re-run this workflow.
 9. After **Approve**, **`workshop-bom-project-vms`** runs, then downstream jobs (netpol audit, mocks) follow automatically—see UC-02 and UC-03 for what each stage asserts.
 
 ### What you should see

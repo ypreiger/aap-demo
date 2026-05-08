@@ -10,10 +10,10 @@ Approve or deny a paused workflow from the **email** message (**Approve** / **De
 
 | # | Task | Detail |
 |---|------|--------|
-| 1 | **`email-plugin` deployed** in **`namespace: aap`** | README: **`../../email-plugin/README.md`**. SMTP enabled, e.g. `SMTP_PASSWORD='…' DISABLE_SMTP=false ../../email-plugin/scripts/deploy-email-plugin.sh`. |
+| 1 | **`email-plugin` deployed** in **`namespace: aap`** | README: **`../email-plugin/README.md`**. SMTP enabled, e.g. `SMTP_PASSWORD='…' DISABLE_SMTP=false ../email-plugin/scripts/deploy-email-plugin.sh`. |
 | 2 | **Controller Base URL set** | **Administration → Settings → System** — **Base URL of the service** is the live Controller HTTPS prefix. |
-| 3 | **Webhook notification registered** matching **your demo workflow** | Playbook **`../../email-plugin/playbooks/register_controller_webhook_notification.yml`**. Defaults attach to **`bom-project-deploy`** only. |
-| 4 | **(Optional)** Mail also for **`workshop-multi-domain`** | Second playbook run — **`../../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`** (section *Same webhook for workshop-multi-domain*). |
+| 3 | **Webhook notification registered** matching **your demo workflow** | Playbook **`../email-plugin/playbooks/register_controller_webhook_notification.yml`**. Defaults attach to **`bom-project-deploy`** only. |
+| 4 | **(Optional)** Mail also for **`workshop-multi-domain`** | Second playbook run — see **`./EMAIL_APPROVAL.md`** §4 (*Other workflow job templates*). |
 
 **Without steps 1–3, no mail arrives** — use **Success criteria (negative)** below.
 
@@ -60,7 +60,7 @@ WH="https://${EP}/v1/hooks/controller"
 CH="$(oc get secret aap-controller-api -n aap -o jsonpath='{.data.host}' | base64 -d)"
 TK="$(oc get secret aap-controller-api -n aap -o jsonpath='{.data.token}' | base64 -d)"
 
-ansible-playbook ../../email-plugin/playbooks/register_controller_webhook_notification.yml \
+ansible-playbook ../email-plugin/playbooks/register_controller_webhook_notification.yml \
   -e controller_host="$CH" \
   -e controller_oauth_token="$TK" \
   -e webhook_target_url="$WH" \
@@ -94,11 +94,11 @@ If **`email-plugin` is intentionally not deployed**: use **fallback** approval i
 |---------|------|
 | No mail | **`DISABLE_SMTP`**, empty **`SMTP_PASSWORD`** (Gmail **App Password** in **`Secret/email-plugin-secrets`**), egress block, **`email-plugin`** pod CrashLoop, wrong **`DEFAULT_TO_EMAIL`**, webhook not associated with **your** WFJT. |
 | Notification **Webhook 422** | Body must carry **`workflow_job_id`** from **`{{ job.id }}`** (parent workflow job) on modern Controller — re-run **`register_controller_webhook_notification.yml`** defaults; **`email-plugin/README.md`**. |
-| Mail but buttons 401/403/400 | Signing secret **`SIGNING_SECRET`**, token expiry (**`TOKEN_MAX_AGE_HOURS`**), stale Deployment after Secret edits. **`../../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`** table. |
+| Mail but buttons 401/403/400 | Signing secret **`SIGNING_SECRET`**, token expiry (**`TOKEN_MAX_AGE_HOURS`**), stale Deployment after Secret edits. **`./EMAIL_APPROVAL.md`** table. |
 | Works for **`bom`** but not **workshop** | Run **Path B** registration snippet. |
 
 ## Related docs
 
-- **`../../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`**
-- **`../../email-plugin/README.md`**
+- **`./EMAIL_APPROVAL.md`**
+- **`../email-plugin/README.md`**
 - Full narrative order: **`../CLIENT_RUNBOOK.md`** §5 (email) and §6 (`workshop-multi-domain`).

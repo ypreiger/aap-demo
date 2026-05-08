@@ -4,7 +4,7 @@
 #
 # Why: Galaxy NG / Pulp on AAP may reject syncing galaxy.ansible.com without a
 # requirements_file — the Hub UI can show an empty collections list until community
-# content exists. See documentation/HUB_COLLECTIONS.md.
+# content exists. See documentation/COLLECTION_HUB.md.
 #
 # Prerequisites: oc (logged in), curl, jq; Hub admin password in OpenShift Secret.
 #

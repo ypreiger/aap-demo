@@ -18,4 +18,4 @@ The image inherits Galaxy dependencies from **`../collections/requirements.yml`*
 
 **Controller:** Push the tagged image to a registry your Controller can pull, register it under **Automation → Execution environments**, then attach it to your Job Templates.
 
-For pinning and certified-content strategy, see **`../documentation/ANSIBLE_COLLECTIONS.md`**.
+For pinning and certified-content strategy, see **`../documentation/COLLECTION_REFERENCE.md`**.

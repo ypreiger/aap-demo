@@ -35,7 +35,7 @@ References: [Installing AAP on OpenShift 2.6](https://docs.redhat.com/en/documen
    oc apply -k aap-yamls/tower/
    ```
 
-   **Collections** (`collections/requirements.yml`): Controller does **not** infer Galaxy credentials from `AnsibleProject` alone. Use [**documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md**](../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md) (UI) or **`../scripts/controller-wire-galaxy-for-default-org.sh`** (API). Optional GitOps YAML: **`tower/ansiblecredential-galaxy-ansible-com.yaml`** (`oc apply -f …`, not bundled in `kustomization.yaml` by default).
+   **Collections** (`collections/requirements.yml`): Controller does **not** infer Galaxy credentials from `AnsibleProject` alone. Use [**documentation/COLLECTION_CONTROLLER.md**](../documentation/COLLECTION_CONTROLLER.md) (UI) or **`../scripts/controller-wire-galaxy-for-default-org.sh`** (API). Optional GitOps YAML: **`tower/ansiblecredential-galaxy-ansible-com.yaml`** (`oc apply -f …`, not bundled in `kustomization.yaml` by default).
 
    **Definitions only** (`WorkflowTemplate` / `JobTemplate` sync to Controller). To also **submit a workflow job** from OpenShift (Tech Preview **`AnsibleWorkflow`**), use an overlay that layers a run on top of `tower/`:
 
@@ -71,7 +71,7 @@ BOM layouts:
 Automation:
 
 - **`playbooks/project_foundation.yml`** — create namespace → **validate Active** → SA → **validate exists** → NetworkPolicy → **validate exists**.
-- **`playbooks/project_vms.yml`** — prerequisite checks foundation objects, then applies & validates Fedora **VirtualMachine** CRs (**OpenShift Virtualization / KubeVirt**). Survey / extra vars documented in **`documentation/VIRTUALIZATION_WORKFLOW_SURVEY.md`**.
+- **`playbooks/project_vms.yml`** — prerequisite checks foundation objects, then applies & validates Fedora **VirtualMachine** CRs (**OpenShift Virtualization / KubeVirt**). Survey / extra vars documented in **`documentation/VIRT_WORKFLOW_SURVEY.md`**.
 
 Tower (YAML in **`tower/`**):
 
@@ -81,7 +81,7 @@ Tower (YAML in **`tower/`**):
 | **`bom-project-foundation`** | Job template → foundation playbook (uses credential **`openshift-bom-target`**). |
 | **`bom-project-vms`** | Job template → VM playbook **only after** foundation succeeds. |
 | **`bom-project-deploy`** | Generic workflow (**not** proj1/proj2-specific). **Survey** prompts for **`project_name`** plus OpenShift Virt options (**cluster instance type vs manual CPU/RAM**, **root disk**, **extra disk**, datasource settings, cloud-init password). **Prompt on launch → Variables** is enabled so API / **`AnsibleWorkflow`** launches can supply **`extra_vars`**. Order: foundation → **`workflow_approval`** `bom-approve-before-vms` → VMs. |
-| **`email-e2e-ns-netpol`** | Minimal Mail E2E: **`email-e2e-create-namespace`** → **`bom-approve-before-vms`** (register webhook with **`scripts/register-webhook-email-e2e-ns-netpol.sh`**) → **`email-e2e-apply-netpol`** (deny‑all **`NetworkPolicy`**). Survey **`target_namespace`**. See **`../workshop/use-cases/UC-07-email-e2e-namespace-netpol.md`**. |
+| **`email-e2e-ns-netpol`** | Minimal Mail E2E: **`email-e2e-create-namespace`** → **`bom-approve-before-vms`** (register webhook with **`scripts/register-webhook-email-e2e-ns-netpol.sh`**) → **`email-e2e-apply-netpol`** (deny‑all **`NetworkPolicy`**). Survey **`target_namespace`**. See **`../documentation/USECASE_UC07_email_e2e_namespace_netpol.md`**. |
 | **`AnsibleWorkflow` `awf-bom-project-deploy-proj1`** (overlay) | Submits **one Workflow Job** to Controller for **`bom-project-deploy`** with **`project_name: proj1`** (survey values via `extra_vars`). Declared under **`tower-full-run-proj1/`**; **`proj2`** variant in **`tower-full-run-proj2/`**. |
 
 `WorkflowTemplate` (CR kind) maps to Automation Controller **Workflow Job Template**; **`AnsibleWorkflow`** maps to a **Workflow Job execution** initiated from OpenShift once the CR is reconciled.
@@ -95,13 +95,13 @@ oc apply -k aap-yamls/tower/
 
 Re-sync Git project in Controller after pushing, then **`oc apply -k aap-yamls/tower/`** if you reconcile from Git.
 
-Approval email (**click Approve/Deny**, Gmail SMTP): this repo’s [`email-plugin/`](../email-plugin/README.md) plus [`documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`](../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md). Native Controller-only SMTP playbook: **`playbooks/controller_configure_bom_approval_email.yml`** (`extras/approval-email.vars.yml`).
+Approval email (**click Approve/Deny**, Gmail SMTP): this repo’s [`email-plugin/`](../email-plugin/README.md) plus [`documentation/EMAIL_APPROVAL.md`](../documentation/EMAIL_APPROVAL.md). Native Controller-only SMTP playbook: **`playbooks/controller_configure_bom_approval_email.yml`** (`extras/approval-email.vars.yml`).
 
 ## Multi-domain workshop chain
 
 [`workshop/README.md`](../workshop/README.md) covers **`workshop-multi-domain`** (**`workflowtemplate-workshop-multi-domain.yaml`**) chaining Virt foundation → approval **`bom-approve-before-vms`** → **`workshop-bom-project-vms`** → netpol audit → mocked F5/VMware/Blue Coat playbooks driven by **`workshop/openshift/mock-infra`** Route. Apply mock kustomization into **`namespace: aap`**, sync Git, verify with **`bash workshop/scripts/run-e2e-multi-domain-workflow.sh`**.
 
-**Git → EDA → approved execution:** deploy **`workshop/git-webhook-bridge`** (GitHub webhook) and apply **`workflowtemplate-workshop-projects-git-driven`** so pushes under **`projects/**`** sync the Controller project, emit an optional EDA JSON envelope, and enqueue workflow **`workshop-projects-git-driven`** (first node **`bom-approve-before-vms`**). See **`../documentation/GIT_WEBHOOK_EDA.md`**. 
+**Git → EDA → approved execution:** deploy **`workshop/git-webhook-bridge`** (GitHub webhook) and apply **`workflowtemplate-workshop-projects-git-driven`** so pushes under **`projects/**`** sync the Controller project, emit an optional EDA JSON envelope, and enqueue workflow **`workshop-projects-git-driven`** (first node **`bom-approve-before-vms`**). See **`../documentation/EDA_GIT_WEBHOOK.md`**. 
 
 If **`bom-project-deploy`** shows an **empty Workflow Visualizer** or `WorkflowTemplate` status reports an error:
 

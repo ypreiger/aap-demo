@@ -1,6 +1,6 @@
 ---
 # Defaults for BOM VM provisioning — overridden by Workflow survey / JT extra_vars.
-# See documentation/VIRTUALIZATION_WORKFLOW_SURVEY.md.
+# See documentation/VIRT_WORKFLOW_SURVEY.md.
 
 # Which fedora-vm-* instances to provision (logical names inside project_name namespace).
 bom_vms:

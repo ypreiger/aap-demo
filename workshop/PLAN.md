@@ -2,7 +2,7 @@
 
 Canonical repository: [ypreiger/aap-demo](https://github.com/ypreiger/aap-demo).
 
-This document is the **execution contract** for operators and automation agents. It lists objectives, cluster wiring, and verification order.
+**Greenfield cluster:** ordered install is **[`documentation/INSTALL_OPENSHIFT.md`](../documentation/INSTALL_OPENSHIFT.md)**. This file is the **execution contract** for operators and automation agents after the platform exists.
 
 ## Objectives
 
@@ -25,19 +25,19 @@ This document is the **execution contract** for operators and automation agents.
 
 ## Deliverables checklist
 
-- [x] **Use-case steps** (**[`use-cases/README.md`](use-cases/README.md)** UC-01–UC-07; UC-05 Hub + Blue Coat, UC-06 email approval, UC-07 namespace + netpol) and **[`CLIENT_RUNBOOK.md`](CLIENT_RUNBOOK.md)**  
+- [x] **Use-case steps** (**[`documentation/USECASE_INDEX.md`](../documentation/USECASE_INDEX.md)** UC-01–UC-07) and **[`CLIENT_RUNBOOK.md`](CLIENT_RUNBOOK.md)**  
 - [x] Mock infra Deployment + Route in `aap` namespace  
 - [x] Workshop job templates + workflow (Tower resource operator CRs)  
 - [x] E2E script with **auto-approve** for CI-like verification  
 - [x] Cleanup helper for stale legacy CRs / optional Controller objects  
 - [x] Agent instruction packs (`workshop/agents/`)  
-- [x] Per-domain narratives (`workshop/use-cases/`)  
+- [x] Per-domain narratives (`documentation/USECASE_*.md`)  
 - [x] Email subject prefix + richer template context  
 
 ## Execution order
 
-1. **Automation Hub**: if **`/content/collections`** stays empty after install, mirror **`collections/requirements.yml`** into the **`community`** repo (**`documentation/HUB_COLLECTIONS.md`** + **`scripts/hub-sync-community-from-requirements.sh`**). In the gateway UI choose **Community** if **Published** is still blank (until **rh-certified** sync + token).  
-2. `collections` + EE: enable Galaxy sync (see **`documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`**).  
+1. **Automation Hub**: if **`/content/collections`** stays empty after install, mirror **`collections/requirements.yml`** into the **`community`** repo (**`documentation/COLLECTION_HUB.md`** + **`scripts/hub-sync-community-from-requirements.sh`**). In the gateway UI choose **Community** if **Published** is still blank (until **rh-certified** sync + token).  
+2. `collections` + EE: enable Galaxy sync (see **`documentation/COLLECTION_CONTROLLER.md`**).  
 3. `oc apply -k workshop/openshift/mock-infra`  
 4. `oc apply -k aap-yamls/tower/` → wait until **workshop-multi-domain** WT exists  
 5. Git project **Sync** (or run `workshop/scripts/run-e2e-multi-domain-workflow.sh` which triggers update)  
@@ -52,13 +52,13 @@ This document is the **execution contract** for operators and automation agents.
 3. Deploy **`workshop/git-webhook-bridge`**; set **`EDA_WEBHOOK_URL`** / **`GITHUB_WEBHOOK_SECRET`** when ready.
 4. Register repo webhook **`POST …/v1/github`** targeting the bridge Route.
 
-Incremental execution uses marker sets produced by **`app/classify.py`** (`openshift_virt` vs **`openshift_ns_bootstrap`** vs **`openshift_netpol_audit`**, domain YAML keys). Details: **`documentation/GIT_WEBHOOK_EDA.md`**.
+Incremental execution uses marker sets produced by **`app/classify.py`** (`openshift_virt` vs **`openshift_ns_bootstrap`** vs **`openshift_netpol_audit`**, domain YAML keys). Details: **`documentation/EDA_GIT_WEBHOOK.md`**.
 
 ## Risks / mitigations
 
 | Risk | Mitigation |
 |------|-------------|
-| CNV quotas / flavours missing | Workflow survey knobs + doc `VIRTUALIZATION_WORKFLOW_SURVEY.md`; pick `manual` sizing if instances types unavailable |
+| CNV quotas / flavours missing | Workflow survey knobs + doc `documentation/VIRT_WORKFLOW_SURVEY.md`; pick `manual` sizing if instances types unavailable |
 | nginx image pull | Cluster pull-through; substitute mirrored `nginx-unprivileged` if deny-all |
 | EDA JWT / UI off | Smoke `curl`; rulebooks remain in **`workshop/rulebooks/`** |
 | RBAC granularity | Supplement script with Org Admin UI mapping |

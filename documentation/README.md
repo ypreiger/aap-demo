@@ -1,38 +1,72 @@
-# Documentation index (`aap-demo`)
+# Documentation (`aap-demo`)
 
-Use this index to open the right guide. All paths are relative to the repository root.
+All guides live under **`documentation/`**. The repository **[`README.md`](../README.md)** summarizes layout and quick checks; use this file as the **index** for setup and operations.
 
-## Automation Hub
+**New OpenShift cluster (full stack):** start with **[`INSTALL_OPENSHIFT.md`](INSTALL_OPENSHIFT.md)** — prerequisites, AAP instance, Hub and Controller collections, Tower CRs, mock infra, **`email-plugin`**, verification, and pointers to use cases.
 
-| Document | Purpose |
-|----------|---------|
-| [HUB_COLLECTIONS.md](HUB_COLLECTIONS.md) | Empty Collections UI; **Community**; **rh-certified** vs **`published`** mirror; **offline token**; OpenShift **Secret** |
-| [CONTROLLER_COLLECTIONS_VISIBILITY.md](CONTROLLER_COLLECTIONS_VISIBILITY.md) | Controller project sync, Galaxy/Hub credentials, EE |
+---
 
-## Automation Controller and workflows
+## `COLLECTION_*` — Automation Hub and Controller
 
-| Document | Purpose |
-|----------|---------|
-| [CONFIGURE_AAP_APPROVAL_EMAIL.md](CONFIGURE_AAP_APPROVAL_EMAIL.md) | Deploy **`email-plugin`**, register approval webhook, Controller base URL |
-| [EMAIL_APPROVAL_EDA_END_TO_END.md](EMAIL_APPROVAL_EDA_END_TO_END.md) | Controller → **`email-plugin`** → mail → optional EDA → REST approve/deny (diagrams) |
-| [ANSIBLE_COLLECTIONS.md](ANSIBLE_COLLECTIONS.md) | Collection choices (KubeVirt, VMware, F5, ProxySG patterns) |
-| [CONTROLLER_COLLECTIONS_VISIBILITY.md](CONTROLLER_COLLECTIONS_VISIBILITY.md) | How job templates resolve collections |
-| [VIRTUALIZATION_WORKFLOW_SURVEY.md](VIRTUALIZATION_WORKFLOW_SURVEY.md) | Surveys for OpenShift Virtualization / instance types |
-| [DOMAIN_INPUT_YAML.md](DOMAIN_INPUT_YAML.md) | Domain YAML under **`projects/*/domain/`** |
-| [GIT_WEBHOOK_EDA.md](GIT_WEBHOOK_EDA.md) | Git webhook → EDA / SCM sync / gated workflow |
+| File | Contents |
+|------|----------|
+| [COLLECTION_HUB.md](COLLECTION_HUB.md) | Hub UI filters; **community** sync; **rh-certified** / **published** mirror; offline token; scripts |
+| [COLLECTION_CONTROLLER.md](COLLECTION_CONTROLLER.md) | Project sync, Galaxy/Hub credential on organization, collection download, EE |
+| [COLLECTION_REFERENCE.md](COLLECTION_REFERENCE.md) | Which collections this repo uses (KubeVirt, VMware, F5, ProxySG patterns) |
 
-## Repository root
+Scripts: `scripts/hub-sync-community-from-requirements.sh`, `scripts/hub-sync-rh-certified-from-secret.sh`, `scripts/hub-sync-published-mirror-rh-certified.sh`.
 
-| Document | Purpose |
-|----------|---------|
-| [../README.md](../README.md) | Layout, basic three-playbook workflow, Controller checklist |
-| [../workshop/CLIENT_RUNBOOK.md](../workshop/CLIENT_RUNBOOK.md) | Operator steps: Hub, workflows, email approval |
-| [../workshop/use-cases/README.md](../workshop/use-cases/README.md) | UC-01–UC-07 index |
+---
 
-## Scripts (referenced by docs)
+## `EMAIL_*` — Approval mail and `email-plugin`
 
-| Script | Purpose |
-|--------|---------|
-| `scripts/hub-sync-community-from-requirements.sh` | Mirror **`collections/requirements.yml`** into Hub **community** |
-| `scripts/hub-sync-rh-certified-from-secret.sh` | Apply offline token from **`rh-hub-offline-token`** and sync **rh-certified** |
-| `scripts/hub-sync-published-mirror-rh-certified.sh` | Populate **`published`** repo so gateway **Published** lists certified collections |
+| File | Contents |
+|------|----------|
+| [EMAIL_APPROVAL.md](EMAIL_APPROVAL.md) | Flow diagrams, deploy, webhook registration, extra workflows, optional SMTP-only path, troubleshooting |
+
+Pod reference: [`email-plugin/README.md`](../email-plugin/README.md).
+
+---
+
+## `EDA_*` — Git webhook and Event-Driven Ansible
+
+| File | Contents |
+|------|----------|
+| [EDA_GIT_WEBHOOK.md](EDA_GIT_WEBHOOK.md) | **`workshop/git-webhook-bridge`**, EDA envelope, Controller SCM sync, gated workflow |
+
+---
+
+## `USECASE_*` — Operator procedures (UC-01–UC-07)
+
+Index: [USECASE_INDEX.md](USECASE_INDEX.md)
+
+| UC | File |
+|----|------|
+| UC-01 | [USECASE_UC01_openshift_virt_and_approval.md](USECASE_UC01_openshift_virt_and_approval.md) |
+| UC-02 | [USECASE_UC02_network_policy_audit.md](USECASE_UC02_network_policy_audit.md) |
+| UC-03 | [USECASE_UC03_mock_f5_vmware_bluecoat.md](USECASE_UC03_mock_f5_vmware_bluecoat.md) |
+| UC-04 | [USECASE_UC04_eda_awareness.md](USECASE_UC04_eda_awareness.md) |
+| UC-05 | [USECASE_UC05_inspect_hub_collections_bluecoat.md](USECASE_UC05_inspect_hub_collections_bluecoat.md) |
+| UC-06 | [USECASE_UC06_approve_by_email_buttons.md](USECASE_UC06_approve_by_email_buttons.md) |
+| UC-07 | [USECASE_UC07_email_e2e_namespace_netpol.md](USECASE_UC07_email_e2e_namespace_netpol.md) |
+
+Condensed operator path: [../workshop/CLIENT_RUNBOOK.md](../workshop/CLIENT_RUNBOOK.md).
+
+---
+
+## `DOMAIN_*` / `VIRT_*`
+
+| File | Contents |
+|------|----------|
+| [DOMAIN_INPUT.md](DOMAIN_INPUT.md) | Domain YAML under **`projects/*/domain/`** |
+| [VIRT_WORKFLOW_SURVEY.md](VIRT_WORKFLOW_SURVEY.md) | OpenShift Virtualization / workflow survey fields |
+
+---
+
+## Workshop (non-doc)
+
+| Path | Role |
+|------|------|
+| [../workshop/PLAN.md](../workshop/PLAN.md) | Rollout order and checklist |
+| [../workshop/WORKSHOP_RBAC.md](../workshop/WORKSHOP_RBAC.md) | Controller RBAC notes |
+| [../workshop/git-webhook-bridge/](../workshop/git-webhook-bridge/) | Bridge source |

@@ -14,6 +14,6 @@ Turn **workshop/PLAN.md** into a sequenced backlog: dependencies first (mock Rou
 
 ## Outputs
 
-- **Client steps** stay in **`workshop/use-cases/README.md`** + **UC-*.md** when adding or renaming flows.
+- **Client steps** stay in **`documentation/USECASE_INDEX.md`** + **`documentation/USECASE_*.md`** when adding or renaming flows (stub **`workshop/use-cases/README.md`** points there).
 - Updated **PLAN.md** checkboxes with dates/owners optional.
 - PR-sized commits: `[workshop] …` subject prefix.
