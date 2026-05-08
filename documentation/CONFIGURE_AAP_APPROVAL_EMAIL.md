@@ -62,6 +62,16 @@ ansible-playbook email-plugin/playbooks/register_controller_webhook_notification
 
 This creates notification **`bom-email-plugin-webhook`** and associates it with workflow **`bom-project-deploy`** approvals. The default Jinja outputs **`workflow_job_id`** from **`{{ job.id }}`** (parent workflow job id on current Controller — see **`email-plugin/README.md`**); **`email-plugin`** resolves the pending **`workflow_approvals/{id}`** via the API.
 
+### Same webhook for **`email-e2e-ns-netpol`** (UC-07 minimal mail demo)
+
+Uses the **same** approval unified template (**`bom-approve-before-vms`**) as **`bom-project-deploy`**, but it is another **workflow job template** — Controller only fires webhooks tied to **that** template. Register once:
+
+```bash
+bash scripts/register-webhook-email-e2e-ns-netpol.sh
+```
+
+From repo root (`aap-demo`), with **`email-plugin`** Route up and **`Secret/aap-controller-api`** valid. Equivalent manual **`ansible-playbook`**: **`workflow_name=email-e2e-ns-netpol`**, **`notification_name=email-e2e-email-plugin-webhook`**. See **`workshop/use-cases/UC-07-email-e2e-namespace-netpol.md`**.
+
 ### Same webhook for **`workshop-multi-domain`**
 
 The playbook’s default **`workflow_name`** is **`bom-project-deploy`**. The multi-domain workflow (**`workshop-multi-domain`**) uses the **same** approval template (**`bom-approve-before-vms`**) but is a **different** workflow job template, so Controller does **not** automatically reuse the webhook. Run registration again:
