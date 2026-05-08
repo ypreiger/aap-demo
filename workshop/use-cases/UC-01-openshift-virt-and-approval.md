@@ -8,6 +8,12 @@ Operators provision a BOM namespace and Fedora VMs for a tenant. A **manual appr
 
 Follow **`../PLAN.md`**. Automation Hub **`/content/collections`**: **`community`** sync + UI filter (**[`../../documentation/HUB_COLLECTIONS.md`](../../documentation/HUB_COLLECTIONS.md)**). Controller **`collections/requirements.yml`**: **`../../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`**.
 
+## Run this in AAP (step-by-step)
+
+See **`workshop-multi-domain`** in **[`../CLIENT_RUNBOOK.md` §6](../CLIENT_RUNBOOK.md#6-workflow-workshop-multi-domain-step-by-step)** (survey **`project_name`**, **`workshop_mock_base_url`**, then approval **`bom-approve-before-vms`**).
+
+For **clickable email Approve/Deny**, the default webhook is tied to **`bom-project-deploy`** unless you register separately for **`workshop-multi-domain`** — **[`../CLIENT_RUNBOOK.md` §5](../CLIENT_RUNBOOK.md#5-email-approval-approve-and-deny-buttons-in-email)**.
+
 ## Controller objects
 
 - Workflow **`workshop-multi-domain`** (survey: **`project_name`**, **`workshop_mock_base_url`**)

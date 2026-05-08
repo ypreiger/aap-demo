@@ -8,6 +8,10 @@ After virtualization assets land, a **read-only** Ansible pass validates the den
 
 Follow **`../PLAN.md`**. Hub + Controller collections: **[`../../documentation/HUB_COLLECTIONS.md`](../../documentation/HUB_COLLECTIONS.md)**, **[`../../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`](../../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md)**.
 
+## Run this in AAP
+
+**`workshop-networkpolicy-audit`** runs inside **`workshop-multi-domain`** (after VMs). Sequence: **[`../CLIENT_RUNBOOK.md` §6](../CLIENT_RUNBOOK.md#6-workflow-workshop-multi-domain-step-by-step)** — expect NetworkPolicy asserts and annotation **`workshop.aap-demo.github.io/network-audit`**.
+
 ## Playbook
 
 `playbooks/workshop_networkpolicy_audit.yml`

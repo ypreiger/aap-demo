@@ -41,6 +41,21 @@ ansible-playbook email-plugin/playbooks/register_controller_webhook_notification
 
 This creates notification **`bom-email-plugin-webhook`** and associates it with workflow **`bom-project-deploy`** approvals. The default Jinja outputs JSON with **`approval_job_id`** only (AAP 4.7 webhook validation); the service resolves **`workflow_job_id`** via the Controller API.
 
+### Same webhook for **`workshop-multi-domain`**
+
+The playbook’s default **`workflow_name`** is **`bom-project-deploy`**. The multi-domain workflow (**`workshop-multi-domain`**) uses the **same** approval template (**`bom-approve-before-vms`**) but is a **different** workflow job template, so Controller does **not** automatically reuse the webhook. Run registration again:
+
+```bash
+ansible-playbook email-plugin/playbooks/register_controller_webhook_notification.yml \
+  -e controller_host="$CH" \
+  -e controller_oauth_token="$TK" \
+  -e webhook_target_url="$WH" \
+  -e workflow_name=workshop-multi-domain \
+  -e notification_name=workshop-email-plugin-webhook
+```
+
+Hands-on launcher steps for both workflows: **`workshop/CLIENT_RUNBOOK.md`** §5–6.
+
 ### Gmail specifics
 
 Use **SMTP App Password**, not your normal password. Populate **`Secret/email-plugin-secrets`** key **`SMTP_PASSWORD`** (deploy script forwards `SMTP_PASSWORD=...`). TLS stays enabled on **`smtp.gmail.com:587`**.

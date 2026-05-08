@@ -8,6 +8,10 @@ The bundled **EDA** instance exposes an external Route even when the UI is disab
 
 **`../PLAN.md`**; optional Hub browse path **[`../../documentation/HUB_COLLECTIONS.md`](../../documentation/HUB_COLLECTIONS.md)**.
 
+## Run this in AAP
+
+EDA is adjunct to the Controller workflows documented in **[`../CLIENT_RUNBOOK.md`](../CLIENT_RUNBOOK.md)**. Use **`bash workshop/scripts/verify-eda-route.sh`** ([§7 table — related docs](../CLIENT_RUNBOOK.md#7-related-documents)) and **`workshop/rulebooks/README.md`**.
+
 ## Exercises
 
 1. Run `bash workshop/scripts/verify-eda-route.sh` for a live smoke check.

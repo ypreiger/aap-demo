@@ -8,6 +8,12 @@ Once the cluster-side footprint exists, automation fans out to **classic infrast
 
 **`../PLAN.md`**, mock Route **`workshop-mock-infra`**, collections per **[`../../documentation/HUB_COLLECTIONS.md`](../../documentation/HUB_COLLECTIONS.md)**.
 
+## Run this in AAP
+
+**`workshop-mock-f5`**, **`workshop-mock-vmware`**, **`workshop-mock-bluecoat`** run in order inside **`workshop-multi-domain`**. Steps and expected log excerpts: **[`../CLIENT_RUNBOOK.md` §6](../CLIENT_RUNBOOK.md#6-workflow-workshop-multi-domain-step-by-step)**.
+
+**Blue Coat collection:** there is no standard Galaxy collection for ProxySG — see **[`../CLIENT_RUNBOOK.md` §3](../CLIENT_RUNBOOK.md#3-where-is-the-blue-coat-collection)**.
+
 ## Endpoints (Route `workshop-mock-infra`)
 
 | File | Simulated domain |

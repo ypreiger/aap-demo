@@ -2,10 +2,13 @@
 
 Companion code lives alongside the Ansible project under [`aap-demo`](../README.md).
 
+**Step-by-step in the AAP UI (workflows to launch, what to see, collections, Blue Coat, email buttons):** [`CLIENT_RUNBOOK.md`](CLIENT_RUNBOOK.md).
+
 ## Contents
 
 | Path | Meaning |
 |------|---------|
+| [`CLIENT_RUNBOOK.md`](CLIENT_RUNBOOK.md) | **Operator / client**: which template to run, approvals, Hub collections, importing collections, email Approve/Deny |
 | [`PLAN.md`](PLAN.md) | Consolidated rollout & verification plan |
 | [`agents/`](agents/) | System prompts for delegated “agents” (Cursor / humans) |
 | [`use-cases/`](use-cases/) | Short domain narratives + success criteria |
