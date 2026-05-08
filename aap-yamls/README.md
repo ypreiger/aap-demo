@@ -35,6 +35,8 @@ References: [Installing AAP on OpenShift 2.6](https://docs.redhat.com/en/documen
    oc apply -k aap-yamls/tower/
    ```
 
+   **Collections** (`collections/requirements.yml`): Controller does **not** infer Galaxy credentials from `AnsibleProject` alone. Use [**documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md**](../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md) (UI) or **`../scripts/controller-wire-galaxy-for-default-org.sh`** (API). Optional GitOps YAML: **`tower/ansiblecredential-galaxy-ansible-com.yaml`** (`oc apply -f …`, not bundled in `kustomization.yaml` by default).
+
    **Definitions only** (`WorkflowTemplate` / `JobTemplate` sync to Controller). To also **submit a workflow job** from OpenShift (Tech Preview **`AnsibleWorkflow`**), use an overlay that layers a run on top of `tower/`:
 
    ```bash
