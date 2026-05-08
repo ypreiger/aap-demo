@@ -28,3 +28,5 @@ Always queue an SCM **project update** for the Ansible project filtered by **`CO
 ## Gated Automation
 
 Webhook **never bypasses approvals**. It launches workflow **`workshop-projects-git-driven`**, whose **first node** waits on **`bom-approve-before-vms`** (same approval template as **`bom-project-deploy`** so one webhook + mail integration can cover both). To use a different gate, create another workflow approval template in Controller and update the **`WorkflowTemplate` CR**.
+
+**Bidirectional expectations:** this path is **Git → Controller sync → cluster**. It does **not** write cluster or survey-only changes back to Git. How to link **Controller Projects** to **`projects/<slug>/`**, and options for **cluster → Git**, are documented in [PROJECTS_GIT_SYNC.md](PROJECTS_GIT_SYNC.md).

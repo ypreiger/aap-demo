@@ -172,6 +172,8 @@ Fix failures using **[`workshop/PLAN.md`](../workshop/PLAN.md)** (execution orde
 
 Deploy **`workshop/git-webhook-bridge`**, apply **`workflowtemplate-workshop-projects-git-driven`**, register GitHub webhook — [EDA_GIT_WEBHOOK.md](EDA_GIT_WEBHOOK.md).
 
+For how **`projects/`** in Git maps to **one** Controller SCM project, approval semantics, and **cluster → Git** (not shipped), read [PROJECTS_GIT_SYNC.md](PROJECTS_GIT_SYNC.md).
+
 ---
 
 ## Phase 12 — Optional: workshop RBAC bootstrap
@@ -213,5 +215,6 @@ After the stack is up, walk scenarios **UC-01–UC-07**: [USECASE_INDEX.md](USEC
 | Manifest details | [../aap-yamls/README.md](../aap-yamls/README.md) |
 | Collections reference | [COLLECTION_REFERENCE.md](COLLECTION_REFERENCE.md) |
 | Domain YAML | [DOMAIN_INPUT.md](DOMAIN_INPUT.md) |
+| Git ↔ `projects/` layout | [PROJECTS_GIT_SYNC.md](PROJECTS_GIT_SYNC.md) |
 | Virt survey fields | [VIRT_WORKFLOW_SURVEY.md](VIRT_WORKFLOW_SURVEY.md) |
 | Doc index | [README.md](README.md) |

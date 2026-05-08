@@ -17,7 +17,7 @@
 
 **OpenShift Virtualization / surveys:** **[documentation/VIRT_WORKFLOW_SURVEY.md](documentation/VIRT_WORKFLOW_SURVEY.md)**.
 
-**BOM workflows** (`bom-project-deploy`, surveys): use **`project_name`** → **`aap-demo/projects/{project_name}/bom`**. Attach credential **`openshift-bom-target`** (OpenShift/Kubernetes API bearer token) to **`bom-project-foundation`** and **`bom-project-vms`**.
+**BOM workflows** (`bom-project-deploy`, surveys): use **`project_name`** → **`aap-demo/projects/{project_name}/bom`**. Attach credential **`openshift-bom-target`** (OpenShift/Kubernetes API bearer token) to **`bom-project-foundation`** and **`bom-project-vms`**. **Git ↔ cluster:** pushes under **`projects/`** can drive sync + gated workflows; cluster-only changes are not pushed back to Git — see **[documentation/PROJECTS_GIT_SYNC.md](documentation/PROJECTS_GIT_SYNC.md)**.
 
 **Approval email:** **`email-plugin/`** + **[documentation/EMAIL_APPROVAL.md](documentation/EMAIL_APPROVAL.md)**.
 

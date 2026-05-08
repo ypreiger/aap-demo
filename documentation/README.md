@@ -54,12 +54,13 @@ Condensed operator path: [../workshop/CLIENT_RUNBOOK.md](../workshop/CLIENT_RUNB
 
 ---
 
-## `DOMAIN_*` / `VIRT_*`
+## `DOMAIN_*` / `VIRT_*` / Git layout
 
 | File | Contents |
 |------|----------|
 | [DOMAIN_INPUT.md](DOMAIN_INPUT.md) | Domain YAML under **`projects/*/domain/`** |
 | [VIRT_WORKFLOW_SURVEY.md](VIRT_WORKFLOW_SURVEY.md) | OpenShift Virtualization / workflow survey fields |
+| [PROJECTS_GIT_SYNC.md](PROJECTS_GIT_SYNC.md) | Controller **Project** (SCM) vs **`projects/<slug>/`**, Git→cluster vs cluster→Git |
 
 ---
 

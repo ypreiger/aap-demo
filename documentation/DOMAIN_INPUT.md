@@ -2,6 +2,8 @@
 
 Workshop artefacts live under **`projects/<name>/domain/*.yaml`** (committed next to BOM `bom/` folders).
 
+**SCM layout vs Controller “Project”:** see [PROJECTS_GIT_SYNC.md](PROJECTS_GIT_SYNC.md) — one synced repo contains many **`projects/<slug>/`** trees; surveys use **`project_name`** = **`<slug>`**.
+
 Controllers map Git changes beneath those directories to **`domain_firewall`**, **`domain_f5`**, **`domain_bluecoat`** flags in **`workshop/git-webhook-bridge`**, skipping automation when untouched.
 
 ## Firewall (`FirewallRuleIntentList`)
