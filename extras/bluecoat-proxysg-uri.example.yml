@@ -1,0 +1,31 @@
+---
+# Example skeleton: ProxySG / Blue Coat when no Galaxy collection exists.
+# Replace URL, methods, and payloads with what your SGOS + management policy supports
+# (consult Broadcom ProxySG admin / API docs for your firmware).
+#
+# Usage (locally / with a machine credential that can reach the appliance):
+#   ansible-playbook extras/bluecoat-proxysg-uri.example.yml \
+#     -e proxysg_manage_url='https://proxysg.example.com:8082/...' \
+#     -e proxysg_manage_user='automation' \
+#     -e proxysg_manage_password='REDACTED'
+#
+# Prefer vaulted variables in real environments.
+- name: ProxySG REST-style call (example pattern only)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    proxysg_manage_url: "https://changeme.example.invalid:8082/REST/config/1.0"
+    proxysg_manage_user: "automation"
+    proxysg_manage_password: "CHANGEME"
+  tasks:
+    - name: Placeholder — enable when you have a supported HTTP API on your appliances
+      ansible.builtin.uri:
+        url: "{{ proxysg_manage_url }}"
+        method: GET
+        force_basic_auth: true
+        user: "{{ proxysg_manage_user }}"
+        password: "{{ proxysg_manage_password }}"
+        validate_certs: true
+        status_code: [200, 204]
+      when: false

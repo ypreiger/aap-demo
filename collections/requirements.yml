@@ -1,4 +1,36 @@
 ---
+# Installed via: ansible-galaxy collection install -r collections/requirements.yml
+# Automation Controller → sync Galaxy content or bake into your Execution Environment
+# (see documentation/ANSIBLE_COLLECTIONS.md).
 collections:
+  # --- BOM / Kubernetes & OpenShift (API + manifests) ---
+  # Used by BOM playbooks (kubernetes.core modules against the cluster API).
+  # OpenShift Virtualization / CNV VMs are Kubernetes CRDs; kubernetes.core applies them.
   - name: kubernetes.core
+    source: https://galaxy.ansible.com
+
+  # Convenience modules for VirtualMachine CRs where you prefer kubevirt.foo over raw manifests.
+  - name: community.kubevirt
+    source: https://galaxy.ansible.com
+
+  # Optional: OpenShift‑specific helpers (routes, DeploymentConfig–era patterns).
+  # Pin or drop if unused; BOM in this repo is Kubernetes‑API‑first.
+  - name: community.okd
+    source: https://galaxy.ansible.com
+
+  # Useful shared connection/filter plugins alongside network modules.
+  - name: ansible.netcommon
+    source: https://galaxy.ansible.com
+
+  # --- VMware (vSphere) ---
+  # Modern VMware REST Ansible collection (recommended for new playbooks).
+  - name: vmware.vmware_rest
+    source: https://galaxy.ansible.com
+
+  # Classic pyvmomi-based modules (widely deployed; complements vmware_rest).
+  - name: community.vmware
+    source: https://galaxy.ansible.com
+
+  # --- F5 BIG-IP / BIG-IQ ---
+  - name: f5networks.f5_modules
     source: https://galaxy.ansible.com
