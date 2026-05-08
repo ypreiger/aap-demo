@@ -21,3 +21,6 @@ resources:
   - workflowtemplate-workshop-multi-domain.yaml
   - jobtemplate-workshop-git-push-dispatcher.yaml
   - workflowtemplate-workshop-projects-git-driven.yaml
+  - jobtemplate-email-e2e-create-namespace.yaml
+  - jobtemplate-email-e2e-apply-netpol.yaml
+  - workflowtemplate-email-e2e-ns-netpol.yaml

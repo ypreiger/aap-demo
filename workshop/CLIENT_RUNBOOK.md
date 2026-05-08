@@ -4,7 +4,7 @@ Canonical repo: **[ypreiger/aap-demo](https://github.com/ypreiger/aap-demo)**.
 
 This guide is for **operators / client representatives** running the lab in the **Automation Controller** UI (and optionally **Automation Hub**). It answers: *which workflow do I launch?, what should I see?, where is “Blue Coat collection”?, how do I add collections?, how do I get email with Approve/Deny buttons?*
 
-**Canonical per-use-case steps:** numbered files and index **[`use-cases/README.md`](use-cases/README.md)** (**UC-01 … UC-06**).
+**Canonical per-use-case steps:** numbered files and index **[`use-cases/README.md`](use-cases/README.md)** (**UC-01 … UC-07**).
 
 This **`CLIENT_RUNBOOK.md`** is the **single condensed** guide; each UC Markdown file carries the detailed **instructions** your client representative follows in order.
 
@@ -124,7 +124,21 @@ Within a few minutes (SMTP + spam folders), the approver inbox should receive a 
 
 **If no email arrives:** plugin not deployed, **`DISABLE_SMTP`**, wrong **`DEFAULT_TO_EMAIL`**, SMTP blocked egress, webhook not attached to **`bom-project-deploy`**, or message in spam. See **[`documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md`](../documentation/CONFIGURE_AAP_APPROVAL_EMAIL.md)** troubleshooting table.
 
-### 5.4 Same email for **`workshop-multi-domain`**
+### 5.4 Minimal email E2E — **`email-e2e-ns-netpol`** (namespace → approve mail → deny‑all NetworkPolicy)
+
+**Goal:** Run a **small** workflow that creates only a **Namespace** (survey **`target_namespace`**), stops on **`bom-approve-before-vms`**, sends **Approve / Deny** mail when **`email-plugin`** is wired for **this** workflow, then applies a deny‑all **`NetworkPolicy`** after approval (**no VMs**).
+
+| Step | Action |
+|------|--------|
+| 1 | Presenter: **`oc apply -k aap-yamls/tower/`** (Tower CRs include workflow **`email-e2e-ns-netpol`**) |
+| 2 | Presenter: **`bash scripts/register-webhook-email-e2e-ns-netpol.sh`** (after **`Secret/aap-controller-api`** exists and **`email-plugin`** Route is up) |
+| 3 | **Projects** → **AAP Demo (GitHub)** → **Sync** so playbooks **`playbooks/email_e2e_*.yml`** are on disk |
+| 4 | **Templates** → **`email-e2e-ns-netpol`** → **Launch** → set **Target namespace** |
+| 5 | Approve from mail (or Controller UI); confirm **`NetworkPolicy`** **`email-e2e-deny-all`** in that namespace |
+
+Full steps and cleanup: **[`use-cases/UC-07-email-e2e-namespace-netpol.md`](use-cases/UC-07-email-e2e-namespace-netpol.md)**.
+
+### 5.5 Same email for **`workshop-multi-domain`**
 
 The default registration step **does not** attach the webhook to **`workshop-multi-domain`**. Run the same playbook again with an explicit workflow name (and a **distinct** notification name so you do not fight the previous association):
 
@@ -199,6 +213,7 @@ Failures usually mean: wrong **`workshop_mock_base_url`**, mock Route missing, V
 
 | Topic | Doc |
 |--------|-----|
+| UC-07 minimal email E2E (namespace + netpol) | [`use-cases/UC-07-email-e2e-namespace-netpol.md`](use-cases/UC-07-email-e2e-namespace-netpol.md) |
 | Hub empty UI | [`documentation/HUB_COLLECTIONS.md`](../documentation/HUB_COLLECTIONS.md) |
 | Controller + `requirements.yml` | [`documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`](../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md) |
 | Collection list & EE | [`documentation/ANSIBLE_COLLECTIONS.md`](../documentation/ANSIBLE_COLLECTIONS.md) |

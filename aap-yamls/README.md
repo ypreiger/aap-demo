@@ -81,6 +81,7 @@ Tower (YAML in **`tower/`**):
 | **`bom-project-foundation`** | Job template → foundation playbook (uses credential **`openshift-bom-target`**). |
 | **`bom-project-vms`** | Job template → VM playbook **only after** foundation succeeds. |
 | **`bom-project-deploy`** | Generic workflow (**not** proj1/proj2-specific). **Survey** prompts for **`project_name`** plus OpenShift Virt options (**cluster instance type vs manual CPU/RAM**, **root disk**, **extra disk**, datasource settings, cloud-init password). **Prompt on launch → Variables** is enabled so API / **`AnsibleWorkflow`** launches can supply **`extra_vars`**. Order: foundation → **`workflow_approval`** `bom-approve-before-vms` → VMs. |
+| **`email-e2e-ns-netpol`** | Minimal Mail E2E: **`email-e2e-create-namespace`** → **`bom-approve-before-vms`** (register webhook with **`scripts/register-webhook-email-e2e-ns-netpol.sh`**) → **`email-e2e-apply-netpol`** (deny‑all **`NetworkPolicy`**). Survey **`target_namespace`**. See **`../workshop/use-cases/UC-07-email-e2e-namespace-netpol.md`**. |
 | **`AnsibleWorkflow` `awf-bom-project-deploy-proj1`** (overlay) | Submits **one Workflow Job** to Controller for **`bom-project-deploy`** with **`project_name: proj1`** (survey values via `extra_vars`). Declared under **`tower-full-run-proj1/`**; **`proj2`** variant in **`tower-full-run-proj2/`**. |
 
 `WorkflowTemplate` (CR kind) maps to Automation Controller **Workflow Job Template**; **`AnsibleWorkflow`** maps to a **Workflow Job execution** initiated from OpenShift once the CR is reconciled.

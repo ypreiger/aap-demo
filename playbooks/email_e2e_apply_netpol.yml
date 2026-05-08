@@ -1,0 +1,50 @@
+---
+# Workflow step 3 (after approval): apply a deny-all NetworkPolicy in target_namespace.
+# Requires openshift-bom-target on the job template.
+- name: Email E2E — apply deny-all NetworkPolicy
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - ansible.builtin.import_tasks:
+        file: "{{ playbook_dir }}/includes/bom_resolve_cluster_auth.yml"
+
+    - name: Ensure target_namespace is defined
+      ansible.builtin.assert:
+        that:
+          - target_namespace is defined
+          - (target_namespace | string | length) > 0
+        fail_msg: "Survey / extra_vars target_namespace missing (passed from workflow)."
+
+    - name: Namespace must exist before NetworkPolicy
+      module_defaults:
+        group/k8s:
+          host: "{{ omit if ((_bom_ocp_api | length) == 0) else _bom_ocp_api }}"
+          api_key: "{{ omit if ((_bom_ocp_token | length) == 0) else _bom_ocp_token }}"
+          validate_certs: "{{ omit if ((_bom_ocp_api | length) == 0) else _bom_verify_ssl }}"
+          ssl_ca_cert: >-
+            {{ omit if ((_bom_ocp_api | length) == 0) or ((_bom_env_ca | length) == 0) else _bom_env_ca }}
+      block:
+        - name: Read Namespace
+          kubernetes.core.k8s_info:
+            api_version: v1
+            kind: Namespace
+            name: "{{ target_namespace }}"
+          register: _ns_e2e
+          failed_when: (_ns_e2e.resources | default([]) | length) < 1
+
+        - name: Apply deny-all NetworkPolicy inside namespace
+          kubernetes.core.k8s:
+            state: present
+            definition:
+              apiVersion: networking.k8s.io/v1
+              kind: NetworkPolicy
+              metadata:
+                name: email-e2e-deny-all
+                namespace: "{{ target_namespace }}"
+                labels:
+                  app.kubernetes.io/name: email-e2e-demo
+              spec:
+                podSelector: {}
+                policyTypes:
+                  - Ingress
+                  - Egress

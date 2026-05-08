@@ -12,3 +12,4 @@ Deep cross-reference and cluster-specific examples also live in **[`../CLIENT_RU
 | **UC-04** | EDA awareness (routes, rulebooks, discussion) | [`UC-04-eda-awareness.md`](UC-04-eda-awareness.md) |
 | **UC-05** | **Inspect Hub collections** (Published vs Community) **+ Blue Coat / ProxySG reality** | [`UC-05-inspect-hub-collections-bluecoat.md`](UC-05-inspect-hub-collections-bluecoat.md) |
 | **UC-06** | **Approve (or deny) a workflow gate from email** (clickable buttons) | [`UC-06-approve-by-email-buttons.md`](UC-06-approve-by-email-buttons.md) |
+| **UC-07** | **Email E2E:** Namespace survey → approval mail → deny‑all **NetworkPolicy** | [`UC-07-email-e2e-namespace-netpol.md`](UC-07-email-e2e-namespace-netpol.md) |

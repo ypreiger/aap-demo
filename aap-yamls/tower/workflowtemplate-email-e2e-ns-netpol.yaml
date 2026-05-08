@@ -1,0 +1,69 @@
+---
+# Minimal E2E: Namespace → webhook/email approval → NetworkPolicy inside that namespace.
+# Register email-plugin webhook against workflow name ``email-e2e-ns-netpol`` (see scripts/register-webhook-email-e2e-ns-netpol.sh).
+apiVersion: tower.ansible.com/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: wjt-email-e2e-ns-netpol
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  state: present
+  name: email-e2e-ns-netpol
+  organization: Default
+  inventory: Demo Inventory
+  description: >-
+    Create a Namespace from survey, pause on manual approval (email-plugin),
+    then apply a deny-all NetworkPolicy in that namespace (kubernetes.core against cluster API).
+  ask_variables_on_launch: true
+  survey_enabled: true
+  survey_spec:
+    name: Email E2E — namespace parameter
+    description: >-
+      Use a DNS-1123 name (lowercase alphanumeric + hyphen). Prefer a distinct name per demo
+      (default email-e2e-demo). Credential openshift-bom-target must have namespace create RBAC where allowed.
+    spec:
+      - type: text
+        question_name: Target namespace name
+        question_description: |
+          Example email-e2e-demo. Must match Kubernetes namespace naming rules.
+        variable: target_namespace
+        required: true
+        default: email-e2e-demo
+
+  workflow_nodes:
+    - identifier: e2e-create-ns
+      unified_job_template:
+        type: job_template
+        name: email-e2e-create-namespace
+        organization:
+          name: Default
+      related:
+        success_nodes:
+          - identifier: e2e-approve-mail
+        failure_nodes: []
+        always_nodes: []
+    - identifier: e2e-approve-mail
+      unified_job_template:
+        organization:
+          name: Default
+        type: workflow_approval
+        name: bom-approve-before-vms
+        description: >-
+          Email E2E gate — approve to apply NetworkPolicy. Reuses shared approval template so one webhook registration can attach per workflow separately.
+        timeout: 0
+      related:
+        success_nodes:
+          - identifier: e2e-netpol
+        failure_nodes: []
+        always_nodes: []
+    - identifier: e2e-netpol
+      unified_job_template:
+        type: job_template
+        name: email-e2e-apply-netpol
+        organization:
+          name: Default
+      related:
+        success_nodes: []
+        failure_nodes: []
+        always_nodes: []

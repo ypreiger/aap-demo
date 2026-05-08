@@ -99,7 +99,9 @@ for pb in \
   playbooks/02_publish_workflow_stats.yml \
   playbooks/03_finalize.yml \
   playbooks/project_foundation.yml \
-  playbooks/project_vms.yml; do
+  playbooks/project_vms.yml \
+  playbooks/email_e2e_create_namespace.yml \
+  playbooks/email_e2e_apply_netpol.yml; do
   echo "  syntax-check: ${pb}"
   ansible-playbook -i localhost, --connection=local --syntax-check "${pb}"
 done

@@ -1,0 +1,48 @@
+---
+# Workflow step 1: create an empty Namespace (survey extra_var target_namespace).
+# Requires openshift-bom-target (Kubernetes API bearer token) on the job template.
+- name: Email E2E — create Namespace
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - ansible.builtin.import_tasks:
+        file: "{{ playbook_dir }}/includes/bom_resolve_cluster_auth.yml"
+
+    - name: Ensure target_namespace is defined
+      ansible.builtin.assert:
+        that:
+          - target_namespace is defined
+          - (target_namespace | string | length) > 0
+          - (target_namespace | string | length) <= 63
+        fail_msg: "Provide survey / extra_vars target_namespace (DNS label segment rules apply)."
+
+    - name: Create and verify Namespace
+      module_defaults:
+        group/k8s:
+          host: "{{ omit if ((_bom_ocp_api | length) == 0) else _bom_ocp_api }}"
+          api_key: "{{ omit if ((_bom_ocp_token | length) == 0) else _bom_ocp_token }}"
+          validate_certs: "{{ omit if ((_bom_ocp_api | length) == 0) else _bom_verify_ssl }}"
+          ssl_ca_cert: >-
+            {{ omit if ((_bom_ocp_api | length) == 0) or ((_bom_env_ca | length) == 0) else _bom_env_ca }}
+      block:
+        - name: Create Namespace {{ target_namespace }}
+          kubernetes.core.k8s:
+            state: present
+            definition:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: "{{ target_namespace }}"
+                labels:
+                  app.kubernetes.io/name: email-e2e-demo
+                  app.kubernetes.io/managed-by: aap-email-e2e
+
+        - name: Verify Namespace Active
+          kubernetes.core.k8s_info:
+            api_version: v1
+            kind: Namespace
+            name: "{{ target_namespace }}"
+          register: _ns_e2e
+          failed_when: >-
+            ((_ns_e2e.resources | default([]) | length) < 1) or
+            (_ns_e2e.resources[0].status.phase | default("") != "Active")

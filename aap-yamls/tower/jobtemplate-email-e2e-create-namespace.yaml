@@ -1,0 +1,16 @@
+---
+apiVersion: tower.ansible.com/v1alpha1
+kind: JobTemplate
+metadata:
+  name: jt-email-e2e-create-namespace
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  name: email-e2e-create-namespace
+  organization: Default
+  project: AAP Demo (GitHub)
+  playbook: playbooks/email_e2e_create_namespace.yml
+  inventory: Demo Inventory
+  credentials:
+    - openshift-bom-target
+  ask_variables_on_launch: false
