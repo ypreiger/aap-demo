@@ -63,6 +63,7 @@ The service resolves **`workflow_job_id`** by calling the Controller API for tha
 |---|---|
 | **`SIGNING_SECRET`** | HMAC key for **`itsdangerous`** signed tokens embedded in approve/deny links. Rotate by restarting the Deployment after patching the Secret. |
 | **`WEBHOOK_HMAC_SECRET`** (optional) | If non-empty, inbound webhooks **must** include header **`X-Email-Plugin-Signature: sha256=<hex_hmac_sha256(secret, raw_body)>`**. |
+| **`EMAIL_SUBJECT_PREFIX`** (ConfigMap) | Overrides default **`[AAP]`** in approval mail subjects (**`[AAP Workshop]`** in `openshift/configmap.yaml`). |
 
 Tokens expire after **`TOKEN_MAX_AGE_HOURS`** (default **72**).
 
