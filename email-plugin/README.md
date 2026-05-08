@@ -49,15 +49,15 @@ ansible-playbook email-plugin/playbooks/register_controller_webhook_notification
   -e webhook_target_url="$WH"
 ```
 
-On **AAP 4.7+**, webhook notification **`messages.workflow_approval`** is a nested object (not a string). The playbook stores JSON under **`running.body`** — the phase when an approval is **waiting**. Only template variables that exist in the Controller approval context pass validation; **`summary_fields.workflow_job`** is **rejected** for webhook types.
+On **AAP 4.7+**, webhook notification **`messages.workflow_approval`** is a nested object (not a string). The playbook stores JSON under **`running.body`** — the phase when an approval is **waiting**. The Controller **workflow approval** Jinja context includes **`workflow_url`** but **not** **`job`** (see upstream AWX `WorkflowApproval.context`). Using `{{ job.id }}` fails silently and AWX POSTs **`{}`**.
 
-**Default body (Controller 27.x / AAP 2.8-style):** `{{ job.id }}` in this context is the **parent workflow job** id, not the **`workflow_approvals/{id}`** row. The plugin finds the pending approval node from that id:
+**Default body:** pass the workflow UI URL; **email-plugin** extracts **`workflow_job_id`** from it and resolves the pending **`approval_job_id`** via the Controller API:
 
 ```json
-{"workflow_job_id": {{ job.id }}}
+{"workflow_url": {{ workflow_url | tojson }}}
 ```
 
-If your older Tower build truly passes the **approval** id as `job.id`, override **`wf_approve_body_template`** with `{"approval_job_id": {{ job.id }}}` when running the playbook (see `extras/register-webhook.example.yml`).
+If you must override (legacy builds), set **`wf_approve_body_template`** when running the playbook (see `extras/register-webhook.example.yml`).
 
 ## Signed approve/deny URLs
 

@@ -108,9 +108,13 @@ def _coerce_payload(data: Any) -> dict[str, Any]:
 def _workflow_id_from_url(job_url: str | None) -> int | None:
     if not job_url:
         return None
+    # AWX WorkflowApproval context uses `workflow_url` (often …/#/jobs/workflow/<id> or …/jobs/workflow/<id>).
     m = re.search(r"/#/jobs/workflow/(\d+)", job_url)
     if m:
         return int(m.group(1))
+    m_path = re.search(r"/jobs/workflow/(\d+)", job_url)
+    if m_path:
+        return int(m_path.group(1))
     m2 = re.search(r"/#/jobs/system_job_templates/.*/workflow_job/(\d+)", job_url)
     return int(m2.group(1)) if m2 else None
 
@@ -163,7 +167,9 @@ def extract_ids(data: dict[str, Any]) -> tuple[int | None, int | None, str | Non
     if wf is None and isinstance(src_wf, dict):
         wf = src_wf.get("id")
     if wf is None:
-        wf = _workflow_id_from_url(str(data.get("url") or ""))
+        wf = _workflow_id_from_url(str(data.get("workflow_url") or ""))
+        if wf is None:
+            wf = _workflow_id_from_url(str(data.get("url") or ""))
         if wf is None and isinstance(job, dict):
             wf = _workflow_id_from_url(str(job.get("url") or ""))
     # Top-level unified job (same as root_is_approval)

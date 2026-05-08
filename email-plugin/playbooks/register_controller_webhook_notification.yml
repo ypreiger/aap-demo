@@ -37,14 +37,12 @@
     notification_label: "{{ notification_name | default('bom-email-plugin-webhook') }}"
     workflow_label: "{{ workflow_name | default('bom-project-deploy') }}"
     awx_validate_ssl: "{{ controller_validate_certs | default(false) | bool }}"
-    # Controller validates Jinja names against the approval context. Nested under
-    # messages.workflow_approval.running.body (webhook notification type).
-    #
-    # On hosted AAP 4.8 / Controller 27.x, {{ job.id }} during workflow_approval.running is the *parent*
-    # workflow_job id (integer), NOT the workflow_approval id. email-plugin resolves the pending approval
-    # from workflow_job_id via the Controller API. Using approval_job_id: {{ job.id }} causes 422 (wrong id).
+    # Workflow approval notifications only expose: workflow_url, approval_node_name,
+    # approval_status, job_metadata — NOT `job` (see AWX WorkflowApproval.context).
+    # Using {{ job.id }} renders empty → AWX POSTs {} → 422. {{ workflow_url | tojson }} is valid JSON.
+    # email-plugin parses workflow_job_id from that URL and resolves the pending approval via the API.
     wf_approve_body_template: >-
-      {% raw %}{"workflow_job_id": {{ job.id }}}{% endraw %}
+      {% raw %}{"workflow_url": {{ workflow_url | tojson }}}{% endraw %}
   tasks:
     - ansible.builtin.assert:
         that:
