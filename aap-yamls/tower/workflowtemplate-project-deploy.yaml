@@ -19,19 +19,129 @@ spec:
   ask_variables_on_launch: true
   survey_enabled: true
   survey_spec:
-    name: Project selection
+    name: Project and OpenShift Virtualization VM options
     description: >-
-      BOM path on the sync'd Git project: aap-demo/projects/{project_name}/bom
+      Select BOM project (namespace/artefacts path) and Fedora VM sizing/root disk/extra disk.
+      See Git documentation/VIRTUALIZATION_WORKFLOW_SURVEY.md.
     spec:
       - type: text
         question_name: Project name
         question_description: >-
           Directory under aap-demo/projects/ on the Git repository (e.g. proj1).
-          Manifests are loaded from aap-demo/projects/{project_name}/bom/.
+          Foundation + VMs target this namespace via manifests under projects/{project_name}/bom/.
         variable: project_name
-        # Do not use empty-string min/max: Controller rejects ("expected to be integer") and WFJT/visualizer fails to sync.
         required: true
         default: proj1
+
+      - type: multiplechoice
+        question_name: VM sizing mode
+        question_description: >-
+          cluster_instancetype = OpenShift Virtualization operator templates
+          (VirtualMachineClusterInstancetype + optional Preference). manual = set CPU/RAM in the VM domain.
+        variable: vm_sizing_mode
+        required: true
+        default: cluster_instancetype
+        choices:
+          - cluster_instancetype
+          - manual
+
+      - type: text
+        question_name: Cluster instance type name
+        question_description: >-
+          When sizing mode is cluster_instancetype. Inspect with oc get virtualmachineclusterinstancetype.
+          Common examples u1.small, u1.medium, n1.medium (cluster-dependent).
+        variable: vm_cluster_instancetype
+        required: true
+        default: u1.medium
+
+      - type: text
+        question_name: Cluster preference name (optional)
+        question_description: >-
+          Leave default fedora or empty to omit spec.preference if your admission rules require it.
+        variable: vm_cluster_preference
+        required: false
+        default: fedora
+
+      - type: integer
+        question_name: Manual CPU cores
+        question_description: Used when vm_sizing_mode = manual (ignored for cluster_instancetype).
+        variable: vm_cpu_cores
+        required: true
+        default: 2
+        min: 1
+        max: 32
+
+      - type: integer
+        question_name: Manual memory (Gi)
+        question_description: Used when vm_sizing_mode = manual (Gi of RAM requested in the VM domain).
+        variable: vm_memory_gi
+        required: true
+        default: 4
+        min: 1
+        max: 128
+
+      - type: multiplechoice
+        question_name: Root disk backing
+        question_description: >-
+          container = kubevirt containerDisk image. datasource = Fedora DataSource in openshift-virtualization-os-images.
+        variable: vm_root_disk_mode
+        required: true
+        default: container
+        choices:
+          - container
+          - datasource
+
+      - type: text
+        question_name: Container root image (container mode)
+        question_description: OCI reference for Fedora containerdisk when vm_root_disk_mode = container.
+        variable: vm_container_root_image
+        required: true
+        default: quay.io/kubevirt/fedora-container-disk-images:41
+
+      - type: text
+        question_name: Fedora DataSource name
+        question_description: Used when vm_root_disk_mode = datasource (cloned PVC via CDI).
+        variable: vm_datasource_name
+        required: true
+        default: fedora
+
+      - type: text
+        question_name: DataSource namespace
+        question_description: openshift-virtualization-os-images on many OpenShift Virtualization installs.
+        variable: vm_datasource_namespace
+        required: true
+        default: openshift-virtualization-os-images
+
+      - type: integer
+        question_name: Root PVC size (Gi) for datasource mode
+        question_description: dataVolumeTemplates PVC requested storage size.
+        variable: vm_root_volume_size_gi
+        required: true
+        default: 30
+        min: 10
+        max: 512
+
+      - type: text
+        question_name: Storage class for datasource PVC (optional)
+        question_description: Leave blank for cluster default (omit storageClassName on PVC).
+        variable: vm_storage_class
+        required: false
+
+      - type: integer
+        question_name: Extra virtio disk (Gi, 0 disables)
+        question_description: Adds an empty virtio disk backed by emptyDisk (no extra PVC).
+        variable: vm_extra_disk_gi
+        required: true
+        default: 0
+        min: 0
+        max: 512
+
+      - type: password
+        question_name: Fedora user password (cloud-init)
+        question_description: >-
+          Optional override for user fedora. Leave blank to use playbook default from vars/bom_vms_defaults.yml.
+        variable: vm_cloud_user_password
+        required: false
   workflow_nodes:
     - identifier: step-foundation
       unified_job_template:

@@ -14,3 +14,15 @@ spec:
   # when the Workflow Job Template does not allow overrides (bom-project-deploy pins Demo Inventory).
   extra_vars:
     project_name: proj1
+    vm_sizing_mode: cluster_instancetype
+    vm_cluster_instancetype: u1.medium
+    vm_cluster_preference: fedora
+    vm_cpu_cores: 2
+    vm_memory_gi: 4
+    vm_root_disk_mode: container
+    vm_container_root_image: quay.io/kubevirt/fedora-container-disk-images:41
+    vm_datasource_name: fedora
+    vm_datasource_namespace: openshift-virtualization-os-images
+    vm_root_volume_size_gi: 30
+    vm_extra_disk_gi: 0
+    vm_cloud_user_password: changeme-workflow-vm

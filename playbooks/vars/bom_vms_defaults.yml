@@ -1,0 +1,40 @@
+---
+# Defaults for BOM VM provisioning — overridden by Workflow survey / JT extra_vars.
+# See documentation/VIRTUALIZATION_WORKFLOW_SURVEY.md.
+
+# Which fedora-vm-* instances to provision (logical names inside project_name namespace).
+bom_vms:
+  - vm_name: fedora-vm-01
+    hostname: fedora-vm-01
+  - vm_name: fedora-vm-02
+    hostname: fedora-vm-02
+
+# cluster_instancetype: use OpenShift Virtualization operator cluster CRs
+# (oc get virtualmachineclusterinstancetype / virtualmachineclusterpreference).
+# manual: set CPU + memory on the VirtualMachine domain (works everywhere KubeVirt runs).
+vm_sizing_mode: cluster_instancetype
+
+vm_cluster_instancetype: u1.medium
+vm_cluster_preference: fedora
+
+vm_cpu_cores: 2
+vm_memory_gi: 4
+
+# container: kubevirt Fedora containerdisk (offline-friendly labs).
+# datasource: clone Fedora from openshift-virtualization-os-images DataSource (needs CDI/sc).
+vm_root_disk_mode: container
+vm_container_root_image: quay.io/kubevirt/fedora-container-disk-images:41
+
+# Used when vm_root_disk_mode == datasource — DataSource fedora shipped with OpenShift Virt.
+vm_datasource_name: fedora
+vm_datasource_namespace: openshift-virtualization-os-images
+vm_root_volume_size_gi: 30
+
+# Blank = omit storageClassName (cluster default PVC bind).
+vm_storage_class: ''
+
+# virtio empty disk (Gi). 0 = omit extra volume.
+vm_extra_disk_gi: 0
+
+# Single password for cloud-init fedora user (rotate for real use; prefer surveys + Vault).
+vm_cloud_user_password: changeme-workflow-vm

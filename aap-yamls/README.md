@@ -63,13 +63,13 @@ EDA and Controller URLs are wired by the platform operator when deployed from th
 
 BOM layouts:
 
-- **`projects/<project_name>/bom/`** — `namespace.yaml`, `serviceaccount.yaml` (**`<project_name>-sa`**), **`networkpolicy.yaml`**, **`vm-fedora-01.yaml`** / **`vm-fedora-02.yaml`**.
-- Repo ships **`projects/proj1`** and **`projects/proj2`**; names in YAML files must match the folder (**`project_name`** extra var equals that folder).
+- **`projects/<project_name>/bom/`** — `namespace.yaml`, `serviceaccount.yaml` (**`<project_name>-sa`**), **`networkpolicy.yaml`**. **VirtualMachines are not static files anymore** — they render from **`playbooks/templates/bom-vm-fedora.yaml.j2`** (CPU/memory via **cluster instance types** or **manual** domain requests, root disk **container** or **DataSource** clone, optional **extra virtio disk**).
+- Repo ships **`projects/proj1`** and **`projects/proj2`**; namespace + manifest names must match the folder (**`project_name`** extra var equals that folder).
 
 Automation:
 
 - **`playbooks/project_foundation.yml`** — create namespace → **validate Active** → SA → **validate exists** → NetworkPolicy → **validate exists**.
-- **`playbooks/project_vms.yml`** — prerequisite checks foundation objects, then applies & validates Fedora **VirtualMachine** CRs (**CNV/KubeVirt** required).
+- **`playbooks/project_vms.yml`** — prerequisite checks foundation objects, then applies & validates Fedora **VirtualMachine** CRs (**OpenShift Virtualization / KubeVirt**). Survey / extra vars documented in **`documentation/VIRTUALIZATION_WORKFLOW_SURVEY.md`**.
 
 Tower (YAML in **`tower/`**):
 
@@ -78,7 +78,7 @@ Tower (YAML in **`tower/`**):
 | **`openshift-bom-target`** | **Prerequisite (not a CR):** In Controller, create **OpenShift or Kubernetes API Bearer Token** with your cluster API URL + SA token (and CA or `verify_ssl: false`). BOM job templates reference this name. Without it, **`kubernetes.core`** fails with *Invalid kube-config / No configuration found*. |
 | **`bom-project-foundation`** | Job template → foundation playbook (uses credential **`openshift-bom-target`**). |
 | **`bom-project-vms`** | Job template → VM playbook **only after** foundation succeeds. |
-| **`bom-project-deploy`** | Generic workflow (**not** proj1/proj2-specific). **Survey** presents a launch dialog for **`project_name`** (Git path `aap-demo/projects/{project_name}/bom`). **Prompt on launch → Variables** is enabled so API / **`AnsibleWorkflow`** launches can supply **`extra_vars`** (inventory stays on the WFJT only—do not set **`inventory`** on **`AnsibleWorkflow`**). Order: foundation → **`workflow_approval`** `bom-approve-before-vms` → VMs. |
+| **`bom-project-deploy`** | Generic workflow (**not** proj1/proj2-specific). **Survey** prompts for **`project_name`** plus OpenShift Virt options (**cluster instance type vs manual CPU/RAM**, **root disk**, **extra disk**, datasource settings, cloud-init password). **Prompt on launch → Variables** is enabled so API / **`AnsibleWorkflow`** launches can supply **`extra_vars`**. Order: foundation → **`workflow_approval`** `bom-approve-before-vms` → VMs. |
 | **`AnsibleWorkflow` `awf-bom-project-deploy-proj1`** (overlay) | Submits **one Workflow Job** to Controller for **`bom-project-deploy`** with **`project_name: proj1`** (survey values via `extra_vars`). Declared under **`tower-full-run-proj1/`**; **`proj2`** variant in **`tower-full-run-proj2/`**. |
 
 `WorkflowTemplate` (CR kind) maps to Automation Controller **Workflow Job Template**; **`AnsibleWorkflow`** maps to a **Workflow Job execution** initiated from OpenShift once the CR is reconciled.

@@ -1,0 +1,116 @@
+---
+# Rendered by playbooks/project_vms.yml — do not apply from disk as static YAML.
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: "{{ item.vm_name }}"
+  namespace: "{{ project_name }}"
+  labels:
+    app.kubernetes.io/name: fedora-vm
+    app.kubernetes.io/instance: "{{ item.vm_name }}"
+    app.kubernetes.io/managed-by: aap-demo
+spec:
+  runStrategy: RerunOnFailure
+{% if vm_sizing_mode | default('manual') == 'cluster_instancetype' %}
+  instancetype:
+    kind: VirtualMachineClusterInstancetype
+    name: "{{ vm_cluster_instancetype }}"
+{% if vm_cluster_preference | default('') | length > 0 %}
+  preference:
+    kind: VirtualMachineClusterPreference
+    name: "{{ vm_cluster_preference }}"
+{% endif %}
+{% endif %}
+{% if vm_root_disk_mode | default('container') == 'datasource' %}
+  dataVolumeTemplates:
+    - metadata:
+        name: "{{ item.vm_name }}-root-{{ project_name }}-dv"
+      spec:
+        sourceRef:
+          kind: DataSource
+          name: "{{ vm_datasource_name }}"
+          namespace: "{{ vm_datasource_namespace }}"
+        pvc:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: "{{ vm_root_volume_size_gi }}Gi"
+{% if vm_storage_class | default('', true) | string | trim | length > 0 %}
+          storageClassName: "{{ vm_storage_class | trim }}"
+{% endif %}
+{% endif %}
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: "{{ item.vm_name }}"
+        app.kubernetes.io/name: fedora-vm
+    spec:
+      networks:
+        - name: default
+          pod: {}
+      domain:
+{% if vm_sizing_mode | default('manual') != 'cluster_instancetype' %}
+        cpu:
+          cores: {{ vm_cpu_cores | int }}
+          sockets: 1
+          threads: 1
+        machine:
+          type: pc
+        resources:
+          requests:
+            memory: "{{ vm_memory_gi | int }}Gi"
+{% endif %}
+        devices:
+          disks:
+            - disk:
+                bus: virtio
+              name: rootdisk
+{% if vm_extra_disk_gi | int > 0 %}
+            - disk:
+                bus: virtio
+              name: extradisk
+{% endif %}
+            - disk:
+                bus: virtio
+              name: cloudinitdisk
+          interfaces:
+            - masquerade: {}
+              name: default
+          rng: {}
+      volumes:
+{% if vm_root_disk_mode | default('container') == 'datasource' %}
+        - name: rootdisk
+          dataVolume:
+            name: "{{ item.vm_name }}-root-{{ project_name }}-dv"
+{% else %}
+        - name: rootdisk
+          containerDisk:
+            image: "{{ vm_container_root_image }}"
+            imagePullPolicy: IfNotPresent
+{% endif %}
+{% if vm_extra_disk_gi | int > 0 %}
+        - name: extradisk
+          emptyDisk:
+            capacity: "{{ vm_extra_disk_gi | int }}Gi"
+{% endif %}
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |-
+              #cloud-config
+              ssh_pwauth: true
+              disable_root: true
+              hostname: {{ item.hostname }}
+              timezone: UTC
+              packages:
+                - qemu-guest-agent
+                - curl
+                - vim-minimal
+              runcmd:
+                - ["systemctl", "enable", "--now", "qemu-guest-agent.service"]
+              users:
+                - default
+                - name: fedora
+                  groups: [wheel]
+                  sudo: ALL=(ALL) NOPASSWD:ALL
+                  plain_text_passwd: {{ vm_cloud_user_password }}
