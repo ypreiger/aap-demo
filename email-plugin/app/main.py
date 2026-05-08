@@ -28,6 +28,41 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("email-plugin")
 
 
+def hook422(detail: str) -> None:
+    """Log then return 422 so cluster logs show why mail was not sent."""
+    log.warning("POST /v1/hooks/controller → 422: %s", detail)
+    raise HTTPException(status_code=422, detail=detail)
+
+
+def flatten_controller_webhook_payload(data: dict[str, Any]) -> dict[str, Any]:
+    """Merge Tower/AAP envelopes so extract_ids finds workflow_job_id / approval_job_id."""
+    out = dict(data)
+    inner = out.get("body")
+    if isinstance(inner, str):
+        try:
+            nested = json.loads(inner.strip())
+            if isinstance(nested, dict):
+                out.update(nested)
+        except json.JSONDecodeError:
+            pass
+    for key in ("workflow_job", "source_workflow_job"):
+        obj = out.get(key)
+        if out.get("workflow_job_id") is None and isinstance(obj, dict):
+            wid = obj.get("id")
+            if wid is not None:
+                out["workflow_job_id"] = wid
+    job = out.get("job")
+    if isinstance(job, dict):
+        if out.get("approval_job_id") is None and job.get("type") == "workflow_approval":
+            jid = job.get("id")
+            if jid is not None:
+                out["approval_job_id"] = jid
+        sjwf = ((job.get("summary_fields") or {}).get("workflow_job") or {}).get("id")
+        if out.get("workflow_job_id") is None and sjwf is not None:
+            out["workflow_job_id"] = sjwf
+    return out
+
+
 @lru_cache
 def get_settings() -> Settings:
     return load_settings()
@@ -143,31 +178,32 @@ async def controller_hook(request: Request) -> dict[str, Any]:
     except (UnicodeDecodeError, json.JSONDecodeError) as e:
         raise HTTPException(status_code=400, detail=f"invalid JSON: {e}") from e
 
+    if isinstance(body, dict):
+        body = flatten_controller_webhook_payload(body)
+
     data = _coerce_payload(body)
     wf_job_id, approval_job_id, to_override = extract_ids(data)
 
     if approval_job_id is None and wf_job_id is None:
-        raise HTTPException(
-            status_code=422,
-            detail="Need workflow_job_id and/or approval_job_id in webhook JSON — see README Jinja snippet.",
+        hook422(
+            "Need workflow_job_id and/or approval_job_id in webhook JSON — see README Jinja snippet.",
         )
 
     if approval_job_id is None and wf_job_id is not None:
         approval_job_id = ctl.first_pending_workflow_approval_id(s, wf_job_id)
         if approval_job_id is None:
-            raise HTTPException(
-                status_code=422,
-                detail=f"No pending workflow approval found for workflow_job_id={wf_job_id}.",
+            hook422(
+                f"No open workflow approval found for workflow_job_id={wf_job_id} "
+                "(check approval node status in Controller, or job.id in notification body).",
             )
 
     try:
         appr = ctl.workflow_approval_job_detail(s, approval_job_id)
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 404:
-            raise HTTPException(
-                status_code=422,
-                detail=f"workflow approval id {approval_job_id} not found (wrong id or already finished).",
-            ) from e
+            d = f"workflow approval id {approval_job_id} not found (wrong id or already finished)."
+            log.warning("POST /v1/hooks/controller → 422: %s", d)
+            raise HTTPException(status_code=422, detail=d) from e
         raise HTTPException(
             status_code=502,
             detail=f"Controller API HTTP {e.response.status_code} fetching approval job.",
@@ -176,19 +212,17 @@ async def controller_hook(request: Request) -> dict[str, Any]:
     if wf_job_id is None:
         wf_job_id = ctl.workflow_job_id_from_approval(appr)
         if wf_job_id is None:
-            raise HTTPException(
-                status_code=422,
-                detail="Cannot resolve workflow_job_id from Controller API for this approval job.",
+            hook422(
+                "Cannot resolve workflow_job_id from Controller API for this approval job.",
             )
 
     try:
         wf_detail = ctl.workflow_job_detail(s, wf_job_id)
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 404:
-            raise HTTPException(
-                status_code=422,
-                detail=f"workflow_jobs/{wf_job_id} not found.",
-            ) from e
+            d = f"workflow_jobs/{wf_job_id} not found."
+            log.warning("POST /v1/hooks/controller → 422: %s", d)
+            raise HTTPException(status_code=422, detail=d) from e
         raise HTTPException(
             status_code=502,
             detail=f"Controller API HTTP {e.response.status_code} fetching workflow job.",

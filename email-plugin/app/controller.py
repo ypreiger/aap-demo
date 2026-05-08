@@ -26,6 +26,20 @@ def _coerce_int(v: object) -> int | None:
     return None
 
 
+def _approval_status_open(status: str | None) -> bool:
+    """True if this unified job is still waiting on a human (not finished)."""
+    st = (status or "").lower()
+    return st not in ("successful", "failed", "canceled", "error")
+
+
+def _node_is_workflow_approval(node: dict) -> bool:
+    sj = (node.get("summary_fields") or {}).get("job") or {}
+    ujt = (node.get("summary_fields") or {}).get("unified_job_template") or {}
+    if sj.get("type") == "workflow_approval":
+        return True
+    return ujt.get("unified_job_type") == "workflow_approval"
+
+
 def workflow_job_id_from_approval(appr: dict) -> int | None:
     """AAP 4.7+ uses workflow_approvals (summary_fields.workflow_job); older AWX used top-level workflow_job."""
     w = _coerce_int(appr.get("workflow_job"))
@@ -35,31 +49,45 @@ def workflow_job_id_from_approval(appr: dict) -> int | None:
 
 
 def first_pending_workflow_approval_id(s: Settings, workflow_job_id: int) -> int | None:
-    """Return first pending workflow approval id for this WorkflowJob (AAP 4.7+ or legacy AWX)."""
+    """Return first open workflow approval id for this WorkflowJob (AAP 4.7+ or legacy AWX)."""
     with _client(s) as c:
-        # AAP 4.7+: walk workflow_job_nodes (list filter on workflow_approvals is unreliable).
-        r = c.get(f"/api/v2/workflow_jobs/{workflow_job_id}/workflow_nodes/")
-        if r.status_code == 200:
+        # Merge nodes from nested route + flat list — some builds return [] on only one path.
+        merged: list[dict] = []
+        seen_node_ids: set[int] = set()
+        for url, params in (
+            (f"/api/v2/workflow_jobs/{workflow_job_id}/workflow_nodes/", {"page_size": 200}),
+            ("/api/v2/workflow_job_nodes/", {"workflow_job": workflow_job_id, "page_size": 200}),
+        ):
+            r = c.get(url, params=params)
+            if r.status_code != 200:
+                continue
             for node in r.json().get("results") or []:
-                sj = (node.get("summary_fields") or {}).get("job") or {}
-                if sj.get("type") != "workflow_approval":
-                    continue
-                st = (sj.get("status") or "").lower()
-                if st not in ("pending", "waiting"):
-                    continue
-                jid = node.get("job") or sj.get("id")
-                if jid is not None:
-                    return int(jid)
+                nid = node.get("id")
+                if isinstance(nid, int):
+                    if nid in seen_node_ids:
+                        continue
+                    seen_node_ids.add(nid)
+                merged.append(node)
+
+        for node in merged:
+            if not _node_is_workflow_approval(node):
+                continue
+            sj = (node.get("summary_fields") or {}).get("job") or {}
+            if not _approval_status_open(sj.get("status")):
+                continue
+            jid = node.get("job") or sj.get("id")
+            if jid is not None:
+                return int(jid)
+
         # Legacy AWX: workflow_approval_jobs list
-        r2 = c.get("/api/v2/workflow_approval_jobs/", params={"workflow_job": workflow_job_id})
+        r2 = c.get(
+            "/api/v2/workflow_approval_jobs/",
+            params={"workflow_job": workflow_job_id, "page_size": 200},
+        )
         if r2.status_code != 200:
             return None
         rows = r2.json().get("results") or []
-        pend = [
-            row
-            for row in rows
-            if (row.get("status") or "").lower() in ("pending", "waiting")
-        ]
+        pend = [row for row in rows if _approval_status_open(row.get("status"))]
         if not pend:
             return None
         return int(sorted(pend, key=lambda x: int(x["id"]))[0]["id"])
