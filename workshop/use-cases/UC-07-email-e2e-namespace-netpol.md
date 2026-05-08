@@ -41,6 +41,13 @@ oc apply -k aap-yamls/tower/
 bash scripts/register-webhook-email-e2e-ns-netpol.sh
 ```
 
+Launch from the cluster ( **`oc login`**, **`Secret/aap-controller-api`** in **`aap`**) — API sync + **`AUTO_APPROVE=true`** skips waiting for mail (use **`false`** to exercise email approval):
+
+```bash
+./scripts/run-email-e2e-ns-netpol-workflow.sh
+AUTO_APPROVE=false TARGET_NAMESPACE=my-demo-ns ./scripts/run-email-e2e-ns-netpol-workflow.sh
+```
+
 ## Success criteria
 
 - Namespace created with **`app.kubernetes.io/managed-by: aap-email-e2e`** label.
