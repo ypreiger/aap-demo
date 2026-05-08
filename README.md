@@ -27,6 +27,10 @@ Inside a **Workflow Job Template**, step 3 receives `demo_batch_id` from step 2.
 
 Use **Automation Controller** (AAP’s control plane UI or API). Names below are suggestions; align with your org’s naming conventions.
 
+### Automation Hub (collections browser)
+
+Presenters validating **`/content/collections`** should ensure the **`community`** repository is synced (**`requirements_file`** from this repo drives the allow list). Scripted path: **`documentation/HUB_COLLECTIONS.md`** and **`scripts/hub-sync-community-from-requirements.sh`**.
+
 ### 1. Organization (optional but typical)
 
 Create or reuse an **Organization** (for example `Demo`).

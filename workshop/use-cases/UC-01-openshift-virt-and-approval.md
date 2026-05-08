@@ -4,6 +4,10 @@
 
 Operators provision a BOM namespace and Fedora VMs for a tenant. A **manual approval gate** separates “platform prep” from “consumes IPs / CPU quotas” VM creation.
 
+## Prerequisites
+
+Follow **`../PLAN.md`**. Automation Hub **`/content/collections`**: **`community`** sync + UI filter (**[`../../documentation/HUB_COLLECTIONS.md`](../../documentation/HUB_COLLECTIONS.md)**). Controller **`collections/requirements.yml`**: **`../../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`**.
+
 ## Controller objects
 
 - Workflow **`workshop-multi-domain`** (survey: **`project_name`**, **`workshop_mock_base_url`**)

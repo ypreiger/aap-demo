@@ -4,6 +4,10 @@
 
 Once the cluster-side footprint exists, automation fans out to **classic infrastructure APIs**—here represented by static JSON over HTTPS to avoid lab dependencies.
 
+## Prerequisites
+
+**`../PLAN.md`**, mock Route **`workshop-mock-infra`**, collections per **[`../../documentation/HUB_COLLECTIONS.md`](../../documentation/HUB_COLLECTIONS.md)**.
+
 ## Endpoints (Route `workshop-mock-infra`)
 
 | File | Simulated domain |

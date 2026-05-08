@@ -4,6 +4,10 @@
 
 After virtualization assets land, a **read-only** Ansible pass validates the deny-all / selective egress policy and annotates the namespace for audit dashboards.
 
+## Prerequisites
+
+Follow **`../PLAN.md`**. Hub + Controller collections: **[`../../documentation/HUB_COLLECTIONS.md`](../../documentation/HUB_COLLECTIONS.md)**, **[`../../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`](../../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md)**.
+
 ## Playbook
 
 `playbooks/workshop_networkpolicy_audit.yml`

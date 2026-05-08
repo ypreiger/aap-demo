@@ -35,13 +35,14 @@ This document is the **execution contract** for presenters and for **AI agents**
 
 ## Execution order (operators / presenters)
 
-1. `collections` + EE: enable Galaxy sync (see `documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`).  
-2. `oc apply -k workshop/openshift/mock-infra`  
-3. `oc apply -k aap-yamls/tower/` → wait until **workshop-multi-domain** WT exists  
-4. Git project **Sync** (or run `workshop/scripts/run-e2e-multi-domain-workflow.sh` which triggers update)  
-5. Register webhook: `ansible-playbook email-plugin/playbooks/register_controller_webhook_notification.yml …`  
-6. Optional SMTP: `./email-plugin/scripts/deploy-email-plugin.sh`  
-7. `bash workshop/scripts/run-e2e-multi-domain-workflow.sh`  
+1. **Automation Hub**: if **`/content/collections`** stays empty after install, mirror **`collections/requirements.yml`** into the **`community`** repo (**`documentation/HUB_COLLECTIONS.md`** + **`scripts/hub-sync-community-from-requirements.sh`**). In the gateway UI choose **Community** if **Published** is still blank (until **rh-certified** sync + token).  
+2. `collections` + EE: enable Galaxy sync (see **`documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`**).  
+3. `oc apply -k workshop/openshift/mock-infra`  
+4. `oc apply -k aap-yamls/tower/` → wait until **workshop-multi-domain** WT exists  
+5. Git project **Sync** (or run `workshop/scripts/run-e2e-multi-domain-workflow.sh` which triggers update)  
+6. Register webhook: `ansible-playbook email-plugin/playbooks/register_controller_webhook_notification.yml …`  
+7. Optional SMTP: `./email-plugin/scripts/deploy-email-plugin.sh`  
+8. `bash workshop/scripts/run-e2e-multi-domain-workflow.sh`  
 
 ## Git-triggered executions
 

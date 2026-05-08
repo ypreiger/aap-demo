@@ -16,6 +16,8 @@ Companion code lives alongside the Ansible project under [`aap-demo`](../README.
 
 ## Quick verify
 
+**Prerequisite:** **`community`** Hub content synced if you browse collections (**[documentation/HUB_COLLECTIONS.md](../documentation/HUB_COLLECTIONS.md)**); Controller still needs **`documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`** for Galaxy/EE semantics.
+
 ```bash
 oc apply -k workshop/openshift/mock-infra
 oc apply -k aap-yamls/tower/
