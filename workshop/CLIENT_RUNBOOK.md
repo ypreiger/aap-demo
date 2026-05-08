@@ -143,6 +143,22 @@ Then launch **`workshop-multi-domain`**; when **`bom-approve-before-vms`** is re
 
 **Goal:** Single survey drives **foundation → approval → VMs → netpol audit → mock F5 → mock VMware → mock Blue Coat**.
 
+### What `workshop_mock_base_url` is
+
+Survey field **Mock integrations base URL** passes **`extra_vars`** **`workshop_mock_base_url`** into the playbook jobs under the mock (**F5 / VMware / Blue Coat**) templates. Its value must be the **HTTPS origin** served by **`workshop-mock-infra`** — the **scheme + host**, **no trailing slash**, **no path**. Playbooks suffix paths such as **`/f5_pool.json`**, **`/vmware_guests.json`**, **`/bluecoat_health.json`**.
+
+Presenter deploy (**edge TLS Route** exposes nginx):
+
+```bash
+cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+oc apply -k workshop/openshift/mock-infra
+bash workshop/scripts/resolve-mock-route.sh   # prints https://...
+```
+
+Example on a sandbox cluster *(replace with your route host)*:
+
+`https://workshop-mock-infra-aap.apps.<your-cluster-domain>`
+
 ### Prerequisites
 
 - **Collections:** Hub **Community** visible (section 2); Controller **collections download** wired ([`documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`](../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md)).
