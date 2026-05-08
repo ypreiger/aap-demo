@@ -40,6 +40,9 @@ for _ in $(seq 1 40); do
   sleep 5
 done
 
+echo "==> Repair UC-07 objects in Controller (JobTemplates + workflow graph if operator left them empty)"
+bash "${ROOT}/scripts/bootstrap-email-e2e-controller-api.sh"
+
 WT_ID=""
 for _ in $(seq 1 60); do
   WT=$(curl -sS -k -H "Authorization: Bearer ${TOKEN}" "${HOST}/api/v2/workflow_job_templates/?name=email-e2e-ns-netpol")

@@ -11,6 +11,8 @@ Automators create **only** an empty **`Namespace`** with a workflow survey param
 - Git content on **`origin/main`** (Tower project **AAP Demo (GitHub)** sync).
 - **`oc apply -k aap-yamls/tower/`** so resources exist: **`email-e2e-create-namespace`**, **`email-e2e-apply-netpol`**, workflow **`email-e2e-ns-netpol`**.
 
+**Tower operator caveat:** If **`oc describe jobtemplate … / workflowtemplate …`** in namespace **`aap`** shows **`There was an error in the job/workflow template`** (often right after the playbooks first land in Git), Controller may still lack the **Job Templates** or the **Workflow Visualizer** may be **empty**. Sync the project once, then run **`scripts/bootstrap-email-e2e-controller-api.sh`** (idempotent) — the launch script **`scripts/run-email-e2e-ns-netpol-workflow.sh`** calls it automatically after project sync.
+
 ## Instructions (Automation Controller UI)
 
 1. **Projects → AAP Demo (GitHub) → Sync** (until playbooks referenced by new templates are present).
