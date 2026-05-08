@@ -25,7 +25,7 @@ This document is the **execution contract** for presenters and for **AI agents**
 
 ## Deliverables checklist
 
-- [x] **Client-facing AAP UI steps** (**[`workshop/CLIENT_RUNBOOK.md`](CLIENT_RUNBOOK.md)**) — workflows to launch, collections, importing collections, Blue Coat, email approvals  
+- [x] **Client-facing steps per use case** (**[`use-cases/README.md`](use-cases/README.md)** **UC-01–UC-06**; **`UC-05`** Hub + Blue Coat, **`UC-06`** email approval) plus consolidated **[`CLIENT_RUNBOOK.md`](CLIENT_RUNBOOK.md)**  
 - [x] Mock infra Deployment + Route in `aap` namespace  
 - [x] Workshop job templates + workflow (Tower resource operator CRs)  
 - [x] E2E script with **auto-approve** for CI-like verification  
