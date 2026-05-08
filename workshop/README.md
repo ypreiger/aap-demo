@@ -11,7 +11,8 @@ Companion code lives alongside the Ansible project under [`aap-demo`](../README.
 | [`CLIENT_RUNBOOK.md`](CLIENT_RUNBOOK.md) | **Operator / client**: which template to run, approvals, Hub collections, importing collections, email Approve/Deny |
 | [`PLAN.md`](PLAN.md) | Consolidated rollout & verification plan |
 | [`agents/`](agents/) | System prompts for delegated “agents” (Cursor / humans) |
-| [`use-cases/`](use-cases/) | Short domain narratives + success criteria |
+| [`use-cases/README.md`](use-cases/README.md) | **Indexed use cases UC-01–UC-06** with step-by-step AAP / Hub instructions |
+| [`use-cases/*.md`](use-cases/) | Individual narratives (**inspect collections + Blue Coat** = UC-05; **email approve** = UC-06) |
 | [`openshift/mock-infra`](openshift/mock-infra) | nginx JSON mocks (F5 / VMware / Blue Coat) |
 | [`scripts/`](scripts) | Resolve Route host, approve workflow gates, **run E2E** |
 | [`git-webhook-bridge/`](git-webhook-bridge) | GitHub `push` → optional **EDA POST** + Controller SCM sync + **approved** workflow launch |

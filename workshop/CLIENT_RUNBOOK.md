@@ -4,7 +4,9 @@ Canonical repo: **[ypreiger/aap-demo](https://github.com/ypreiger/aap-demo)**.
 
 This guide is for **operators / client representatives** running the lab in the **Automation Controller** UI (and optionally **Automation Hub**). It answers: *which workflow do I launch?, what should I see?, where is “Blue Coat collection”?, how do I add collections?, how do I get email with Approve/Deny buttons?*
 
-Companion stories: [`use-cases/`](use-cases/). **Hands-on steps live here**; use-case files link back for context only.
+**Canonical per-use-case steps:** numbered files and index **[`use-cases/README.md`](use-cases/README.md)** (**UC-01 … UC-06**).
+
+This **`CLIENT_RUNBOOK.md`** is the **single condensed** guide; each UC Markdown file carries the detailed **instructions** your client representative follows in order.
 
 ---
 

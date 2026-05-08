@@ -6,15 +6,40 @@ After virtualization assets land, a **read-only** Ansible pass validates the den
 
 ## Prerequisites
 
-Follow **`../PLAN.md`**. Hub + Controller collections: **[`../../documentation/HUB_COLLECTIONS.md`](../../documentation/HUB_COLLECTIONS.md)**, **[`../../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`](../../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md)**.
+Follow **`../PLAN.md`**. Hub + Controller collections: **[`UC-05-inspect-hub-collections-bluecoat.md`](UC-05-inspect-hub-collections-bluecoat.md)**, **`../../documentation/CONTROLLER_COLLECTIONS_VISIBILITY.md`**.
 
-## Run this in AAP
+To run **only** this job template in isolation (advanced), ensure inventory + **OpenShift/K8s API credential** **`openshift-bom-target`** exist; in the standard workshop you run it **inside **`workshop-multi-domain`****.
 
-**`workshop-networkpolicy-audit`** runs inside **`workshop-multi-domain`** (after VMs). Sequence: **[`../CLIENT_RUNBOOK.md` §6](../CLIENT_RUNBOOK.md#6-workflow-workshop-multi-domain-step-by-step)** — expect NetworkPolicy asserts and annotation **`workshop.aap-demo.github.io/network-audit`**.
+---
+
+## Instructions (step-by-step in AAP)
+
+### Typical path — as part of **`workshop-multi-domain`**
+
+1. Complete **UC-01** through the approval gate and **`workshop-bom-project-vms`** (foundation + VMs must exist first).
+2. Stay on the running **workflow job** detail view (**Jobs** → your **`workshop-multi-domain`** instance).
+3. When the **`workshop-networkpolicy-audit`** node starts, click into that **job** (not only the workflow row).
+4. Read **Output:**
+   - Assert messages for **`NetworkPolicy`** named **`deny-all-open-443`** (exact name checked by playbook **`../../playbooks/workshop_networkpolicy_audit.yml`**).
+   - Annotation **`workshop.aap-demo.github.io/network-audit`** applied to namespace.
+
+### What you should see
+
+| Item | Meaning |
+|------|---------|
+| **Status** | **`Successful`** unless foundation SKIPPED (**by design**) or **`kubernetes.core` auth** broke (rotate **`openshift-bom-target`**). |
+| **Log** | No failed **assertions** — policy present and annotation echoed. |
+
+### Standalone run (operators only)
+
+1. **Templates** → **Job Templates** → **`workshop-networkpolicy-audit`**.
+2. Provide **`extra_vars`** matching your target namespace (**`project_name`** / BOM convention used by BOM playbooks)—only if supported by inventory and credentials in your tenant; default workshop path is embedded in **UC-01** workflow.
+
+---
 
 ## Playbook
 
-`playbooks/workshop_networkpolicy_audit.yml`
+`../../playbooks/workshop_networkpolicy_audit.yml`
 
 ## Success criteria
 
@@ -25,3 +50,7 @@ Follow **`../PLAN.md`**. Hub + Controller collections: **[`../../documentation/H
 
 - Foundation skipped → assert fails (by design).
 - SA token expired → `kubernetes.core` auth errors (rotate **openshift-bom-target** credential).
+
+## See also
+
+- **[`../CLIENT_RUNBOOK.md`](../CLIENT_RUNBOOK.md)** §6 node table (order after VMs).
