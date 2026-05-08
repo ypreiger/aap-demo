@@ -11,6 +11,8 @@ Companion code lives alongside the Ansible project under [`aap-demo`](../README.
 | [`use-cases/`](use-cases/) | Short domain narratives + success criteria |
 | [`openshift/mock-infra`](openshift/mock-infra) | nginx JSON mocks (F5 / VMware / Blue Coat) |
 | [`scripts/`](scripts) | Resolve Route host, approve workflow gates, **run E2E** |
+| [`git-webhook-bridge/`](git-webhook-bridge) | GitHub `push` → optional **EDA POST** + Controller SCM sync + **approved** workflow launch |
+| [Domain YAML inputs](../documentation/DOMAIN_INPUT_YAML.md) | Firewall / F5 / Blue Coat declarations under **`projects/*/domain/`** |
 
 ## Quick verify
 

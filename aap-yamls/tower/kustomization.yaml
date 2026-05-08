@@ -19,3 +19,5 @@ resources:
   - jobtemplate-workshop-mock-vmware.yaml
   - jobtemplate-workshop-mock-bluecoat.yaml
   - workflowtemplate-workshop-multi-domain.yaml
+  - jobtemplate-workshop-git-push-dispatcher.yaml
+  - workflowtemplate-workshop-projects-git-driven.yaml

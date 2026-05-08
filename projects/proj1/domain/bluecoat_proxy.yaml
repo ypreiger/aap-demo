@@ -1,0 +1,17 @@
+---
+apiVersion: workshop.aap-demo/v1
+kind: BluecoatProxyHints
+metadata:
+  name: proj1-gateway-hints
+spec:
+  policyBundle:
+    revision: blueprint-2042
+    complianceProfile: corp-default
+    categoriesBlocked:
+      - malware
+      - phishing
+      - spyware
+      - phishing-parked
+      - phishing-analytics
+      - ransomware
+      - botnet

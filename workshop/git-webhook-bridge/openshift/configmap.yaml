@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: git-webhook-bridge-env
+data:
+  CONTROLLER_VERIFY_SSL: "false"
+  CONTROLLER_PROJECT_FILTER: "AAP Demo"
+  GIT_WORKFLOW_TEMPLATE_NAME: "workshop-projects-git-driven"
+  GIT_WORKFLOW_INVENTORY_NAME: "Demo Inventory"
+  # Optional: outbound EDA Activation / Event Stream ingest URL — leave blank to skip POST.
+  EDA_WEBHOOK_URL: ""
+  # Populated post-deploy alongside WORKFLOW_MOCK_BASE_URL
+  WORKFLOW_MOCK_BASE_URL: "https://workshop-mock-infra-aap.apps.example.com"

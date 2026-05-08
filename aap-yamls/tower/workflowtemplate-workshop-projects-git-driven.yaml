@@ -1,0 +1,46 @@
+---
+# Git-triggered rebuild: Approval → BOM/domain dispatcher (extras from git-webhook-bridge).
+# Shares the BOM approval unified template so email-plugin webhooks keep working unchanged.
+#
+apiVersion: tower.ansible.com/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: wjt-workshop-projects-git-driven
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  state: present
+  name: workshop-projects-git-driven
+  organization: Default
+  inventory: Demo Inventory
+  description: >-
+    Approve Git-mediated rebuilds touching projects/*/bom or projects/*/domain YAML.
+    Webhook bridge posts EDA payloads, syncs SCM, passes domains_by_project as extra vars.
+  ask_variables_on_launch: false
+  survey_enabled: false
+  workflow_nodes:
+    - identifier: approve-git-batch
+      unified_job_template:
+        organization:
+          name: Default
+        type: workflow_approval
+        name: bom-approve-before-vms
+        description: >-
+          Git-triggered SCM update touching projects/*/… — approve Dispatcher (BOM/domain YAML + mocks).
+          Same approval object as BOM workflow for shared mail/webhook integrations.
+        timeout: 0
+      related:
+        success_nodes:
+          - identifier: run-dispatcher
+        failure_nodes: []
+        always_nodes: []
+    - identifier: run-dispatcher
+      unified_job_template:
+        type: job_template
+        name: workshop-git-push-dispatcher
+        organization:
+          name: Default
+      related:
+        success_nodes: []
+        failure_nodes: []
+        always_nodes: []

@@ -1,0 +1,17 @@
+---
+apiVersion: workshop.aap-demo/v1
+kind: FirewallRuleIntentList
+metadata:
+  name: proj2-minimal-firewall-sample
+spec:
+  environment: workshop
+  rules:
+    - name: deny-all-but-dns
+      action: permit
+      layer: egress
+      sources:
+        - labelSelector: workload=payments
+      services:
+        - proto: udp
+          ports:
+            - 53

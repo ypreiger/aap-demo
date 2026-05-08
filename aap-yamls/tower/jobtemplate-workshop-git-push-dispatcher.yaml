@@ -1,0 +1,16 @@
+---
+apiVersion: tower.ansible.com/v1alpha1
+kind: JobTemplate
+metadata:
+  name: jt-workshop-git-push-dispatcher
+  namespace: aap
+spec:
+  connection_secret: aap-controller-api
+  name: workshop-git-push-dispatcher
+  organization: Default
+  project: AAP Demo (GitHub)
+  playbook: playbooks/workshop_git_push_dispatcher.yml
+  inventory: Demo Inventory
+  credentials:
+    - openshift-bom-target
+  ask_variables_on_launch: false

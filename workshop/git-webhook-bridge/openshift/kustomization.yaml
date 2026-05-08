@@ -1,0 +1,10 @@
+namespace: aap
+commonLabels:
+  app.kubernetes.io/name: git-webhook-bridge
+resources:
+  - imagestream.yaml
+  - buildconfig-binary.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - route.yaml

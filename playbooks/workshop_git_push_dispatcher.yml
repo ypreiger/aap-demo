@@ -1,0 +1,45 @@
+---
+# Controller job used after approval in workflow workshop-projects-git-driven.
+# Consumes Controller extra_vars emitted by workshop/git-webhook-bridge GitHub webhook.
+#
+# Required extra vars when git-triggered:
+#   domains_by_project: dict project_slug -> list[str]
+#   git_changed_files: list[str]
+# Optional:
+#   workshop_mock_base_url (HTTPS Route for mock infra)
+#
+- name: Git-driven BOM + domain YAML dispatcher
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - ansible.builtin.assert:
+        that:
+          - domains_by_project is defined
+          - domains_by_project | length > 0
+        fail_msg: >-
+          Provide domains_by_project (dict slug -> markers). Git bridge sets this automatically;
+          rehearsals can paste JSON manually at launch.
+
+    - name: Normalize domains payload from JSON string tower may pass through extra_vars
+      when: domains_by_project is string
+      ansible.builtin.set_fact:
+        domains_by_project: "{{ domains_by_project | from_json }}"
+
+    - name: Announce affected projects
+      ansible.builtin.debug:
+        msg:
+          git_triggered: "{{ git_triggered | default(false) }}"
+          domains_by_project: "{{ domains_by_project }}"
+          changed_files_preview: "{{ (git_changed_files | default([]))[0:20] }}"
+
+    - ansible.builtin.include_tasks:
+        file: "{{ playbook_dir }}/includes/workshop_git_dispatch_slug.yml"
+      loop: "{{ domains_by_project | dict2items }}"
+      loop_control:
+        loop_var: _item
+      vars:
+        project_name: "{{ _item.key }}"
+        _domains_for_project: "{{ _item.value }}"
+
+    - ansible.builtin.debug:
+        msg: "dispatcher finished for projects={{ domains_by_project.keys() | list }}"

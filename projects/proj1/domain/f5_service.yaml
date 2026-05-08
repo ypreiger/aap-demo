@@ -1,0 +1,20 @@
+---
+apiVersion: workshop.aap-demo/v1
+kind: F5DeclarativeSnippet
+metadata:
+  name: proj1-vs-pool-draft
+spec:
+  tenant: workshop-lab
+  virtual:
+    name: ingress-demo-vs
+    destination: /Common/Shared/10.1.255.254:8443
+    pool: proj1-shared-pool
+  pool:
+    name: proj1-shared-pool
+    loadBalancingMode: least-connections-member
+    monitor: /Common/tcp_echo
+    members:
+      - address: openshift-router.internal
+        port: 443
+      - address: 10.255.220.101
+        port: 8443

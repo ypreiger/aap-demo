@@ -1,0 +1,145 @@
+---
+# Included with: project_name (= slug), _domains_for_project (list from git-webhook-bridge)
+- ansible.builtin.debug:
+    msg:
+      slug: "{{ project_name }}"
+      domains: "{{ _domains_for_project }}"
+
+- name: BOM foundation (covers namespace/SA/NetPolicy apply from Git)
+  when: >-
+    ((_domains_for_project | default([]))
+    | intersect(['openshift_virt','openshift_ns_bootstrap','openshift_netpol_audit']))
+    | length > 0
+  ansible.builtin.command:
+    argv:
+      - ansible-playbook
+      - "{{ playbook_dir }}/project_foundation.yml"
+      - -e
+      - "project_name={{ project_name }}"
+  register: _foundation_cmd
+
+- name: BOM Fedora VMs (skipped for netpol-only or namespace-only deltas)
+  when: "'openshift_virt' in (_domains_for_project | default([]))"
+  ansible.builtin.command:
+    argv:
+      - ansible-playbook
+      - "{{ playbook_dir }}/project_vms.yml"
+      - -e
+      - "project_name={{ project_name }}"
+      - -e
+      - "vm_sizing_mode=cluster_instancetype"
+      - -e
+      - "vm_cluster_instancetype=u1.medium"
+      - -e
+      - "vm_cluster_preference=fedora"
+      - -e
+      - "vm_root_disk_mode=container"
+      - -e
+      - "vm_container_root_image=quay.io/kubevirt/fedora-container-disk-images:41"
+      - -e
+      - "vm_datasource_namespace=openshift-virtualization-os-images"
+      - -e
+      - "vm_datasource_name=fedora"
+      - -e
+      - "vm_root_volume_size_gi=30"
+      - -e
+      - "vm_extra_disk_gi=0"
+      - -e
+      - "vm_cloud_user_password={{ vm_cloud_user_password | default('changeme-git-driven') }}"
+  register: _vms_cmd
+
+- name: Network posture audit annotation
+  when: >-
+    ((_domains_for_project | default([])) | intersect(['openshift_virt','openshift_netpol_audit']))
+    | length > 0
+  ansible.builtin.command:
+    argv:
+      - ansible-playbook
+      - "{{ playbook_dir }}/workshop_networkpolicy_audit.yml"
+      - -e
+      - "project_name={{ project_name }}"
+  register: _npaudit_cmd
+
+- name: Firewall intents YAML ingest
+  when: "'domain_firewall' in (_domains_for_project | default([]))"
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/../projects/{{ project_name }}/domain/firewall_rules.yaml"
+  register: _fw_stat
+
+- name: Interpret firewall intents
+  when:
+    - "'domain_firewall' in (_domains_for_project | default([]))"
+    - _fw_stat.stat.exists | bool
+  block:
+    - ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../projects/{{ project_name }}/domain/firewall_rules.yaml"
+        name: _fw_yaml
+    - ansible.builtin.assert:
+        that:
+          - (_fw_yaml.spec.rules | default([])) | length > 0
+    - ansible.builtin.debug:
+        msg:
+          intents: "{{ _fw_yaml.spec.rules | map(attribute='name') | list }}"
+
+- name: F5 YAML stat
+  when: "'domain_f5' in (_domains_for_project | default([]))"
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/../projects/{{ project_name }}/domain/f5_service.yaml"
+  register: _f5_stat
+
+- name: Normalize F5 draft vs mock JSON
+  when:
+    - "'domain_f5' in (_domains_for_project | default([]))"
+    - _f5_stat.stat.exists | bool
+    - workshop_mock_base_url | default('') | length > 0
+  block:
+    - ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../projects/{{ project_name }}/domain/f5_service.yaml"
+        name: _f5_yaml
+    - ansible.builtin.uri:
+        url: "{{ (workshop_mock_base_url | regex_replace('/$', '')) ~ '/f5_pool.json' }}"
+        method: GET
+        validate_certs: false
+        return_content: true
+        status_code: [200]
+      register: _f5mock_http
+    - ansible.builtin.debug:
+        msg:
+          yaml_pool_name: "{{ _f5_yaml.spec.pool.name | default('unset') }}"
+          mock_pool_json: "{{ (_f5mock_http.content | default('{}') | from_json).name | default('?') }}"
+          reconciliation: compare draft YAML against mock JSON (lab AS3 bridge placeholder).
+
+- name: Blue Coat hints YAML ingest
+  when: "'domain_bluecoat' in (_domains_for_project | default([]))"
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/../projects/{{ project_name }}/domain/bluecoat_proxy.yaml"
+  register: _bc_stat
+
+- name: Show Blue Coat bundle intent
+  when:
+    - "'domain_bluecoat' in (_domains_for_project | default([]))"
+    - _bc_stat.stat.exists | bool
+  block:
+    - ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../projects/{{ project_name }}/domain/bluecoat_proxy.yaml"
+        name: _bc_yaml
+    - ansible.builtin.debug:
+        msg:
+          blueprint: "{{ _bc_yaml.spec.policyBundle.revision | default('unknown') }}"
+          blocked_categories_preview: "{{ (_bc_yaml.spec.policyBundle.categoriesBlocked | default([]))[0:4] }}"
+
+- name: VMware discovery mock
+  when:
+    - "'domain_vmware' in (_domains_for_project | default([]))"
+    - workshop_mock_base_url | default('') | length > 0
+  ansible.builtin.command:
+    argv:
+      - ansible-playbook
+      - "{{ playbook_dir }}/workshop_mock_vmware.yml"
+      - -e
+      - "workshop_mock_base_url={{ workshop_mock_base_url }}"
+
+- name: Note generic domain YAML change
+  when: "'domain_generic_yaml' in (_domains_for_project | default([]))"
+  ansible.builtin.debug:
+    msg: Generic domain YAML touched — extend dispatcher mapping if new vendor types are introduced.

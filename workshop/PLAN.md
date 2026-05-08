@@ -43,6 +43,15 @@ This document is the **execution contract** for presenters and for **AI agents**
 6. Optional SMTP: `./email-plugin/scripts/deploy-email-plugin.sh`  
 7. `bash workshop/scripts/run-e2e-multi-domain-workflow.sh`  
 
+## Git-triggered executions
+
+1. Ensure Tower exposes **`bom-approve-before-vms`** (**shared** with BOM workflow CRs — no extra bootstrap).
+2. Apply **`workflowtemplate-workshop-projects-git-driven`** (**`jt-workshop-git-push-dispatcher`**).
+3. Deploy **`workshop/git-webhook-bridge`**; set **`EDA_WEBHOOK_URL`** / **`GITHUB_WEBHOOK_SECRET`** when ready.
+4. Register repo webhook **`POST …/v1/github`** targeting the bridge Route.
+
+Incremental execution uses marker sets produced by **`app/classify.py`** (`openshift_virt` vs **`openshift_ns_bootstrap`** vs **`openshift_netpol_audit`**, domain YAML keys). Details: **`documentation/GIT_WEBHOOK_EDA.md`**.
+
 ## Risks / mitigations
 
 | Risk | Mitigation |

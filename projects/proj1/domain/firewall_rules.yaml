@@ -1,0 +1,23 @@
+---
+# Versioned declarative intents (workshop — not applied directly by clusters without playbooks).
+apiVersion: workshop.aap-demo/v1
+kind: FirewallRuleIntentList
+metadata:
+  name: proj1-sample-intents
+  labels:
+    project: proj1
+spec:
+  environment: workshop
+  rules:
+    - name: allow-mgmt-https
+      action: permit
+      layer: ingress
+      sources:
+        - cidr: 10.0.0.0/8
+      destinations:
+        - fqdn: openshift-api.cluster.local
+      services:
+        - proto: tcp
+          ports:
+            - 443
+      description: Narrow admin HTTPS from campus core (mock parity with NP checks).

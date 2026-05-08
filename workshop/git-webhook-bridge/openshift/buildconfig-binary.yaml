@@ -1,0 +1,22 @@
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: git-webhook-bridge
+spec:
+  successfulBuildsHistoryLimit: 2
+  failedBuildsHistoryLimit: 5
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile
+      from:
+        kind: ImageStreamTag
+        namespace: openshift
+        name: python:3.12-ubi9
+  output:
+    to:
+      kind: ImageStreamTag
+      name: git-webhook-bridge:latest

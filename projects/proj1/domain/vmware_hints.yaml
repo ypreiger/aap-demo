@@ -1,0 +1,9 @@
+---
+# Optional inventory hints for VMware domain automation (still mock-backed in labs).
+apiVersion: workshop.aap-demo/v1
+kind: VmwareHints
+spec:
+  vcenter_logical: workshop-lab-vcenter
+  priority_vms_to_sync:
+    - fedora-mgmt-01
+    - rhel-app-42
