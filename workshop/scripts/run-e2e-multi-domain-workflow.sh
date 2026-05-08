@@ -8,8 +8,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 NS="${AAP_NAMESPACE:-aap}"
 
-HOST=$(oc get secret -n "${NS}" aap-controller-api -o jsonpath='{.data.host}' | base64 -d | sed 's|/*$||')
-TOKEN=$(oc get secret -n "${NS}" aap-controller-api -o jsonpath='{.data.token}' | base64 -d)
+HOST=$(oc get secret -n "${NS}" aap-controller-api -o jsonpath='{.data.host}' | base64 -d | tr -d '\r\n' | sed 's|/*$||')
+TOKEN=$(oc get secret -n "${NS}" aap-controller-api -o jsonpath='{.data.token}' | base64 -d | tr -d '\r\n')
 
 echo "==> Apply mock infra"
 oc apply -k "${ROOT}/workshop/openshift/mock-infra"
@@ -35,7 +35,8 @@ echo "Waiting for Git project revision (polling) ..."
 for _ in $(seq 1 40); do
   P=$(curl -sS -k -H "Authorization: Bearer ${TOKEN}" "${HOST}/api/v2/projects/${PROJ_ID}/")
   SYNC=$(echo "$P" | jq -r '.status // empty')
-  if [[ "${SYNC,,}" == "successful" ]]; then break; fi
+  SYNC_LC=$(echo "$SYNC" | tr '[:upper:]' '[:lower:]')
+  if [[ "${SYNC_LC}" == "successful" ]]; then break; fi
   sleep 5
 done
 
@@ -79,7 +80,8 @@ for _ in $(seq 1 120); do
   W=$(curl -sS -k -H "Authorization: Bearer ${TOKEN}" "${HOST}/api/v2/workflow_jobs/${WFJ}/")
   S=$(echo "$W" | jq -r '.status // empty')
   echo "    status=${S}"
-  case "${S,,}" in
+  SLC=$(echo "$S" | tr '[:upper:]' '[:lower:]')
+  case "${SLC}" in
     successful) exit 0 ;;
     failed|error|canceled) echo "$W" | jq '{status,status_text}' >&2; exit 6 ;;
   esac

@@ -3,8 +3,8 @@
 # or rbac API — Teams alone are scaffolding.
 set -euo pipefail
 NS="${AAP_NAMESPACE:-aap}"
-HOST=$(oc get secret -n "${NS}" aap-controller-api -o jsonpath='{.data.host}' | base64 -d | sed 's|/*$||')
-TOKEN=$(oc get secret -n "${NS}" aap-controller-api -o jsonpath='{.data.token}' | base64 -d)
+HOST=$(oc get secret -n "${NS}" aap-controller-api -o jsonpath='{.data.host}' | base64 -d | tr -d '\r\n' | sed 's|/*$||')
+TOKEN=$(oc get secret -n "${NS}" aap-controller-api -o jsonpath='{.data.token}' | base64 -d | tr -d '\r\n')
 
 BASE="${HOST%/}"
 [[ "$BASE" == */api ]] || BASE="${BASE}/api"
@@ -23,8 +23,9 @@ fi
 
 ensure_team() {
   local tn="$1"
-  local TD
-  TD=$(curl_api "${BASE}/v2/teams/?organization=${ORG_ID}&search=${tn}")
+  local ENC TD
+  ENC=$(jq -rn --arg s "$tn" '$s|@uri')
+  TD=$(curl_api "${BASE}/v2/teams/?organization=${ORG_ID}&search=${ENC}")
   local TID
   TID=$(echo "$TD" | jq -r --arg nm "$tn" '[.results[]? | select(.name == $nm) | .id][0] // empty')
   if [[ -n "${TID}" && "${TID}" != "null" ]]; then
@@ -36,11 +37,11 @@ ensure_team() {
   echo "Created team ${tn} id=${TID}"
 }
 
-ensure_team "Workshop — OpenShift Virtualization"
-ensure_team "Workshop — Network Policy"
-ensure_team "Workshop — VMware"
-ensure_team "Workshop — F5"
-ensure_team "Workshop — Secure Web Gateway"
-ensure_team "Workshop — Observers ReadOnly"
+ensure_team "Workshop OpenShiftVirt"
+ensure_team "Workshop NetworkPolicy"
+ensure_team "Workshop VMware"
+ensure_team "Workshop F5"
+ensure_team "Workshop SecureWebGW"
+ensure_team "Workshop ObserversRO"
 
 echo "Teams ready. Assign workflow/job permissions manually (Default org admin) — see workshop/WORKSHOP_RBAC.md"

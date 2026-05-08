@@ -33,7 +33,8 @@ fi
 DET=$(curl_api "${BASE}/v2/workflow_approvals/${APPROVAL_ID}/")
 STAT=$(echo "$DET" | jq -r '.status // empty')
 
-case "${STAT,,}" in
+STAT_LC=$(echo "$STAT" | tr '[:upper:]' '[:lower:]')
+case "${STAT_LC}" in
   successful)
     echo "approval_job=${APPROVAL_ID} already finalized (${STAT})."
     exit 0
@@ -45,12 +46,12 @@ case "${STAT,,}" in
 esac
 
 echo "approval_job=${APPROVAL_ID} status=${STAT}"
-case "${STAT,,}" in
+case "${STAT_LC}" in
   pending|waiting)
     OUT=$(curl_api -X POST -d '{}' "${BASE}/v2/workflow_approvals/${APPROVAL_ID}/approve/")
     echo "$OUT" | jq '{id,status}' 2>/dev/null || echo "$OUT"
     ;;
-  "")
+  '')
     exit 3
     ;;
   *)

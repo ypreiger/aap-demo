@@ -6,12 +6,12 @@
 
 | Team | Responsibility |
 |------|----------------|
-| Workshop — OpenShift Virtualization | `bom-project-*`, `workshop-bom-project-vms`, inventory access |
-| Workshop — Network Policy | `workshop-networkpolicy-audit` |
-| Workshop — VMware | `workshop-mock-vmware` (later vendor creds) |
-| Workshop — F5 | `workshop-mock-f5` |
-| Workshop — Secure Web Gateway | Blue Coat mocks / future integrations |
-| Workshop — Observers ReadOnly | dashboards / auditor |
+| Workshop OpenShiftVirt | `bom-project-*`, `workshop-bom-project-vms`, inventory access |
+| Workshop NetworkPolicy | `workshop-networkpolicy-audit` |
+| Workshop VMware | `workshop-mock-vmware` (later vendor creds) |
+| Workshop F5 | `workshop-mock-f5` |
+| Workshop SecureWebGW | Blue Coat mocks / future integrations |
+| Workshop ObserversRO | dashboards / auditor |
 
 ## Grants (UI path)
 
