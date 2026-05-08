@@ -37,6 +37,17 @@ def hook422(detail: str) -> None:
 def flatten_controller_webhook_payload(data: dict[str, Any]) -> dict[str, Any]:
     """Merge Tower/AAP envelopes so extract_ids finds workflow_job_id / approval_job_id."""
     out = dict(data)
+    # Nested messages.workflow_approval.running.body (stringified JSON from CM)
+    wa_body = (
+        ((out.get("messages") or {}).get("workflow_approval") or {}).get("running") or {}
+    ).get("body")
+    if isinstance(wa_body, str) and wa_body.strip().startswith("{"):
+        try:
+            nested = json.loads(wa_body.strip())
+            if isinstance(nested, dict):
+                out.update(nested)
+        except json.JSONDecodeError:
+            pass
     inner = out.get("body")
     if isinstance(inner, str):
         try:
@@ -109,6 +120,9 @@ def extract_ids(data: dict[str, Any]) -> tuple[int | None, int | None, str | Non
     Best-effort parse for webhook JSON.
     Prefer explicit approval_job_id; else workflow_job_id for resolver.
     Override recipient: 'to_email' | 'recipient' | OVERRIDE_TO_EMAIL optional.
+
+    Tower/AAP may POST (a) only custom template JSON, (b) full unified job as root
+    (type=workflow_approval, summary_fields.workflow_job), or (c) { "job": { ... } }.
     """
     to_ov = (
         data.get("to_email")
@@ -120,25 +134,40 @@ def extract_ids(data: dict[str, Any]) -> tuple[int | None, int | None, str | Non
     wf = data.get("workflow_job_id") or data.get("workflow_job")
     if isinstance(wf, dict):
         wf = wf.get("id")
-    job = data.get("job") or {}
+
+    # Unified job may be the entire POST body (no "job" wrapper).
+    root_type = str(data.get("type") or "").lower()
+    root_is_approval = root_type in ("workflow_approval", "workflow_approval_job")
+    job = data.get("job")
+    if not isinstance(job, dict) and root_is_approval:
+        job = data
+    elif not isinstance(job, dict):
+        job = {}
+
     if isinstance(job, dict):
-        if ap is None and job.get("type") in {"workflow_approval"}:
+        if ap is None and job.get("type") in {"workflow_approval", "workflow_approval_job"}:
             ap = job.get("id")
             sum_wf = (job.get("summary_fields") or {}).get("workflow_job") or {}
             if wf is None and isinstance(sum_wf, dict):
                 wf = sum_wf.get("id")
+            sum_sw = (job.get("summary_fields") or {}).get("source_workflow_job") or {}
+            if wf is None and isinstance(sum_sw, dict):
+                wf = sum_sw.get("id")
         elif wf is None and job.get("type") == "workflow_job":
             wf = job.get("id")
     summary = data.get("summary_fields") or {}
     wf_s = summary.get("workflow_job") if isinstance(summary, dict) else None
     if wf is None and isinstance(wf_s, dict):
         wf = wf_s.get("id")
+    src_wf = summary.get("source_workflow_job") if isinstance(summary, dict) else None
+    if wf is None and isinstance(src_wf, dict):
+        wf = src_wf.get("id")
     if wf is None:
         wf = _workflow_id_from_url(str(data.get("url") or ""))
         if wf is None and isinstance(job, dict):
             wf = _workflow_id_from_url(str(job.get("url") or ""))
-    # Top-level Tower-style id can be playbook or WFJ — unreliable; only use with explicit type hints
-    if ap is None and data.get("type") == "workflow_approval_job":
+    # Top-level unified job (same as root_is_approval)
+    if ap is None and root_is_approval:
         ap = data.get("id")
 
     aa = int(ap) if ap is not None else None
@@ -185,8 +214,11 @@ async def controller_hook(request: Request) -> dict[str, Any]:
     wf_job_id, approval_job_id, to_override = extract_ids(data)
 
     if approval_job_id is None and wf_job_id is None:
+        ks = sorted(data.keys()) if isinstance(data, dict) else []
         hook422(
-            "Need workflow_job_id and/or approval_job_id in webhook JSON — see README Jinja snippet.",
+            "Need workflow_job_id and/or approval_job_id in webhook JSON — see README. "
+            f"Payload top-level keys: {ks}. "
+            "Controller often POSTs the full approval job as root (type=workflow_approval); upgrade email-plugin.",
         )
 
     if approval_job_id is None and wf_job_id is not None:
