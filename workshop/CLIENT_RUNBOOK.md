@@ -44,7 +44,7 @@ Use the **cluster / workshop** URL your admin gives you (example host pattern: `
 
 **If Community is still empty:** Run **`scripts/hub-sync-community-from-requirements.sh`** (requires **`oc`** and Hub admin credentials). See **[`documentation/HUB_COLLECTIONS.md`](../documentation/HUB_COLLECTIONS.md)**.
 
-**If Published is empty:** Configure the offline token and sync **`rh-certified`** — **[`documentation/HUB_COLLECTIONS.md`](../documentation/HUB_COLLECTIONS.md)** §2.
+**If Published / All is empty but certified content exists:** Sync **`rh-certified`** first (offline token — **[`documentation/HUB_COLLECTIONS.md`](../documentation/HUB_COLLECTIONS.md)** §2), then mirror **`published`** (**§2.6**, script **`scripts/hub-sync-published-mirror-rh-certified.sh`**). Until **`published`** finishes syncing, select repository **`rh-certified`** in Hub.
 
 ### What you should see
 

@@ -12,8 +12,11 @@ Three separate causes:
 2. **Community repository never synced**  
    Galaxy NG / Pulp can reject syncing `galaxy.ansible.com` without a **`requirements_file`** on the **community** collection remote. Typical API message: *Syncing content from galaxy.ansible.com without specifying a requirements file is not allowed.*
 
-3. **Published repository never synced**  
-   Certified collections require a valid **offline token** on the **`rh-certified`** remote and a completed sync of the **`rh-certified`** repository. Until then, **Published** stays at count **0** even when **Community** is populated.
+3. **Certified remote never synced**  
+   Certified collections require a valid **offline token** on the **`rh-certified`** remote and a completed sync of the **`rh-certified`** repository.
+
+4. **`published` repository empty while `rh-certified` is full**  
+   On many installs, Red Hat content lands in the **`rh-certified`** Ansible repository (`/plugin/ansible/content/rh-certified/` shows a non-zero count). The gateway filter **Published** / **All** often calls the **`published`** pipeline (`/plugin/ansible/content/published/`), which uses a **separate** repository that starts with **`remote: null`**. That API stays at **`meta.count: 0`** until you mirror certified content into **`published`** — see **§2.6**.
 
 Allow-listed community collections for this repository are defined in [`collections/requirements.yml`](../collections/requirements.yml).
 
@@ -107,7 +110,17 @@ This script:
 
 The first certified sync can run for a long time. Watch **Automation Hub → Tasks** (or poll Pulp tasks via API) until completion.
 
-### 2.4 Verify Published content
+### 2.4 Verify API counts
+
+**`rh-certified`** repository (where sync writes first):
+
+```bash
+curl -sk -u "${USER}:${PASS}" \
+  "${GATEWAY}/api/galaxy/v3/plugin/ansible/content/rh-certified/collections/index/?limit=5" \
+  | jq '.meta.count'
+```
+
+**`published`** pipeline (gateway **Published** filter):
 
 ```bash
 curl -sk -u "${USER}:${PASS}" \
@@ -115,7 +128,22 @@ curl -sk -u "${USER}:${PASS}" \
   | jq '.meta.count'
 ```
 
-### 2.5 Manual configuration (UI)
+If the first command is large and the second is **0**, run **§2.6**.
+
+### 2.6 Mirror certified content into the `published` repository
+
+Symptom: **Collections** shows certified rows under repository **`rh-certified`**, but **Published** / **All** is empty.
+
+Fix: attach the **`rh-certified`** collection remote to the **`published`** Ansible repository and sync **`published`** (duplicates artifacts; required for the **`published`** plugin path).
+
+```bash
+export HUB_GATEWAY_URL="https://<your-aap-gateway-host>"
+./scripts/hub-sync-published-mirror-rh-certified.sh
+```
+
+The sync can take as long as the original **`rh-certified`** sync. Re-run after Hub reinstall if **`published`** loses its remote again.
+
+### 2.7 Manual configuration (UI)
 
 If you do not use the script:
 
@@ -134,9 +162,12 @@ Exact menu labels depend on AAP version; see *Red Hat Ansible Automation Platfor
 
 1. Log in to the **AAP gateway**.
 2. Open **Automation Hub** → **Collections** (`/content/collections`).
-3. Use the repository or filter control:
-   - **Community** — mirrored Galaxy collections after §1.
-   - **Published** — Red Hat certified content after §2.
+3. Set the repository or filter control:
+   - **Community** — after §1.
+   - **rh-certified** — certified content immediately after **`rh-certified`** sync completes (§2.3).
+   - **Published** — same certified content only after **`published`** repository is populated (**§2.6**) or your platform maps both paths.
+
+Hard-refresh the browser after long-running sync tasks finish.
 
 ---
 
@@ -155,6 +186,7 @@ Controller does not populate Hub. For job templates that install collections fro
 |--------|--------|
 | Re-run `./scripts/hub-sync-community-from-requirements.sh` | Updates **`requirements_file`** if YAML changed; starts a new community sync. |
 | Re-run `./scripts/hub-sync-rh-certified-from-secret.sh` | Refreshes remote token from Secret and starts rh-certified sync. |
+| Run `./scripts/hub-sync-published-mirror-rh-certified.sh` | Fills **`published`** so gateway **Published** / **All** lists match **`rh-certified`**. |
 | Purge Hub repositories | Not scripted here; coordinate with platform admins if storage must be reclaimed. |
 
 Workshop cleanup for jobs and Routes remains under **`workshop/scripts/`** and **`scripts/workshop-aap-cleanup-unused.sh`**.

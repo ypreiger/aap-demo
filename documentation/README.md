@@ -6,7 +6,7 @@ Use this index to open the right guide. All paths are relative to the repository
 
 | Document | Purpose |
 |----------|---------|
-| [HUB_COLLECTIONS.md](HUB_COLLECTIONS.md) | Empty Collections UI; **Community** sync; **Published / certified** sync; **offline token** and OpenShift **Secret** |
+| [HUB_COLLECTIONS.md](HUB_COLLECTIONS.md) | Empty Collections UI; **Community**; **rh-certified** vs **`published`** mirror; **offline token**; OpenShift **Secret** |
 | [CONTROLLER_COLLECTIONS_VISIBILITY.md](CONTROLLER_COLLECTIONS_VISIBILITY.md) | Controller project sync, Galaxy/Hub credentials, EE |
 
 ## Automation Controller and workflows
@@ -34,3 +34,4 @@ Use this index to open the right guide. All paths are relative to the repository
 |--------|---------|
 | `scripts/hub-sync-community-from-requirements.sh` | Mirror **`collections/requirements.yml`** into Hub **community** |
 | `scripts/hub-sync-rh-certified-from-secret.sh` | Apply offline token from **`rh-hub-offline-token`** and sync **rh-certified** |
+| `scripts/hub-sync-published-mirror-rh-certified.sh` | Populate **`published`** repo so gateway **Published** lists certified collections |
