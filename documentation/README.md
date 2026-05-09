@@ -62,6 +62,12 @@ Condensed operator path: [../workshop/CLIENT_RUNBOOK.md](../workshop/CLIENT_RUNB
 | [VIRT_WORKFLOW_SURVEY.md](VIRT_WORKFLOW_SURVEY.md) | OpenShift Virtualization / workflow survey fields |
 | [PROJECTS_GIT_SYNC.md](PROJECTS_GIT_SYNC.md) | Controller **Project** (SCM) vs **`projects/<slug>/`**, Git→cluster vs cluster→Git |
 
+## Lightspeed
+
+| File | Contents |
+|------|----------|
+| [LIGHTSPEED_ASSISTANT.md](LIGHTSPEED_ASSISTANT.md) | Assistant visible but not answering — LLM secret, logs, egress |
+
 ---
 
 ## Workshop (non-doc)
