@@ -15,7 +15,7 @@ If **`chatbot_token`** is still a placeholder (for example **`REPLACE_ME_SET_REA
 ```bash
 oc patch secret demo-aap-lightspeed-chatbot-config -n aap --type merge -p '{
   "stringData": {
-    "chatbot_model": "gpt-4o-mini",
+    "chatbot_model": "gpt-3.5-turbo",
     "chatbot_url": "https://api.openai.com/v1",
     "chatbot_token": "<YOUR_OPENAI_API_KEY>",
     "chatbot_llm_provider_type": "openai"
