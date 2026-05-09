@@ -52,12 +52,12 @@ References: [Installing AAP on OpenShift 2.6](https://docs.redhat.com/en/documen
 |------|------|
 | `01-ansibleautomationplatform.yaml` | `hub.file_*` storage class / size (`ocs-external-storagecluster-cephfs` assumes ODF CephFS; change if your cluster differs). |
 | same | Uncomment `hostname` to pin the gateway Route host under your `*.apps...` domain. |
-| same | Lightspeed is `disabled: true`; enable only with valid IBM/auth secrets per product docs. |
+| same | **Lightspeed** is enabled in **`01-ansibleautomationplatform.yaml`** via `spec.lightspeed.chatbot_config_secret_name`; create Secret **`demo-aap-lightspeed-chatbot-config`** first (see **`secrets/aap-demo-lightspeed-chatbot-config.secret.example.yaml`**) with a working LLM endpoint. |
 
 ## MCP and Lightspeed
 
 - **MCP** is enabled read-only (`allow_write_operations: false`). See chapter *Deploying an Ansible MCP server* in the install guide.
-- **Lightspeed** requires IBM watsonx Code Assistant configuration secrets; enable in the CR after you create those secrets ([install guide — Lightspeed](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.6/html/installing_on_openshift_container_platform/index)).
+- **Ansible Lightspeed (intelligent assistant)** is wired with `spec.lightspeed.disabled: false` and **`chatbot_config_secret_name: demo-aap-lightspeed-chatbot-config`**. Create that Secret in **`aap`** *before* or immediately after the first apply (copy from **`secrets/aap-demo-lightspeed-chatbot-config.secret.example.yaml`**). Required keys: **`chatbot_model`**, **`chatbot_url`**, **`chatbot_token`**, optional **`chatbot_llm_provider_type`** (`openai`, `rhoai_vllm`, etc.); optional MCP: **`aap_gateway_url`**, **`aap_controller_url`** (internal — e.g. `http://demo-aap`, `http://demo-aap-controller-service` when the CR name is **`demo-aap`**). Product guide: [Deploying Ansible Lightspeed on OpenShift](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.6/html/installing_on_openshift_container_platform/deploying-chatbot-operator).
 
 EDA and Controller URLs are wired by the platform operator when deployed from the bundled CR; no standalone `EDA` CR is needed for this layout.
 

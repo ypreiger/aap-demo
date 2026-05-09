@@ -12,8 +12,7 @@
 # - oc extract secret/demo-aap-admin-password -n aap --keys=password --to=-
 # - Apply tower/*.yaml ONLY after gateway is reachable and you optionally enable preload data.
 #
-# Lightspeed requires IBM watsonx Code Assistant auth/model secrets BEFORE enabling;
-# overlay `secrets/lightspeed-*.yaml` is provided as template only.
+# Lightspeed requires chatbot configuration Secret (see secrets/aap-demo-lightspeed-chatbot-config.secret.example.yaml).
 #
 # Derived from appendix examples in RH AAP 2.6 Installing on OpenShift Container Platform:
 # https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.6/html/installing_on_openshift_container_platform/
@@ -53,13 +52,11 @@ spec:
     storage_type: file
     file_storage_storage_class: ocs-external-storagecluster-cephfs
     file_storage_size: 50Gi
-  # Ansible Lightspeed (IBM watsonx Code Assistant) — opt-in; needs secrets (see secrets/).
+  # Ansible Lightspeed — requires Secret `demo-aap-lightspeed-chatbot-config` (see secrets/).
+  # Keys: chatbot_model, chatbot_url, chatbot_token, chatbot_llm_provider_type (+ optional MCP URLs).
   lightspeed:
-    disabled: true
-    # When you have valid secrets, set disabled: false and uncomment:
-    # auth_config_secret_name: aap-demo-lightspeed-auth
-    # api:
-    #   model_pipeline_secret: aap-demo-lightspeed-model
+    disabled: false
+    chatbot_config_secret_name: demo-aap-lightspeed-chatbot-config
   # Ansible MCP server (read-only by default for safer demos).
   mcp:
     disabled: false
