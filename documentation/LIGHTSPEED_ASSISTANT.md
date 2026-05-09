@@ -10,12 +10,16 @@ The chatbot reads **`Secret/demo-aap-lightspeed-chatbot-config`** in **`aap`** (
 
 If **`chatbot_token`** is still a placeholder (for example **`REPLACE_ME_SET_REAL_LLM_TOKEN`**), inference fails. OpenAI keys normally start with **`sk-`** and are much longer than placeholder text.
 
+**`chatbot_model`:** set this to a model your API account can call ([OpenAI models](https://platform.openai.com/docs/models)). **`gpt-3.5-turbo`** is legacy; this repo’s examples default to **`gpt-4.1-mini`** (small, current tier). **`gpt-4o-mini`** is also common for low cost.
+
+If OpenAI returns **quota exceeded** for **multiple** models (`…/gpt-4o-mini`, `…/gpt-3.5-turbo`, …), your **account/org monthly or tier limit** is usually the blocker—increase **billing / limits** in the OpenAI dashboard. Changing the model string only helps when **another** model still has allowance.
+
 **Patch** (example — OpenAI):
 
 ```bash
 oc patch secret demo-aap-lightspeed-chatbot-config -n aap --type merge -p '{
   "stringData": {
-    "chatbot_model": "gpt-3.5-turbo",
+    "chatbot_model": "gpt-4.1-mini",
     "chatbot_url": "https://api.openai.com/v1",
     "chatbot_token": "<YOUR_OPENAI_API_KEY>",
     "chatbot_llm_provider_type": "openai"
