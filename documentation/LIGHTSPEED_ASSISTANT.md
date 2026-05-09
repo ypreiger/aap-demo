@@ -14,6 +14,8 @@ If **`chatbot_token`** is still a placeholder (for example **`REPLACE_ME_SET_REA
 
 If OpenAI returns **quota exceeded** for **multiple** models, your **account/org monthly or tier limit** is usually the blocker—increase **billing / limits** in the OpenAI dashboard. Changing the model string only helps when **another** model still has allowance.
 
+**HTTP 500** after fixing the token: check **`ansible-chatbot`** logs. If OpenAI returns **`Unsupported parameter: 'max_tokens' … Use 'max_completion_tokens' instead`**, your **`chatbot_model`** (e.g. some **`gpt-5.*`** IDs) uses an API shape the bundled Lightspeed client does not send yet—use **`gpt-4o-mini`** or **`gpt-4.1-mini`** until Red Hat ships a compatible image, or open a support case with the log line.
+
 **Patch** (example — OpenAI):
 
 ```bash
