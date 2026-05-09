@@ -2,7 +2,7 @@
 
 Canonical repo: **[ypreiger/aap-demo](https://github.com/ypreiger/aap-demo)**.
 
-**Standing up a new cluster from zero:** **[`documentation/INSTALL_OPENSHIFT.md`](../documentation/INSTALL_OPENSHIFT.md)** (operator → collections → Tower CRs → mock → email → verify).
+**Standing up a new cluster from zero:** **[`documentation/01_INSTALL_OPENSHIFT.md`](../documentation/01_INSTALL_OPENSHIFT.md)** (operator → collections → Tower CRs → mock → email → verify).
 
 This guide is for **operators** using **Automation Controller** and **Automation Hub**.
 
@@ -15,7 +15,7 @@ It covers:
 - Adding collections and execution environments  
 - Email with Approve/Deny links (**`email-plugin`**)
 
-**Per-use-case procedures:** **[`documentation/USECASE_INDEX.md`](../documentation/USECASE_INDEX.md)** (UC-01–UC-07). Each **`documentation/USECASE_UC*.md`** file is the checklist for that scenario.
+**Per-use-case procedures:** **[`workshop/use-cases/README.md`](../workshop/use-cases/README.md)** (UC-01–UC-07). Each **`workshop/use-cases/USECASE_UC*.md`** file is the checklist for that scenario.
 
 ---
 
@@ -44,9 +44,9 @@ Use the **cluster / workshop** URL your admin gives you (example host pattern: `
 
 **Why Published can stay empty:** Certified content comes from the **rh-certified** remote and needs Red Hat subscription / token setup on the platform. The workshop content is satisfied by **Community** collections mirrored into Hub.
 
-**If Community is still empty:** Run **`scripts/hub-sync-community-from-requirements.sh`** (requires **`oc`** and Hub admin credentials). See **[`documentation/COLLECTION_HUB.md`](../documentation/COLLECTION_HUB.md)**.
+**If Community is still empty:** Run **`scripts/hub-sync-community-from-requirements.sh`** (requires **`oc`** and Hub admin credentials). See **[`documentation/02_COLLECTION_HUB.md`](../documentation/02_COLLECTION_HUB.md)**.
 
-**If Published / All is empty but certified content exists:** Sync **`rh-certified`** first (offline token — **[`documentation/COLLECTION_HUB.md`](../documentation/COLLECTION_HUB.md)** §2), then mirror **`published`** (**§2.6**, script **`scripts/hub-sync-published-mirror-rh-certified.sh`**). Until **`published`** finishes syncing, select repository **`rh-certified`** in Hub.
+**If Published / All is empty but certified content exists:** Sync **`rh-certified`** first (offline token — **[`documentation/02_COLLECTION_HUB.md`](../documentation/02_COLLECTION_HUB.md)** §2), then mirror **`published`** (**§2.6**, script **`scripts/hub-sync-published-mirror-rh-certified.sh`**). Until **`published`** finishes syncing, select repository **`rh-certified`** in Hub.
 
 ### What you should see
 
@@ -57,7 +57,7 @@ Use the **cluster / workshop** URL your admin gives you (example host pattern: `
 
 ## 3. “Where is the Blue Coat collection?”
 
-**There is no widely used Ansible Galaxy collection named “Blue Coat” or “ProxySG”** for Symantec / Broadcom SGOS the way there is for F5 or VMware. This repository documents that in **[`documentation/COLLECTION_REFERENCE.md`](../documentation/COLLECTION_REFERENCE.md)** (section *Symantec Broadcom ProxySG (“Blue Coat”)*).
+**There is no widely used Ansible Galaxy collection named “Blue Coat” or “ProxySG”** for Symantec / Broadcom SGOS the way there is for F5 or VMware. This repository documents that in **[`documentation/04_COLLECTION_REFERENCE.md`](../documentation/04_COLLECTION_REFERENCE.md)** (section *Symantec Broadcom ProxySG (“Blue Coat”)*).
 
 What this **workshop** does instead:
 
@@ -84,13 +84,13 @@ Pick the path that matches your policy.
    export HUB_GATEWAY_URL="https://<your-gateway-host>"
    ./scripts/hub-sync-community-from-requirements.sh
    ```
-   Details: **[`documentation/COLLECTION_HUB.md`](../documentation/COLLECTION_HUB.md)**.
+   Details: **[`documentation/02_COLLECTION_HUB.md`](../documentation/02_COLLECTION_HUB.md)**.
 
 ### B. Collections for **Automation Controller** job runs (most common in class)
 
 Controller installs collections from **`requirements.yml`** **when the project syncs**, if collection download is enabled and a Galaxy/Hub credential exists on the organization.
 
-1. Follow **[`documentation/COLLECTION_CONTROLLER.md`](../documentation/COLLECTION_CONTROLLER.md)** (enable download, org credential, **sync project**).
+1. Follow **[`documentation/03_COLLECTION_CONTROLLER.md`](../documentation/03_COLLECTION_CONTROLLER.md)** (enable download, org credential, **sync project**).
 2. After changing **`collections/requirements.yml`** in Git, **update the project** in Controller (**Projects** → **Sync**).
 
 ### C. Collections **baked into an Execution Environment**
@@ -110,7 +110,7 @@ The playbook **[`email-plugin/playbooks/register_controller_webhook_notification
 | Step | Action |
 |------|--------|
 | 1 | Deploy **`email-plugin`**: **[`email-plugin/README.md`](../email-plugin/README.md)** — `SMTP_PASSWORD='...' DISABLE_SMTP=false ./email-plugin/scripts/deploy-email-plugin.sh` |
-| 2 | Register webhook: **[`documentation/EMAIL_APPROVAL.md`](../documentation/EMAIL_APPROVAL.md)** — `ansible-playbook email-plugin/playbooks/register_controller_webhook_notification.yml` with `controller_host`, `controller_oauth_token`, `webhook_target_url` |
+| 2 | Register webhook: **[`documentation/06_EMAIL_APPROVAL.md`](../documentation/06_EMAIL_APPROVAL.md)** — `ansible-playbook email-plugin/playbooks/register_controller_webhook_notification.yml` with `controller_host`, `controller_oauth_token`, `webhook_target_url` |
 | 3 | Confirm **Controller** → **Administration** → **Settings** → **System** → **Base URL of the service** is your real Controller URL |
 
 ### 5.2 Launch the workflow (you)
@@ -133,7 +133,7 @@ Within a few minutes (SMTP + spam folders), the approver inbox should receive a 
 - Workflow status moves from **Pending** → **Successful** after approval (unless a later job fails).
 - After approval: job template **`bom-project-vms`** runs and attempts to create **VirtualMachine** resources (cluster must have OpenShift Virtualization / capacity).
 
-**If no email arrives:** plugin not deployed, **`DISABLE_SMTP`**, wrong **`DEFAULT_TO_EMAIL`**, SMTP blocked egress, webhook not attached to **`bom-project-deploy`**, or message in spam. See **[`documentation/EMAIL_APPROVAL.md`](../documentation/EMAIL_APPROVAL.md)** troubleshooting table.
+**If no email arrives:** plugin not deployed, **`DISABLE_SMTP`**, wrong **`DEFAULT_TO_EMAIL`**, SMTP blocked egress, webhook not attached to **`bom-project-deploy`**, or message in spam. See **[`documentation/06_EMAIL_APPROVAL.md`](../documentation/06_EMAIL_APPROVAL.md)** troubleshooting table.
 
 ### 5.4 Minimal email E2E — **`email-e2e-ns-netpol`** (namespace → approve mail → deny‑all NetworkPolicy)
 
@@ -147,7 +147,7 @@ Within a few minutes (SMTP + spam folders), the approver inbox should receive a 
 | 4 | **Templates** → **`email-e2e-ns-netpol`** → **Launch** → set **Target namespace** |
 | 5 | Approve from mail (or Controller UI); confirm **`NetworkPolicy`** **`email-e2e-deny-all`** in that namespace |
 
-Full steps and cleanup: **[`documentation/USECASE_UC07_email_e2e_namespace_netpol.md`](../documentation/USECASE_UC07_email_e2e_namespace_netpol.md)**.
+Full steps and cleanup: **[`workshop/use-cases/USECASE_UC07_email_e2e_namespace_netpol.md`](../workshop/use-cases/USECASE_UC07_email_e2e_namespace_netpol.md)**.
 
 ### 5.5 Same email for **`workshop-multi-domain`**
 
@@ -188,7 +188,7 @@ Example on a sandbox cluster *(replace with your route host)*:
 
 ### Prerequisites
 
-- **Collections:** Hub **Community** visible (section 2); Controller **collections download** wired ([`documentation/COLLECTION_CONTROLLER.md`](../documentation/COLLECTION_CONTROLLER.md)).
+- **Collections:** Hub **Community** visible (section 2); Controller **collections download** wired ([`documentation/03_COLLECTION_CONTROLLER.md`](../documentation/03_COLLECTION_CONTROLLER.md)).
 - **Mock JSON Route:** Apply **`workshop/openshift/mock-infra`** so Route **`workshop-mock-infra`** exists.
 - **Survey URL:** Obtain the HTTPS base (**no trailing slash**), e.g.:
   ```bash
@@ -224,9 +224,9 @@ Failures usually mean: wrong **`workshop_mock_base_url`**, mock Route missing, V
 
 | Topic | Doc |
 |--------|-----|
-| UC-07 email E2E (namespace + netpol) | [`documentation/USECASE_UC07_email_e2e_namespace_netpol.md`](../documentation/USECASE_UC07_email_e2e_namespace_netpol.md) |
-| Hub empty UI | [`documentation/COLLECTION_HUB.md`](../documentation/COLLECTION_HUB.md) |
-| Controller + `requirements.yml` | [`documentation/COLLECTION_CONTROLLER.md`](../documentation/COLLECTION_CONTROLLER.md) |
-| Collection list & EE | [`documentation/COLLECTION_REFERENCE.md`](../documentation/COLLECTION_REFERENCE.md) |
-| Email plugin deploy + webhook | [`email-plugin/README.md`](../email-plugin/README.md), [`documentation/EMAIL_APPROVAL.md`](../documentation/EMAIL_APPROVAL.md) |
+| UC-07 email E2E (namespace + netpol) | [`workshop/use-cases/USECASE_UC07_email_e2e_namespace_netpol.md`](../workshop/use-cases/USECASE_UC07_email_e2e_namespace_netpol.md) |
+| Hub empty UI | [`documentation/02_COLLECTION_HUB.md`](../documentation/02_COLLECTION_HUB.md) |
+| Controller + `requirements.yml` | [`documentation/03_COLLECTION_CONTROLLER.md`](../documentation/03_COLLECTION_CONTROLLER.md) |
+| Collection list & EE | [`documentation/04_COLLECTION_REFERENCE.md`](../documentation/04_COLLECTION_REFERENCE.md) |
+| Email plugin deploy + webhook | [`email-plugin/README.md`](../email-plugin/README.md), [`documentation/06_EMAIL_APPROVAL.md`](../documentation/06_EMAIL_APPROVAL.md) |
 | Presenter rollout order | [`PLAN.md`](PLAN.md) |

@@ -3,7 +3,7 @@
 ## Deliverables
 
 - Keep **`workshop/README.md`** as the index; cross-link `documentation/*` for deep dives.
-- Each **`documentation/USECASE_*.md`** must list **inputs**, **Controller objects**, **expected artifacts**, **rollback**.
+- Each **`workshop/use-cases/USECASE_*.md`** must list **inputs**, **Controller objects**, **expected artifacts**, **rollback**.
 
 ## Style
 

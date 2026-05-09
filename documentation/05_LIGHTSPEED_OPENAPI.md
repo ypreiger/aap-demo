@@ -1,16 +1,34 @@
-# Ansible Lightspeed Intelligent Assistant — troubleshooting
+# Ansible Lightspeed — OpenAPI-style LLM endpoint, API key, and troubleshooting
+
+The chatbot calls an **HTTPS LLM API** (OpenAI-compatible for **`chatbot_llm_provider_type: openai`**). This document explains **`chatbot_url`** / **`chatbot_token`**, how that differs from the **Controller API** token, and what to check when the assistant is silent.
 
 The assistant icon appears when **`AnsibleLightspeed`** is reconciled and the gateway can reach **`demo-aap-lightspeed-chatbot-api`**. **No reply in the chat** usually means the **LLM backend is misconfigured or unreachable**, not the UI.
 
 ---
 
-## 1. Supply a real LLM credential
+## 1. `chatbot_url` and `chatbot_token` (LLM “Open API” key)
 
-The chatbot reads **`Secret/demo-aap-lightspeed-chatbot-config`** in **`aap`** (keys **`chatbot_model`**, **`chatbot_url`**, **`chatbot_token`**, **`chatbot_llm_provider_type`**).
+**Secret:** **`demo-aap-lightspeed-chatbot-config`** in namespace **`aap`** (see example: **`aap-yamls/secrets/aap-demo-lightspeed-chatbot-config.secret.example.yaml`**).
 
-If **`chatbot_token`** is still a placeholder (for example **`REPLACE_ME_SET_REAL_LLM_TOKEN`**), inference fails. OpenAI keys normally start with **`sk-`** and are much longer than placeholder text.
+| Key | Role |
+|-----|------|
+| **`chatbot_url`** | **Base URL** for the LLM provider’s **HTTP API** (for public OpenAI use **`https://api.openai.com/v1`**). The chatbot client appends provider-specific paths (e.g. chat/completions style calls) under this base. |
+| **`chatbot_token`** | **API key** (or bearer token) for that LLM endpoint. For OpenAI, keys usually start with **`sk-`**. This is **not** the same value as the Automation Controller **personal access token** used for `aap-controller-api` in [01_INSTALL_OPENSHIFT.md](01_INSTALL_OPENSHIFT.md) Phase 3. |
+| **`chatbot_model`** | Model id your account can use on that API ([OpenAI models](https://platform.openai.com/docs/models)). This repo’s examples use **`gpt-4o-mini`**. |
+| **`chatbot_llm_provider_type`** | Which wire protocol the client uses: commonly **`openai`**, or **`rhoai_vllm`** / **`rhelai_vllm`** for OpenShift AI / vLLM (set **`chatbot_url`** to your serving route). |
 
-**`chatbot_model`:** set this to a model your API account can call ([OpenAI models](https://platform.openai.com/docs/models)). This repo’s examples default to **`gpt-4o-mini`** (low cost, current small multimodal). **`gpt-4.1-mini`** is an alternative if your org prefers that tier.
+**Do not confuse these credentials:**
+
+| Secret / token | Used for |
+|----------------|----------|
+| **`demo-aap-lightspeed-chatbot-config`** | **Upstream LLM** (OpenAI, vLLM, etc.) — what this page calls the “**LLM API key**”. |
+| **Controller API** token (e.g. **`aap-controller-api`**) | **Red Hat Ansible Automation Platform Controller REST API** only — job templates, projects, webhooks. Never paste this into **`chatbot_token`**. |
+
+If **`chatbot_token`** is still a placeholder (e.g. **`REPLACE_ME_SET_REAL_LLM_TOKEN`**), inference fails.
+
+---
+
+## 2. Examples: patch the Secret
 
 If OpenAI returns **quota exceeded** for **multiple** models, your **account/org monthly or tier limit** is usually the blocker—increase **billing / limits** in the OpenAI dashboard. Changing the model string only helps when **another** model still has allowance.
 
@@ -40,7 +58,7 @@ oc rollout status deployment/demo-aap-lightspeed-chatbot-api -n aap --timeout=18
 
 ---
 
-## 2. Confirm logs (symptoms map to causes)
+## 3. Confirm logs (symptoms map to causes)
 
 **Lightspeed API** (proxies streaming to the chatbot):
 
@@ -73,13 +91,13 @@ oc rollout status deployment/demo-aap-lightspeed-api -n aap --timeout=300s
 
 ---
 
-## 3. Egress
+## 4. Egress
 
 Pods in **`aap`** must reach **`chatbot_url`** (for OpenAI: **`https://api.openai.com`**). Deny-all **`NetworkPolicy`** or cluster egress restrictions cause timeouts or failures after you fix the token.
 
 ---
 
-## 4. Reference
+## 5. Reference
 
 - Template for the Secret (do not commit real keys): **`aap-yamls/secrets/aap-demo-lightspeed-chatbot-config.secret.example.yaml`**
 - Product procedure: [Deploying Ansible Lightspeed on OpenShift](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.6/html/installing_on_openshift_container_platform/deploying-chatbot-operator)

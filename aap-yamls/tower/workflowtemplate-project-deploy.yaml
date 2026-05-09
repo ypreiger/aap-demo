@@ -22,7 +22,7 @@ spec:
     name: Project and OpenShift Virtualization VM options
     description: >-
       Select BOM project (namespace/artefacts path) and Fedora VM sizing/root disk/extra disk.
-      See Git documentation/VIRT_WORKFLOW_SURVEY.md.
+      See Git documentation/09_VIRT_WORKFLOW_SURVEY.md.
     spec:
       - type: text
         question_name: Project name

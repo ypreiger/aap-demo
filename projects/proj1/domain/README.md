@@ -9,4 +9,4 @@ YAML here describes **intent** for non-OpenShift (and cross-cutting network) too
 | `bluecoat_proxy.yaml` | Secure web gateway posture | Stub health/policy metadata. |
 | `vmware_hints.yaml` | VMware / vCenter mock sync | Drives `domain_vmware` classification + nested mock playbook. |
 
-Schemas are summarized in **`documentation/DOMAIN_INPUT.md`**.
+Schemas are summarized in **`documentation/08_DOMAIN_INPUT.md`**.

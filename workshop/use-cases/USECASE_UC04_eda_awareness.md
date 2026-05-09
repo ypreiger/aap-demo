@@ -6,7 +6,7 @@ EDA exposes a Route for webhook ingress even when the product UI is disabled. **
 
 ## Prerequisites
 
-**`../workshop/PLAN.md`**. Optional: **[`UC-05-inspect-hub-collections-bluecoat.md`](USECASE_UC05_inspect_hub_collections_bluecoat.md)** for Hub layout.
+**`../PLAN.md`**. Optional: **[`UC-05-inspect-hub-collections-bluecoat.md`](USECASE_UC05_inspect_hub_collections_bluecoat.md)** for Hub layout.
 
 ---
 
@@ -24,7 +24,7 @@ bash workshop/scripts/verify-eda-route.sh
 
 ### 2. Read rulebook skeleton
 
-Open **`../workshop/rulebooks/README.md`** in this repository (sample **ansible-rulebook** layout for discussion).
+Open **`../rulebooks/README.md`** in this repository (sample **ansible-rulebook** layout for discussion).
 
 ### 3. Classroom discussion prompts
 
@@ -62,5 +62,5 @@ Fully configuring authenticated activations against production Kafka/webhooks—
 
 ## See also
 
-- **`./EDA_GIT_WEBHOOK.md`** — git-driven controller + EDA bridge pattern.
+- **`../../documentation/07_EDA_GIT_WEBHOOK.md`** — git-driven controller + EDA bridge pattern.
 - **`../CLIENT_RUNBOOK.md`** §7 related references.

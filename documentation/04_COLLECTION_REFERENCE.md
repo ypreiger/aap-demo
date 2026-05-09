@@ -4,9 +4,9 @@ Canonical copy of this repository: **[https://github.com/ypreiger/aap-demo](http
 
 This repo’s **`collections/requirements.yml`** lists **Galaxy Ansible** collections for common infrastructure targets. It is oriented toward **Automation Controller**: either **sync Galaxy** into an Execution Environment image, or **`ansible-builder`** with the provided **`execution-environment/`** scaffolding.
 
-If jobs fail with **missing collections** or project updates never install them, start with [**Controller: collections visibility and sync**](COLLECTION_CONTROLLER.md) (Galaxy credential on the **organization**, global **Enable Collection(s) Download**, then **sync** the Git project—or run **`scripts/controller-wire-galaxy-for-default-org.sh`**).
+If jobs fail with **missing collections** or project updates never install them, start with [**Controller: collections visibility and sync**](03_COLLECTION_CONTROLLER.md) (Galaxy credential on the **organization**, global **Enable Collection(s) Download**, then **sync** the Git project—or run **`scripts/controller-wire-galaxy-for-default-org.sh`**).
 
-If **Automation Hub** itself lists **no** collections under the gateway **`/content/collections`** UI, mirror **`collections/requirements.yml`** into the **`community`** repository with **`scripts/hub-sync-community-from-requirements.sh`** — rationale and troubleshooting: [**Automation Hub collections (empty UI)**](COLLECTION_HUB.md).
+If **Automation Hub** itself lists **no** collections under the gateway **`/content/collections`** UI, mirror **`collections/requirements.yml`** into the **`community`** repository with **`scripts/hub-sync-community-from-requirements.sh`** — rationale and troubleshooting: [**Automation Hub collections (empty UI)**](02_COLLECTION_HUB.md).
 
 ---
 
@@ -85,9 +85,21 @@ You may install **either or both**. Same target vCenter can justify **only `vmwa
 | Galaxy collection | Notes |
 |------------------|-------|
 | **`f5networks.f5_modules`** | **Supported F5 Ansible collection**: AS3, declarative onboarding, BIG-IP LTM-centric modules (`bigip_virtual_server`, pools, certs, …). |
+| **`f5networks.f5_bigip`** | Older Galaxy namespace; still published. Prefer **`f5_modules`** for new playbooks unless you depend on this artifact name. |
 
 **Docs:**  
 - Galaxy: [https://galaxy.ansible.com/ui/repo/published/f5networks/f5_modules/](https://galaxy.ansible.com/ui/repo/published/f5networks/f5_modules/)  
+- Legacy: [https://galaxy.ansible.com/ui/repo/published/f5networks/f5_bigip/](https://galaxy.ansible.com/ui/repo/published/f5networks/f5_bigip/)  
+
+---
+
+## Event-Driven Ansible (EDA)
+
+| Galaxy collection | Notes |
+|------------------|-------|
+| **`ansible.eda`** | Rulebooks, plugins, event filters, and related content for **Event-Driven Ansible**. |
+
+**Docs:** [https://galaxy.ansible.com/ui/repo/published/ansible/eda/](https://galaxy.ansible.com/ui/repo/published/ansible/eda/)  
 
 ---
 

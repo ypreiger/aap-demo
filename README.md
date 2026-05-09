@@ -6,28 +6,30 @@
 |------|----------|
 | **`playbooks/`** | Playbooks; **`inventory/`** hosts; **`collections/requirements.yml`** Galaxy allow list |
 | **`workshop/`** | Multi-domain workflows, mock infra, E2E scripts — start at **[workshop/README.md](workshop/README.md)** and **[workshop/CLIENT_RUNBOOK.md](workshop/CLIENT_RUNBOOK.md)** |
-| **`documentation/`** | **[documentation/README.md](documentation/README.md)** — index; **[documentation/INSTALL_OPENSHIFT.md](documentation/INSTALL_OPENSHIFT.md)** — **greenfield cluster** (operator → collections → workshop) |
+| **`documentation/`** | **[documentation/README.md](documentation/README.md)** — numbered guides (`01`–`10`, UC index); **[documentation/01_INSTALL_OPENSHIFT.md](documentation/01_INSTALL_OPENSHIFT.md)** — **greenfield cluster** |
 | **`aap-yamls/`** | Automation Controller / Tower Kubernetes manifests — **[aap-yamls/README.md](aap-yamls/README.md)** |
-| **`projects/`** | BOM and domain YAML (`proj1`, `proj2`) — **[documentation/DOMAIN_INPUT.md](documentation/DOMAIN_INPUT.md)** |
+| **`projects/`** | BOM and domain YAML (`proj1`, `proj2`) — **[documentation/08_DOMAIN_INPUT.md](documentation/08_DOMAIN_INPUT.md)** |
 | **`email-plugin/`** | Approval email service — **[email-plugin/README.md](email-plugin/README.md)** |
 
-**Git-driven workflows:** **[documentation/EDA_GIT_WEBHOOK.md](documentation/EDA_GIT_WEBHOOK.md)** and **`workshop/git-webhook-bridge/`**.
+**Git-driven workflows:** **[documentation/07_EDA_GIT_WEBHOOK.md](documentation/07_EDA_GIT_WEBHOOK.md)** and **`workshop/git-webhook-bridge/`**.
 
-**Collections and EE:** **[documentation/COLLECTION_REFERENCE.md](documentation/COLLECTION_REFERENCE.md)**. Verify locally: **`./scripts/verify-collections-and-ee.sh`**.
+**Collections and EE:** **[documentation/04_COLLECTION_REFERENCE.md](documentation/04_COLLECTION_REFERENCE.md)**. Verify locally: **`./scripts/verify-collections-and-ee.sh`**.
 
-**OpenShift Virtualization / surveys:** **[documentation/VIRT_WORKFLOW_SURVEY.md](documentation/VIRT_WORKFLOW_SURVEY.md)**.
+**Ansible Lightspeed (LLM API key, troubleshooting):** **[documentation/05_LIGHTSPEED_OPENAPI.md](documentation/05_LIGHTSPEED_OPENAPI.md)**.
 
-**BOM workflows** (`bom-project-deploy`, surveys): use **`project_name`** → **`aap-demo/projects/{project_name}/bom`**. Attach credential **`openshift-bom-target`** (OpenShift/Kubernetes API bearer token) to **`bom-project-foundation`** and **`bom-project-vms`**. **Git ↔ cluster:** pushes under **`projects/`** can drive sync + gated workflows; cluster-only changes are not pushed back to Git — see **[documentation/PROJECTS_GIT_SYNC.md](documentation/PROJECTS_GIT_SYNC.md)**.
+**OpenShift Virtualization / surveys:** **[documentation/09_VIRT_WORKFLOW_SURVEY.md](documentation/09_VIRT_WORKFLOW_SURVEY.md)**.
 
-**Approval email:** **`email-plugin/`** + **[documentation/EMAIL_APPROVAL.md](documentation/EMAIL_APPROVAL.md)**.
+**BOM workflows** (`bom-project-deploy`, surveys): use **`project_name`** → **`aap-demo/projects/{project_name}/bom`**. Attach credential **`openshift-bom-target`** (OpenShift/Kubernetes API bearer token) to **`bom-project-foundation`** and **`bom-project-vms`**. **Git ↔ cluster:** pushes under **`projects/`** can drive sync + gated workflows; cluster-only changes are not pushed back to Git — see **[documentation/10_PROJECTS_GIT_SYNC.md](documentation/10_PROJECTS_GIT_SYNC.md)**.
 
-**Namespace → approval email → NetworkPolicy:** workflow **`email-e2e-ns-netpol`** — **[documentation/USECASE_UC07_email_e2e_namespace_netpol.md](documentation/USECASE_UC07_email_e2e_namespace_netpol.md)**; apply **`oc apply -k aap-yamls/tower/`**, then **`scripts/register-webhook-email-e2e-ns-netpol.sh`**.
+**Approval email:** **`email-plugin/`** + **[documentation/06_EMAIL_APPROVAL.md](documentation/06_EMAIL_APPROVAL.md)**.
+
+**Namespace → approval email → NetworkPolicy:** workflow **`email-e2e-ns-netpol`** — **[workshop/use-cases/USECASE_UC07_email_e2e_namespace_netpol.md](workshop/use-cases/USECASE_UC07_email_e2e_namespace_netpol.md)**; apply **`oc apply -k aap-yamls/tower/`**, then **`scripts/register-webhook-email-e2e-ns-netpol.sh`**.
 
 ---
 
 ## New OpenShift cluster (full recreation)
 
-Follow **[documentation/INSTALL_OPENSHIFT.md](documentation/INSTALL_OPENSHIFT.md)** for prerequisites, **AAP operator and platform instance**, **Automation Hub** community sync, **Controller** Galaxy credential and project sync, **`openshift-bom-target`** credential, **`oc apply -k aap-yamls/tower/`**, **mock infra**, **`email-plugin`** + webhooks, **`run-e2e-multi-domain-workflow.sh`**, optional **Git/EDA** and **RBAC**, then **[documentation/USECASE_INDEX.md](documentation/USECASE_INDEX.md)**.
+Follow **[documentation/01_INSTALL_OPENSHIFT.md](documentation/01_INSTALL_OPENSHIFT.md)** for prerequisites, **AAP operator and platform instance**, **Automation Hub** community sync, **Controller** Galaxy credential and project sync, **`openshift-bom-target`** credential, **`oc apply -k aap-yamls/tower/`**, **mock infra**, **`email-plugin`** + webhooks, **`run-e2e-multi-domain-workflow.sh`**, optional **Git/EDA** and **RBAC**, then **[workshop/use-cases/README.md](workshop/use-cases/README.md)**.
 
 ---
 
@@ -60,7 +62,7 @@ Configure objects in **Automation Controller** (UI or API). Use the names in the
 
 Hub **`/content/collections`**:
 
-- Sync **Community** using **[documentation/COLLECTION_HUB.md](documentation/COLLECTION_HUB.md)** and **`scripts/hub-sync-community-from-requirements.sh`**.
+- Sync **Community** using **[documentation/02_COLLECTION_HUB.md](documentation/02_COLLECTION_HUB.md)** and **`scripts/hub-sync-community-from-requirements.sh`**.
 - Sync **Published** using an offline token — **§2** in the same file and **`scripts/hub-sync-rh-certified-from-secret.sh`**; if the gateway **Published** list stays empty after **`rh-certified`** sync, run **`scripts/hub-sync-published-mirror-rh-certified.sh`** (**§2.6** in that doc).
 
 ### Organization
@@ -124,6 +126,6 @@ Grant the demo **Team** or user permission to read the **Project**, use the **In
 
 ## Extensions
 
-- **Collections / EE:** [`collections/requirements.yml`](collections/requirements.yml), [`execution-environment/README.md`](execution-environment/README.md), **[documentation/COLLECTION_REFERENCE.md](documentation/COLLECTION_REFERENCE.md)**.
+- **Collections / EE:** [`collections/requirements.yml`](collections/requirements.yml), [`execution-environment/README.md`](execution-environment/README.md), **[documentation/04_COLLECTION_REFERENCE.md](documentation/04_COLLECTION_REFERENCE.md)**.
 - **Remote inventory and credentials** for non-local targets.
 - **Configuration as code:** e.g. **`ansible.controller`** collection — [Red Hat Ansible Automation Platform documentation](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/).

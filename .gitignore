@@ -3,6 +3,8 @@
 *.swp
 .DS_Store
 
+execution-environment/context/
+
 # Local Controller / SMTP secrets (copy from extras/approval-email.vars.example.yml)
 extras/approval-email.vars.yml
 

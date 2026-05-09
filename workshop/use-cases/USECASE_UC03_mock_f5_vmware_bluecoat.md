@@ -6,7 +6,7 @@ Run mock **F5 / VMware / Blue Coat** jobs over **`ansible.builtin.uri`** against
 
 ## Prerequisites
 
-**`../workshop/PLAN.md`**, Route **`workshop-mock-infra`**, survey **`workshop_mock_base_url`** set (see UC-01).
+**`../PLAN.md`**, Route **`workshop-mock-infra`**, survey **`workshop_mock_base_url`** set (see UC-01).
 
 ProxySG / Blue Coat: **[`UC-05-inspect-hub-collections-bluecoat.md`](USECASE_UC05_inspect_hub_collections_bluecoat.md)** (Hub search vs URI mock).
 
@@ -54,13 +54,13 @@ curl -sk "${BASE}/bluecoat_health.json" | head -c 200
 
 ## Playbooks
 
-- `../playbooks/workshop_mock_f5.yml`
-- `../playbooks/workshop_mock_vmware.yml`
-- `../playbooks/workshop_mock_bluecoat.yml` (`workshop_bluecoat_skip: true` to bypass)
+- `../../playbooks/workshop_mock_f5.yml`
+- `../../playbooks/workshop_mock_vmware.yml`
+- `../../playbooks/workshop_mock_bluecoat.yml` (`workshop_bluecoat_skip: true` to bypass)
 
 ## Graduation path
 
-Swap **`uri`** tasks for **`f5networks.f5_modules`**, **`community.vmware`**, real ProxySG automation once credentials exist — Galaxy collections for F5/VMware live in **`../collections/requirements.yml`**; ProxySG alternatives in **`./COLLECTION_REFERENCE.md`**.
+Swap **`uri`** tasks for **`f5networks.f5_modules`**, **`community.vmware`**, real ProxySG automation once credentials exist — Galaxy collections for F5/VMware live in **`../../collections/requirements.yml`**; ProxySG alternatives in **`../../documentation/04_COLLECTION_REFERENCE.md`**.
 
 ## See also
 

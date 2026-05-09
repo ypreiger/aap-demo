@@ -3,7 +3,7 @@
 # extra_vars from Workflow survey (CPU/RAM/instance types/root disk/extra disk).
 #
 # Prerequisites: openshift-virtualization operator; optionally cluster instance types/preferences
-# (see documentation/VIRT_WORKFLOW_SURVEY.md).
+# (see documentation/09_VIRT_WORKFLOW_SURVEY.md).
 #
 - name: Project BOM — virtual machines layer
   hosts: localhost

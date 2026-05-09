@@ -6,8 +6,8 @@ Provision BOM namespace and Fedora VMs. A **manual approval** separates foundati
 
 ## Prerequisites
 
-- **`../workshop/PLAN.md`** execution order (mock infra, tower CRs applied, project sync).
-- **Hub / collections:** **[`USECASE_UC05_inspect_hub_collections_bluecoat.md`](USECASE_UC05_inspect_hub_collections_bluecoat.md)** or **`./COLLECTION_HUB.md`** + **`./COLLECTION_CONTROLLER.md`**.
+- **`../PLAN.md`** execution order (mock infra, tower CRs applied, project sync).
+- **Hub / collections:** **[`USECASE_UC05_inspect_hub_collections_bluecoat.md`](USECASE_UC05_inspect_hub_collections_bluecoat.md)** or **`../../documentation/02_COLLECTION_HUB.md`** + **`../../documentation/03_COLLECTION_CONTROLLER.md`**.
 - **Mock route** for survey URL: `oc apply -k workshop/openshift/mock-infra` (from repo root) → `bash workshop/scripts/resolve-mock-route.sh`
 
 ---

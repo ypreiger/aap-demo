@@ -3,7 +3,7 @@
 Repository: [ypreiger/aap-demo](https://github.com/ypreiger/aap-demo).
 
 **Pod build and env:** [`email-plugin/README.md`](../email-plugin/README.md)  
-**Git / EDA bridge (parallel path):** [EDA_GIT_WEBHOOK.md](EDA_GIT_WEBHOOK.md)
+**Git / EDA bridge (parallel path):** [07_EDA_GIT_WEBHOOK.md](07_EDA_GIT_WEBHOOK.md)
 
 ---
 
@@ -49,7 +49,7 @@ Controller (approval waiting)
         └── REST approve/deny ──► Controller (workflow continues)
 ```
 
-**Optional (Git):** push → **`workshop/git-webhook-bridge`** → EDA webhook + Controller SCM sync → gated workflow → **same** approval and mail path. EDA does not approve jobs; see [EDA_GIT_WEBHOOK.md](EDA_GIT_WEBHOOK.md).
+**Optional (Git):** push → **`workshop/git-webhook-bridge`** → EDA webhook + Controller SCM sync → gated workflow → **same** approval and mail path. EDA does not approve jobs; see [07_EDA_GIT_WEBHOOK.md](07_EDA_GIT_WEBHOOK.md).
 
 ---
 
@@ -113,7 +113,7 @@ Controller sends webhooks **per** workflow template. Register again for each:
 
 | Workflow | Command |
 |----------|---------|
-| **`email-e2e-ns-netpol`** | `bash scripts/register-webhook-email-e2e-ns-netpol.sh` — details [USECASE_UC07_email_e2e_namespace_netpol.md](USECASE_UC07_email_e2e_namespace_netpol.md) |
+| **`email-e2e-ns-netpol`** | `bash scripts/register-webhook-email-e2e-ns-netpol.sh` — details [../workshop/use-cases/USECASE_UC07_email_e2e_namespace_netpol.md](../workshop/use-cases/USECASE_UC07_email_e2e_namespace_netpol.md) |
 | **`workshop-multi-domain`** | Same playbook with `-e workflow_name=workshop-multi-domain -e notification_name=workshop-email-plugin-webhook` |
 
 Operator checklist: [../workshop/CLIENT_RUNBOOK.md](../workshop/CLIENT_RUNBOOK.md) §5–6.
@@ -152,4 +152,4 @@ Red Hat: [Controller notifications](https://docs.redhat.com/en/documentation/red
 | Buttons 400/401 | **`SIGNING_SECRET`** / token expiry; restart Deployment after Secret change. |
 | Wrong Controller link | **`CONTROLLER_UI_PUBLIC_URL`** (§3). |
 | Egress blocked | Allow pod → SMTP and Controller HTTPS. |
-| EDA never receives events | [EDA_GIT_WEBHOOK.md](EDA_GIT_WEBHOOK.md) — **`EDA_WEBHOOK_URL`**, JWT, network. |
+| EDA never receives events | [07_EDA_GIT_WEBHOOK.md](07_EDA_GIT_WEBHOOK.md) — **`EDA_WEBHOOK_URL`**, JWT, network. |

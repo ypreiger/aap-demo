@@ -8,13 +8,28 @@
 version: 3
 
 dependencies:
+  # ubi9/python-311 still defaults PYCMD to /usr/bin/python3 (3.9); ansible-core 2.16+ needs 3.10+.
+  python_interpreter:
+    python_path: /usr/bin/python3.11
   ansible_core:
     # kubernetes.core 6.x requires ansible-core 2.16+ (see ansible-galaxy install warnings on older cores).
     package_pip: ansible-core>=2.16.0,<2.19.0
   ansible_runner:
     package_pip: ansible-runner
+  # Installs all entries in collections/requirements.yml, including f5networks.f5_modules (F5 BIG-IP).
   galaxy: ../collections/requirements.yml
+  # kubernetes.core bindep lists openshift-clients on RHEL; UBI default repos do not ship it.
+  # The collection works with the pip-installed kubernetes client inside the EE.
+  # ansible.eda pulls systemd-python for journal plugins; pip compile fails on stock UBI without
+  # systemd libs — omit unless you add systemd-devel / rulebook features require it.
+  exclude:
+    system:
+      - openshift-clients
+    python:
+      - systemd-python
 
 images:
   base_image:
-    name: docker.io/redhat/ubi9:latest
+    # ansible-core 2.16+ requires Python 3.10+ (default ubi9:latest uses 3.9 and breaks pip install).
+    # Alternative when entitled: registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9:latest
+    name: registry.access.redhat.com/ubi9/python-311:latest

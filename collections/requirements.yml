@@ -1,7 +1,7 @@
 ---
 # Installed via: ansible-galaxy collection install -r collections/requirements.yml
 # Automation Controller → sync Galaxy content or bake into your Execution Environment
-# (see documentation/COLLECTION_REFERENCE.md).
+# (see documentation/04_COLLECTION_REFERENCE.md).
 collections:
   # --- BOM / Kubernetes & OpenShift (API + manifests) ---
   # Used by BOM playbooks (kubernetes.core modules against the cluster API).
@@ -33,4 +33,12 @@ collections:
 
   # --- F5 BIG-IP / BIG-IQ ---
   - name: f5networks.f5_modules
+    source: https://galaxy.ansible.com
+
+  # Legacy namespace still published on Galaxy (BIG-IP modules); mirror for Hub UI / docs parity.
+  - name: f5networks.f5_bigip
+    source: https://galaxy.ansible.com
+
+  # Event-Driven Ansible (rulebooks, plugins, event filters).
+  - name: ansible.eda
     source: https://galaxy.ansible.com

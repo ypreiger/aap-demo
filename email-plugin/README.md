@@ -6,7 +6,7 @@ Runs in **namespace `aap`** beside Automation Controller:
 2. The plugin resolves the **workflow approval job**, signs short-lived URLs, sends **HTML mail** via **SMTP** (prepared for **Gmail**: `smtp.gmail.com:587` + STARTTLS).
 3. The recipient taps **Approve** or **Deny** in the mail; the browser hits this Route; the plugin calls **Controller REST** (`/api/v2/workflow_approval_jobs/{id}/approve|deny/`).
 
-**Workshop / Controller wiring** (webhook body, extra workflows, troubleshooting): **[`../documentation/EMAIL_APPROVAL.md`](../documentation/EMAIL_APPROVAL.md)**.
+**Workshop / Controller wiring** (webhook body, extra workflows, troubleshooting): **[`../documentation/06_EMAIL_APPROVAL.md`](../documentation/06_EMAIL_APPROVAL.md)**.
 
 **EDA**: not required — Controller notifies this pod directly via webhook HTTP. Optionally, an EDA source could relay the same JSON to this URL.
 
@@ -110,7 +110,7 @@ Otherwise the **`DEFAULT_TO_EMAIL`** env is used.
 - **`401` webhook** → HMAC mismatch; clear `WEBHOOK_HMAC_SECRET` or fix Controller headers.
 - **No mail but hook returns `{ok:true}`** → `DISABLE_SMTP=true` or empty `SMTP_PASSWORD`; check **`email-plugin`** pod logs (`kubectl logs deploy/email-plugin -n aap`).
 - **`422` webhook** → cannot resolve approvals; workflow may not yet be paused on an approval gate, or webhook JSON lacks ids (customize **`wf_approve_body_template`**).
-- **“Open in Controller” lands on API / SSO error** → Controller often exposes **`/api`** in **`CONTROLLER_HOST`**, but users must open the SPA through the gateway or trimmed host. Patch **`CONTROLLER_UI_PUBLIC_URL`** (**`CONTROLLER_WORKFLOW_JOB_UI_PATH_TEMPLATE`** optional) on **`email-plugin-env`** — see **[`documentation/EMAIL_APPROVAL.md`](../documentation/EMAIL_APPROVAL.md)** (*Open in Controller link* subsection).
+- **“Open in Controller” lands on API / SSO error** → Controller often exposes **`/api`** in **`CONTROLLER_HOST`**, but users must open the SPA through the gateway or trimmed host. Patch **`CONTROLLER_UI_PUBLIC_URL`** (**`CONTROLLER_WORKFLOW_JOB_UI_PATH_TEMPLATE`** optional) on **`email-plugin-env`** — see **[`documentation/06_EMAIL_APPROVAL.md`](../documentation/06_EMAIL_APPROVAL.md)** (*Open in Controller link* subsection).
 
 ## Repo layout
 

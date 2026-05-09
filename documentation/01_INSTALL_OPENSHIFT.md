@@ -15,7 +15,7 @@ This runbook is the **ordered path** to stand up the same environment this repos
 | **Storage class** for Hub file storage (default in CR may assume ODF CephFS) | Edit **`aap-yamls/01-ansibleautomationplatform.yaml`** if your cluster differs — see [aap-yamls/README.md](../aap-yamls/README.md) |
 | **Git** fork or clone URL you will put in **`AnsibleProject`** (shipped example points at GitHub) | Controller sync; change CR if you use a private fork |
 | **`jq`** and **`curl`** | Required by **`workshop/scripts/run-e2e-multi-domain-workflow.sh`** |
-| **OpenShift Virtualization** (KubeVirt) installed and usable | Only if you run BOM / **`workshop-multi-domain`** VM steps — see [VIRT_WORKFLOW_SURVEY.md](VIRT_WORKFLOW_SURVEY.md) |
+| **OpenShift Virtualization** (KubeVirt) installed and usable | Only if you run BOM / **`workshop-multi-domain`** VM steps — see [09_VIRT_WORKFLOW_SURVEY.md](09_VIRT_WORKFLOW_SURVEY.md) |
 | **Outbound** from nodes/builders: registries for AAP images; from **`email-plugin`** pod: SMTP (e.g. Gmail) + Controller HTTPS | Builds and mail |
 
 Red Hat install reference: [Installing AAP on OpenShift 2.6](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.6/html/installing_on_openshift_container_platform/index).
@@ -48,6 +48,7 @@ oc get routes,pods -n aap
 
 - Retrieve the **admin** password: Secret name pattern **`{instance-name}-admin-password`** (bundled CR uses **`demo-aap-admin-password`** — confirm with `oc get secrets -n aap | grep admin-password`).
 - Open the **gateway** Route URL; confirm tiles for Hub, Controller, etc.
+- **Ansible Lightspeed:** the UI may show the assistant before the LLM answers. Create/patch **`Secret/demo-aap-lightspeed-chatbot-config`** with a real **`chatbot_token`** and **`chatbot_url`** (OpenAI-compatible API) — **[05_LIGHTSPEED_OPENAPI.md](05_LIGHTSPEED_OPENAPI.md)**. This is **not** the Controller OAuth token from Phase 3.
 
 Details and tunables (storage class, hostname, MCP/Lightspeed): **[`aap-yamls/README.md`](../aap-yamls/README.md)**.
 
@@ -78,7 +79,7 @@ export HUB_GATEWAY_URL="https://<your-gateway-host>"
 ./scripts/hub-sync-community-from-requirements.sh
 ```
 
-In the UI, filter by **Community** if **Published** is still empty. Certified / **rh-certified** flow: [COLLECTION_HUB.md](COLLECTION_HUB.md) §2 and **`scripts/hub-sync-rh-certified-from-secret.sh`**.
+In the UI, filter by **Community** if **Published** is still empty. Certified / **rh-certified** flow: [02_COLLECTION_HUB.md](02_COLLECTION_HUB.md) §2 and **`scripts/hub-sync-rh-certified-from-secret.sh`**.
 
 ---
 
@@ -86,7 +87,7 @@ In the UI, filter by **Community** if **Published** is still empty. Certified / 
 
 Controller does **not** install collections from **`requirements.yml`** until **collection download** is enabled and a **Galaxy/Hub** credential exists on the **Organization** used by the project.
 
-1. Follow [COLLECTION_CONTROLLER.md](COLLECTION_CONTROLLER.md) (UI checklist).
+1. Follow [03_COLLECTION_CONTROLLER.md](03_COLLECTION_CONTROLLER.md) (UI checklist).
 2. Or run **`./scripts/controller-wire-galaxy-for-default-org.sh`** against your Controller API (same host/token as Phase 3).
 3. Optional: apply **`aap-yamls/tower/ansiblecredential-galaxy-ansible-com.yaml`** if you manage that credential in Git (not always in **`kustomization.yaml`** — see **`aap-yamls/tower/`**).
 4. In Controller: **Projects** → open **`AAP Demo (GitHub)`** (or your renamed project) → **Sync** so playbooks and **`collections/requirements.yml`** exist on the execution path.
@@ -146,9 +147,9 @@ Use the printed **`https://…`** origin (no trailing slash) as **`workshop_mock
    SMTP_PASSWORD='<gmail-app-password>' DISABLE_SMTP=false ./email-plugin/scripts/deploy-email-plugin.sh
    ```
 
-2. Register the Controller **webhook notification** on **`bom-project-deploy`** (and optionally other workflows): [EMAIL_APPROVAL.md](EMAIL_APPROVAL.md) §4, or the copy-paste block in **[`email-plugin/README.md`](../email-plugin/README.md)**.
+2. Register the Controller **webhook notification** on **`bom-project-deploy`** (and optionally other workflows): [06_EMAIL_APPROVAL.md](06_EMAIL_APPROVAL.md) §4, or the copy-paste block in **[`email-plugin/README.md`](../email-plugin/README.md)**.
 
-3. For **`email-e2e-ns-netpol`**, run **`scripts/register-webhook-email-e2e-ns-netpol.sh`** after reading [USECASE_UC07_email_e2e_namespace_netpol.md](USECASE_UC07_email_e2e_namespace_netpol.md).
+3. For **`email-e2e-ns-netpol`**, run **`scripts/register-webhook-email-e2e-ns-netpol.sh`** after reading [../workshop/use-cases/USECASE_UC07_email_e2e_namespace_netpol.md](../workshop/use-cases/USECASE_UC07_email_e2e_namespace_netpol.md).
 
 ---
 
@@ -170,9 +171,9 @@ Fix failures using **[`workshop/PLAN.md`](../workshop/PLAN.md)** (execution orde
 
 ## Phase 11 — Optional: Git → EDA → gated workflow
 
-Deploy **`workshop/git-webhook-bridge`**, apply **`workflowtemplate-workshop-projects-git-driven`**, register GitHub webhook — [EDA_GIT_WEBHOOK.md](EDA_GIT_WEBHOOK.md).
+Deploy **`workshop/git-webhook-bridge`**, apply **`workflowtemplate-workshop-projects-git-driven`**, register GitHub webhook — [07_EDA_GIT_WEBHOOK.md](07_EDA_GIT_WEBHOOK.md).
 
-For how **`projects/`** in Git maps to **one** Controller SCM project, approval semantics, and **cluster → Git** (not shipped), read [PROJECTS_GIT_SYNC.md](PROJECTS_GIT_SYNC.md).
+For how **`projects/`** in Git maps to **one** Controller SCM project, approval semantics, and **cluster → Git** (not shipped), read [10_PROJECTS_GIT_SYNC.md](10_PROJECTS_GIT_SYNC.md).
 
 ---
 
@@ -188,7 +189,7 @@ Uses Controller API; align with [WORKSHOP_RBAC.md](../workshop/WORKSHOP_RBAC.md)
 
 ## Use cases (operator checklists)
 
-After the stack is up, walk scenarios **UC-01–UC-07**: [USECASE_INDEX.md](USECASE_INDEX.md).
+After the stack is up, walk scenarios **UC-01–UC-07**: [../workshop/use-cases/README.md](../workshop/use-cases/README.md).
 
 ---
 
@@ -199,11 +200,11 @@ After the stack is up, walk scenarios **UC-01–UC-07**: [USECASE_INDEX.md](USEC
 | Platform | `oc apply -k aap-yamls/` |
 | Secret | `oc apply -f …/aap-controller-api-secret.yaml` |
 | Hub sync | `./scripts/hub-sync-community-from-requirements.sh` |
-| Controller wiring | [COLLECTION_CONTROLLER.md](COLLECTION_CONTROLLER.md) or `./scripts/controller-wire-galaxy-for-default-org.sh` |
+| Controller wiring | [03_COLLECTION_CONTROLLER.md](03_COLLECTION_CONTROLLER.md) or `./scripts/controller-wire-galaxy-for-default-org.sh` |
 | Credential | UI: **`openshift-bom-target`** |
 | Tower CRs | `oc apply -k aap-yamls/tower/` |
 | Mock | `oc apply -k workshop/openshift/mock-infra` |
-| Mail | `./email-plugin/scripts/deploy-email-plugin.sh` + [EMAIL_APPROVAL.md](EMAIL_APPROVAL.md) §4 |
+| Mail | `./email-plugin/scripts/deploy-email-plugin.sh` + [06_EMAIL_APPROVAL.md](06_EMAIL_APPROVAL.md) §4 |
 | E2E | `bash workshop/scripts/run-e2e-multi-domain-workflow.sh` |
 
 ---
@@ -213,8 +214,9 @@ After the stack is up, walk scenarios **UC-01–UC-07**: [USECASE_INDEX.md](USEC
 | Topic | File |
 |-------|------|
 | Manifest details | [../aap-yamls/README.md](../aap-yamls/README.md) |
-| Collections reference | [COLLECTION_REFERENCE.md](COLLECTION_REFERENCE.md) |
-| Domain YAML | [DOMAIN_INPUT.md](DOMAIN_INPUT.md) |
-| Git ↔ `projects/` layout | [PROJECTS_GIT_SYNC.md](PROJECTS_GIT_SYNC.md) |
-| Virt survey fields | [VIRT_WORKFLOW_SURVEY.md](VIRT_WORKFLOW_SURVEY.md) |
+| Collections reference | [04_COLLECTION_REFERENCE.md](04_COLLECTION_REFERENCE.md) |
+| Lightspeed LLM (URL + API key) | [05_LIGHTSPEED_OPENAPI.md](05_LIGHTSPEED_OPENAPI.md) |
+| Domain YAML | [08_DOMAIN_INPUT.md](08_DOMAIN_INPUT.md) |
+| Git ↔ `projects/` layout | [10_PROJECTS_GIT_SYNC.md](10_PROJECTS_GIT_SYNC.md) |
+| Virt survey fields | [09_VIRT_WORKFLOW_SURVEY.md](09_VIRT_WORKFLOW_SURVEY.md) |
 | Doc index | [README.md](README.md) |

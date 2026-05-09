@@ -8,9 +8,9 @@
 ## Prerequisites
 
 - Log in to the **AAP gateway** (Hub + Controller).
-- **Community** repository synced: **`../scripts/hub-sync-community-from-requirements.sh`** and **`./COLLECTION_HUB.md`**.
-- **Published** optional: **`./COLLECTION_HUB.md`** §2 (offline token).
-- Optional: **`./COLLECTION_REFERENCE.md`** (ProxySG patterns).
+- **Community** repository synced: **`../../scripts/hub-sync-community-from-requirements.sh`** and **`../../documentation/02_COLLECTION_HUB.md`**.
+- **Published** optional: **`../../documentation/02_COLLECTION_HUB.md`** §2 (offline token).
+- Optional: **`../../documentation/04_COLLECTION_REFERENCE.md`** (ProxySG patterns).
 
 ---
 
@@ -23,7 +23,7 @@
 
 ### What you should see (examples)
 
-Namespaces and collection names aligned with **`../collections/requirements.yml`** mirror, for example:
+Namespaces and collection names aligned with **`../../collections/requirements.yml`** mirror, for example:
 
 | Namespace / collection | Typical note |
 |------------------------|---------------|
@@ -54,7 +54,7 @@ Namespaces and collection names aligned with **`../collections/requirements.yml`
 ### Why this workshop still mentions Blue Coat
 
 - Day-2 “Blue Coat” in this repo is implemented as **`ansible.builtin.uri`** against a **mock JSON** **`/bluecoat_health.json`** (**Route `workshop-mock-infra`**) inside workflow **`workshop-multi-domain`** — see **[`UC-03-mock-f5-vmware-bluecoat.md`](USECASE_UC03_mock_f5_vmware_bluecoat.md)**.
-- Patterns for production automation (URI vs SSH/`expect`, vendor bundles) live in **`./COLLECTION_REFERENCE.md`** (ProxySG subsection).
+- Patterns for production automation (URI vs SSH/`expect`, vendor bundles) live in **`../../documentation/04_COLLECTION_REFERENCE.md`** (ProxySG subsection).
 
 ---
 
@@ -76,9 +76,9 @@ curl -sk "${GATEWAY}/api/galaxy/v3/plugin/ansible/content/published/collections/
 
 | Symptom | Action |
 |---------|--------|
-| **Community empty** | Run **`hub-sync-community-from-requirements.sh`** — **`./COLLECTION_HUB.md`**. |
+| **Community empty** | Run **`hub-sync-community-from-requirements.sh`** — **`../../documentation/02_COLLECTION_HUB.md`**. |
 | **Only Published visible** | Change UI filter/repo to **Community**. |
-| **Looking for ProxySG Ansible modules in Hub** | Use **mock playbooks / URI** (**UC-03**) or **`COLLECTION_REFERENCE.md`** alternatives; not Hub search. |
+| **Looking for ProxySG Ansible modules in Hub** | Use **mock playbooks / URI** (**UC-03**) or **`04_COLLECTION_REFERENCE.md`** alternatives; not Hub search. |
 
 ## Success criteria
 

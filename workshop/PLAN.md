@@ -25,13 +25,13 @@ Canonical repository: [ypreiger/aap-demo](https://github.com/ypreiger/aap-demo).
 
 ## Deliverables checklist
 
-- [x] **Use-case steps** (**[`documentation/USECASE_INDEX.md`](../documentation/USECASE_INDEX.md)** UC-01–UC-07) and **[`CLIENT_RUNBOOK.md`](CLIENT_RUNBOOK.md)**  
+- [x] **Use-case steps** (**[`use-cases/README.md`](use-cases/README.md)** UC-01–UC-07) and **[`CLIENT_RUNBOOK.md`](CLIENT_RUNBOOK.md)**  
 - [x] Mock infra Deployment + Route in `aap` namespace  
 - [x] Workshop job templates + workflow (Tower resource operator CRs)  
 - [x] E2E script with **auto-approve** for CI-like verification  
 - [x] Cleanup helper for stale legacy CRs / optional Controller objects  
 - [x] Agent instruction packs (`workshop/agents/`)  
-- [x] Per-domain narratives (`documentation/USECASE_*.md`)  
+- [x] Per-domain narratives (`workshop/use-cases/USECASE_*.md`)  
 - [x] Email subject prefix + richer template context  
 
 ## Execution order

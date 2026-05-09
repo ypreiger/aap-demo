@@ -21,7 +21,7 @@ So you **link** them by convention: **one Controller SCM project** holds **many*
 2. **`workshop/git-webhook-bridge`** receives the webhook, classifies paths ([`app/classify.py`](../workshop/git-webhook-bridge/app/classify.py)), optionally notifies EDA, then triggers a Controller **SCM project update** for the configured project (default name filter matches **`AAP Demo (GitHub)`**).
 3. After sync, the gated workflow **`workshop-projects-git-driven`** can run the dispatcher so jobs use **fresh** files from Git.
 
-Details: [EDA_GIT_WEBHOOK.md](EDA_GIT_WEBHOOK.md), bridge [README](../workshop/git-webhook-bridge/README.md).
+Details: [07_EDA_GIT_WEBHOOK.md](07_EDA_GIT_WEBHOOK.md), bridge [README](../workshop/git-webhook-bridge/README.md).
 
 **BOM playbooks** ([`playbooks/project_foundation.yml`](../playbooks/project_foundation.yml), [`project_vms.yml`](../playbooks/project_vms.yml)) **read manifests from disk** under **`projects/{{ project_name }}/bom/`** on the controller checkout. The namespace name in **`namespace.yaml`** must **match** **`project_name`**.
 
@@ -74,8 +74,8 @@ That needs **secrets**, **branch policy**, and **idempotency** (avoid loops: Git
 
 | Direction | Status |
 |-----------|--------|
-| **Git `projects/` → SCM sync → workflows → cluster** | Supported ([EDA_GIT_WEBHOOK.md](EDA_GIT_WEBHOOK.md), bridge, Tower CRs). |
+| **Git `projects/` → SCM sync → workflows → cluster** | Supported ([07_EDA_GIT_WEBHOOK.md](07_EDA_GIT_WEBHOOK.md), bridge, Tower CRs). |
 | **Cluster / survey-only → Git** | **Not** implemented; use Pattern A/B for new slugs, or plan Pattern C explicitly. |
 | **Linking** | **One** Controller **Project** (whole repo) + **`project_name`** selects **`projects/<slug>/`**. |
 
-For domain file semantics, see [DOMAIN_INPUT.md](DOMAIN_INPUT.md).
+For domain file semantics, see [08_DOMAIN_INPUT.md](08_DOMAIN_INPUT.md).

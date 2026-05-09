@@ -6,7 +6,7 @@ Run a **read-only** playbook that validates NetworkPolicy posture and annotates 
 
 ## Prerequisites
 
-Follow **`../workshop/PLAN.md`**. Hub + Controller collections: **[`UC-05-inspect-hub-collections-bluecoat.md`](USECASE_UC05_inspect_hub_collections_bluecoat.md)**, **`./COLLECTION_CONTROLLER.md`**.
+Follow **`../PLAN.md`**. Hub + Controller collections: **[`UC-05-inspect-hub-collections-bluecoat.md`](USECASE_UC05_inspect_hub_collections_bluecoat.md)**, **`../../documentation/03_COLLECTION_CONTROLLER.md`**.
 
 To run **only** this job template in isolation, ensure inventory and credential **`openshift-bom-target`** exist. In **`workshop-multi-domain`** it runs after earlier workflow nodes.
 
@@ -20,7 +20,7 @@ To run **only** this job template in isolation, ensure inventory and credential 
 2. Stay on the running **workflow job** detail view (**Jobs** → your **`workshop-multi-domain`** instance).
 3. When the **`workshop-networkpolicy-audit`** node starts, click into that **job** (not only the workflow row).
 4. Read **Output:**
-   - Assert messages for **`NetworkPolicy`** named **`deny-all-open-443`** (exact name checked by playbook **`../playbooks/workshop_networkpolicy_audit.yml`**).
+   - Assert messages for **`NetworkPolicy`** named **`deny-all-open-443`** (exact name checked by playbook **`../../playbooks/workshop_networkpolicy_audit.yml`**).
    - Annotation **`workshop.aap-demo.github.io/network-audit`** applied to namespace.
 
 ### What you should see
@@ -39,7 +39,7 @@ To run **only** this job template in isolation, ensure inventory and credential 
 
 ## Playbook
 
-`../playbooks/workshop_networkpolicy_audit.yml`
+`../../playbooks/workshop_networkpolicy_audit.yml`
 
 ## Success criteria
 
