@@ -49,11 +49,20 @@ Typical messages:
 | **`Streaming query API returned status code=404`** | Chatbot returns **404** — often **model/provider not found** (bad **`chatbot_model`**, **`chatbot_url`**, or **`chatbot_llm_provider_type`** vs actual endpoint). |
 | **`401` / `Invalid API Key`** | Wrong LLM **`chatbot_token`** for the URL you configured, or upstream rejects the key. |
 | TLS / connection errors | **`chatbot_url`** unreachable from the cluster (**egress**, DNS, firewall). |
+| **`503` / Service Unavailable** | **`deployment/demo-aap-lightspeed-api`** has **no Ready pods** (readiness/liveness **timeouts**, rollout stuck on **Terminating**, **HPA** scaling). Gateway Envoy returns **503** when the Service has **no healthy endpoints**. |
 
 **Chatbot** (talks to the LLM):
 
 ```bash
 oc logs deployment/demo-aap-lightspeed-chatbot-api -n aap -c ansible-chatbot --tail=100
+```
+
+If you see **503**, confirm **`demo-aap-lightspeed-api`** is Ready, then restart if probes were timing out during a rollout:
+
+```bash
+oc get pods -n aap | grep demo-aap-lightspeed-api
+oc rollout restart deployment/demo-aap-lightspeed-api -n aap
+oc rollout status deployment/demo-aap-lightspeed-api -n aap --timeout=300s
 ```
 
 ---
