@@ -33,9 +33,7 @@
       - -e
       - "vm_cluster_preference=fedora"
       - -e
-      - "vm_root_disk_mode=container"
-      - -e
-      - "vm_container_root_image=quay.io/kubevirt/fedora-container-disk-images:41"
+      - "vm_root_disk_mode=datasource"
       - -e
       - "vm_datasource_namespace=openshift-virtualization-os-images"
       - -e

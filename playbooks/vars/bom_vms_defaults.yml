@@ -20,9 +20,9 @@ vm_cluster_preference: fedora
 vm_cpu_cores: 2
 vm_memory_gi: 4
 
-# container: kubevirt Fedora containerdisk (offline-friendly labs).
-# datasource: clone Fedora from openshift-virtualization-os-images DataSource (needs CDI/sc).
-vm_root_disk_mode: container
+# container: kubevirt Fedora containerdisk (needs pull from quay.io/kubevirt — often blocked on OCP).
+# datasource: clone Fedora from openshift-virtualization-os-images (recommended on OpenShift Virtualization).
+vm_root_disk_mode: datasource
 vm_container_root_image: quay.io/kubevirt/fedora-container-disk-images:41
 
 # Used when vm_root_disk_mode == datasource — DataSource fedora shipped with OpenShift Virt.

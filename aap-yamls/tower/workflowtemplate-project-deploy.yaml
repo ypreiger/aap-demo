@@ -83,10 +83,11 @@ spec:
       - type: multiplechoice
         question_name: Root disk backing
         question_description: >-
-          container = kubevirt containerDisk image. datasource = Fedora DataSource in openshift-virtualization-os-images.
+          datasource = Fedora clone from openshift-virtualization-os-images (recommended on OpenShift;
+          avoids ImagePullBackOff pulling quay.io/kubevirt). container = containerDisk from OCI registry.
         variable: vm_root_disk_mode
         required: true
-        default: container
+        default: datasource
         choices:
           - container
           - datasource

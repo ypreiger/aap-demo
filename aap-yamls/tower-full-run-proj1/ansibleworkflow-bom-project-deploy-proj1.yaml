@@ -19,7 +19,7 @@ spec:
     vm_cluster_preference: fedora
     vm_cpu_cores: 2
     vm_memory_gi: 4
-    vm_root_disk_mode: container
+    vm_root_disk_mode: datasource
     vm_container_root_image: quay.io/kubevirt/fedora-container-disk-images:41
     vm_datasource_name: fedora
     vm_datasource_namespace: openshift-virtualization-os-images

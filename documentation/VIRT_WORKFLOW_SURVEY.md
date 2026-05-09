@@ -31,11 +31,11 @@ Uses **`spec.template.spec.domain.cpu`** and **`spec.template.spec.domain.resour
 
 ## Root disk (`vm_root_disk_mode`)
 
-### `container` (default workshops)
+### `container`
 
-Imports **`spec.template.spec.volumes[].containerDisk`** from **`vm_container_root_image`** (default **`quay.io/kubevirt/fedora-container-disk-images:41`**).
+Imports **`spec.template.spec.volumes[].containerDisk`** from **`vm_container_root_image`** (default **`quay.io/kubevirt/fedora-container-disk-images:41`**). Use only when workers can pull that image; otherwise expect **`ImagePullBackOff`** (see **Troubleshooting** below).
 
-### `datasource`
+### `datasource` (default for shipped Tower CRs / workshops on OpenShift)
 
 Creates **`spec.dataVolumeTemplates[]`** cloning the **`DataSource`** **`fedora`** in **`openshift-virtualization-os-images`** (`vm_datasource_name` / `vm_datasource_namespace` overridable). Requires working **CDI** + **storage** in the namespace.
 
@@ -66,3 +66,21 @@ Survey lives on **`bom-project-deploy`** (`aap-yamls/tower/workflowtemplate-proj
 ## Passwords / security
 
 Survey includes **`vm_cloud_user_password`** (cloud‑init **`fedora`** user). Prefer **credentials / Vault / secrets automation** outside Git for real workloads.
+
+---
+
+## Troubleshooting **`ImagePullBackOff`** on VM launcher pods (`virt-launcher-*`)
+
+KubeVirt **`container`** root-disk mode pulls **`vm_container_root_image`** (default **`quay.io/kubevirt/fedora-container-disk-images:41`**) onto the worker that schedules the VM. Many OpenShift clusters **cannot pull** `quay.io/kubevirt` (no egress, proxy, or deny‑list), which shows as **`ErrImagePull` / `ImagePullBackOff`** on pods in **`proj1`**, **`proj2`**, etc.
+
+**Fix (recommended on OpenShift Virtualization):** launch with **`vm_root_disk_mode`** = **`datasource`** so the root disk comes from the **`fedora`** **`DataSource`** in **`openshift-virtualization-os-images`** (no kubevirt Quay pull). The **`workshop-multi-domain`** job template **`workshop-bom-project-vms`** defaults to **`datasource`** for that reason.
+
+**Alternatively:** mirror **`quay.io/kubevirt/fedora-container-disk-images`** to a registry your cluster allows and set **`vm_container_root_image`** to that mirror while keeping **`container`** mode.
+
+**Inspect:**
+
+```bash
+oc get pods -n proj1 -o wide
+oc describe pod -n proj1 -l kubevirt.io=virt-launcher-pod  # events show failing image reference
+oc get datasource -n openshift-virtualization-os-images fedora
+```
