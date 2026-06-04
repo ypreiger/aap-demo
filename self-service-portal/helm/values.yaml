@@ -8,19 +8,5 @@ redhat-developer-hub:
     clusterRouterBase: apps.cluster-jx4b7.dynamic.redhatworkshops.io
     pluginMode: oci
     imageTagInfo: "2.2"
-  upstream:
-    backstage:
-      appConfig:
-        catalog:
-          providers:
-            rhaap:
-              production:
-                orgs: Default
-        ansible:
-          rhaap:
-            checkSSL: true
-        auth:
-          providers:
-            rhaap:
-              production:
-                checkSSL: true
+  # Do not override catalog.providers.rhaap here — the chart already sets
+  # orgs: Default under the templated environment key (production).

@@ -10,19 +10,6 @@ redhat-developer-hub:
     pluginMode: oci
     # Match chart 2.2.0 lifecycle tag (see Red Hat Ansible automation portal lifecycle page)
     imageTagInfo: "2.2"
-  upstream:
-    backstage:
-      appConfig:
-        catalog:
-          providers:
-            rhaap:
-              production:
-                orgs: Default  # your AAP Controller organization name
-        ansible:
-          rhaap:
-            checkSSL: true   # set false only for lab clusters with self-signed AAP TLS
-        auth:
-          providers:
-            rhaap:
-              production:
-                checkSSL: true
+  # Optional: override AAP organization (chart default is Default). Use helm upgrade --set
+  # only if you know the chart's templated catalog.providers.env key; otherwise edit
+  # upstream.backstage.appConfig.catalog.providers.rhaap.<env>.orgs in a full values export.

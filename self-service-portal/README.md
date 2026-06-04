@@ -79,7 +79,7 @@ eval "$(./scripts/create-aap-oauth-and-token.sh)"
 
 3. **Personal access token** for catalog sync (`aap-token` in `secrets-rhaap-portal`): create under the admin user in the gateway; **read** scope minimum.
 
-4. **Organization**: default `Default` in `helm/values.yaml` (`catalog.providers.rhaap.production.orgs`).
+4. **Organization**: chart default is `Default` (`catalog.providers.rhaap` in chart values). Do not add a duplicate `production:` block in `values.yaml` (it breaks the merged app config).
 
 ## Secrets (exact names)
 
