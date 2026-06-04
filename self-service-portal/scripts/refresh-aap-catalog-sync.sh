@@ -20,4 +20,18 @@ for path in \
   head -c 200 /tmp/refresh-body.txt 2>/dev/null; echo
 done
 
-log "Open Self-Service → Create Task and filter tags: openshift-virtualization"
+log "Trigger Automation Hub collection sync (pahCollections)"
+code=$(curl -sk -o /tmp/refresh-body.txt -w '%{http_code}' \
+  -X POST "${BASE}/api/ansible/sync/from-aap/content" \
+  -H 'Content-Type: application/json' \
+  -d '{"filters":[{"repository_name":"community"},{"repository_name":"published"}]}' \
+  2>/dev/null || echo 000)
+log "POST /api/ansible/sync/from-aap/content -> HTTP ${code}"
+head -c 400 /tmp/refresh-body.txt 2>/dev/null; echo
+
+code=$(curl -sk -o /tmp/refresh-body.txt -w '%{http_code}' \
+  "${BASE}/api/ansible/sync/status?ansible_contents=true" 2>/dev/null || echo 000)
+log "GET /api/ansible/sync/status?ansible_contents=true -> HTTP ${code}"
+head -c 400 /tmp/refresh-body.txt 2>/dev/null; echo
+
+log "Open Self-Service → Collections (Hub) and Create Task (filter: openshift-virtualization)"

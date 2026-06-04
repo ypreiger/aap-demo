@@ -26,4 +26,22 @@ redhat-developer-hub:
               target: https://github.com/rh-mad-workshop/coolstore-software-templates/blob/demo-vm/showcase-templates.yaml
               rules:
                 - allow: [Location, Template]
-  # Do not override catalog.providers.rhaap — chart sets orgs: Default and jobTemplates sync.
+          providers:
+            rhaap:
+              # Merge into the chart's environment key — do NOT add a bare `production:` block
+              # (that duplicates keys in app-config and can CrashLoop backstage-backend).
+              '{{- include "catalog.providers.env" . }}':
+                sync:
+                  pahCollections:
+                    enabled: true
+                    repositories:
+                      # Workshop collections mirrored from collections/requirements.yml
+                      - name: community
+                        schedule:
+                          frequency: {hours: 6}
+                          timeout: {minutes: 60}
+                      # Red Hat certified content synced into Hub (published repo)
+                      - name: published
+                        schedule:
+                          frequency: {days: 1}
+                          timeout: {minutes: 60}

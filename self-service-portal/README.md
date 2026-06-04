@@ -31,7 +31,7 @@ self-service-portal/
     ├── create-aap-oauth-and-token.sh  # Optional: auto-create OAuth + token
     ├── deploy-gitops.sh               # Apply Application and print URLs
     ├── label-virt-workflow-templates.sh  # API labels on virt workflows
-    └── refresh-aap-catalog-sync.sh    # Nudge AAP job-template catalog sync
+    └── refresh-aap-catalog-sync.sh    # Nudge job-template + Hub collection sync
 ```
 
 ## OpenShift Virtualization templates
@@ -66,6 +66,32 @@ Reference templates from [rh-mad-workshop/coolstore-software-templates](https://
 - **Tomcat VM** — legacy app on RHEL VM (workshop pattern)
 
 These use `publish:gitlab` and `argocd:create-resources` actions. For a full create flow you need GitLab OAuth in `secrets-scm` and Argo CD integration; otherwise use the AAP workflows above.
+
+## Automation Hub collections
+
+**Self-Service → Collections** lists Ansible collections synced from **Automation Hub** repositories on your AAP gateway. The chart ships with `pahCollections` **disabled**; this demo enables it in [`helm/values.yaml`](helm/values.yaml) for:
+
+| Hub repository | Content |
+|----------------|---------|
+| **community** | 13 collections mirrored from [`collections/requirements.yml`](../collections/requirements.yml) (`kubernetes.core`, `community.kubevirt`, `f5networks.f5_modules`, …) |
+| **published** | Red Hat certified collections synced into Hub |
+
+If Hub **Collections** is empty, mirror community content first:
+
+```bash
+# From repo root — see documentation/02_COLLECTION_HUB.md
+./scripts/hub-sync-community-from-requirements.sh
+```
+
+After GitOps sync (or Helm upgrade), trigger a catalog refresh:
+
+```bash
+./self-service-portal/scripts/refresh-aap-catalog-sync.sh
+```
+
+**Helm merge note:** enable `pahCollections` under the chart’s templated environment key — `'{{- include "catalog.providers.env" . }}':` — **not** a duplicate bare `production:` block (that breaks merged `app-config` and can CrashLoop `backstage-backend`).
+
+Collection discovery uses `ansible.rhaap.baseUrl` / `aap-token` from `secrets-rhaap-portal` (same as job-template sync). See [Red Hat: collection discovery sources](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.7/html/develop-proc_configure_github_app_ee_builder#configure-collection-discovery-sources).
 
 ## Prerequisites
 
@@ -116,7 +142,7 @@ eval "$(./scripts/create-aap-oauth-and-token.sh)"
 
 3. **Personal access token** for catalog sync (`aap-token` in `secrets-rhaap-portal`): create under the admin user in the gateway; **read** scope minimum.
 
-4. **Organization**: chart default is `Default` (`catalog.providers.rhaap` in chart values). Do not add a duplicate `production:` block in `values.yaml` (it breaks the merged app config).
+4. **Organization**: chart default is `Default` (`catalog.providers.rhaap` in chart values). Override `pahCollections` only via the templated `'{{- include "catalog.providers.env" . }}':` key in `values.yaml` — not a bare `production:` block.
 
 ## Secrets (exact names)
 
@@ -166,6 +192,7 @@ redhat-developer-hub:
 | Init container **ImagePullBackOff** on plugins | Recreate `aap-portal-dynamic-plugins-registry-auth` (`bootstrap-secrets.sh`). |
 | Portal login fails | OAuth redirect URI must match Route host; enable external OAuth2 tokens. |
 | Catalog empty | Check `aap-token` and `orgs` in values; gateway URL in `aap-host-url`. |
+| Collections empty | Hub **community** repo populated (`hub-sync-community-from-requirements.sh`); `pahCollections.enabled: true` in values; run `refresh-aap-catalog-sync.sh`. |
 | Backend **password authentication failed for user postgres** | PostgreSQL started after the first backend attempt. Delete `data-aap-portal-postgresql-0` PVC and portal pods; Argo resync recreates a clean DB. |
 | Init container **Evicted** (ephemeral-storage) | Scale portal deployment to 1 replica during install; avoid parallel rollouts on small nodes. |
 | `clusterRouterBase` validation error | Use full apps domain from `ingresscontroller cluster`. |

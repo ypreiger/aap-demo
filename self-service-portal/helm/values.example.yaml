@@ -27,3 +27,18 @@ redhat-developer-hub:
               target: https://github.com/rh-mad-workshop/coolstore-software-templates/blob/demo-vm/showcase-templates.yaml
               rules:
                 - allow: [Location, Template]
+          providers:
+            rhaap:
+              '{{- include "catalog.providers.env" . }}':
+                sync:
+                  pahCollections:
+                    enabled: true
+                    repositories:
+                      - name: community
+                        schedule:
+                          frequency: {hours: 6}
+                          timeout: {minutes: 60}
+                      - name: published
+                        schedule:
+                          frequency: {days: 1}
+                          timeout: {minutes: 60}
