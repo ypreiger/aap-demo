@@ -1,0 +1,28 @@
+# Copy to values.yaml and set clusterRouterBase for your cluster.
+# Chart: redhat-rhaap-portal (https://charts.openshift.io/) targetRevision: 2.2.0
+# Release name (Argo): aap-portal → Route host: aap-portal-rhaap-portal-<namespace>.<clusterRouterBase>
+
+redhat-developer-hub:
+  nameOverride: rhaap-portal
+  global:
+    # Required — must NOT stay apps.example.com
+    clusterRouterBase: apps.example.com
+    pluginMode: oci
+    # Match chart 2.2.0 lifecycle tag (see Red Hat Ansible automation portal lifecycle page)
+    imageTagInfo: "2.2"
+  upstream:
+    backstage:
+      appConfig:
+        catalog:
+          providers:
+            rhaap:
+              production:
+                orgs: Default  # your AAP Controller organization name
+        ansible:
+          rhaap:
+            checkSSL: true   # set false only for lab clusters with self-signed AAP TLS
+        auth:
+          providers:
+            rhaap:
+              production:
+                checkSSL: true

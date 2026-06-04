@@ -1,0 +1,38 @@
+# Deploy Ansible automation portal (self-service) into namespace aap via OpenShift GitOps.
+# Prerequisites: secrets in aap (see ../scripts/bootstrap-secrets.sh) and this repo reachable by Argo CD.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aap-self-service-portal
+  namespace: openshift-gitops
+  labels:
+    app.kubernetes.io/part-of: aap-demo
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: aap
+  sources:
+    - repoURL: https://charts.openshift.io
+      chart: redhat-rhaap-portal
+      targetRevision: "2.2.0"
+      helm:
+        releaseName: aap-portal
+        valueFiles:
+          - $values/self-service-portal/helm/values.yaml
+    - repoURL: https://github.com/ypreiger/aap-demo.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    # Helm generates random backend auth secret data on first install
+    - group: ""
+      kind: Secret
+      name: aap-portal-auth
+      jsonPointers:
+        - /data

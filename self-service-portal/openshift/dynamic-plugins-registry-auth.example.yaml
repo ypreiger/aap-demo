@@ -1,0 +1,17 @@
+# Example only. Secret name MUST be: <helm-release-name>-dynamic-plugins-registry-auth
+# For release aap-portal → aap-portal-dynamic-plugins-registry-auth
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aap-portal-dynamic-plugins-registry-auth
+  namespace: aap
+type: Opaque
+stringData:
+  auth.json: |
+    {
+      "auths": {
+        "registry.redhat.io": {
+          "auth": "BASE64_USERNAME_PASSWORD"
+        }
+      }
+    }

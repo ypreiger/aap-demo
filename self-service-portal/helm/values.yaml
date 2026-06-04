@@ -1,0 +1,26 @@
+# Ansible automation portal (self-service) — Helm values for chart redhat-rhaap-portal 2.2.0
+# Argo CD passes this file via multi-source ref: values (see argocd/application.yaml).
+#
+# Set clusterRouterBase to your OpenShift apps domain (oc get ingresscontroller cluster -o jsonpath='{.status.domain}').
+redhat-developer-hub:
+  nameOverride: rhaap-portal
+  global:
+    clusterRouterBase: apps.cluster-jx4b7.dynamic.redhatworkshops.io
+    pluginMode: oci
+    imageTagInfo: "2.2"
+  upstream:
+    backstage:
+      appConfig:
+        catalog:
+          providers:
+            rhaap:
+              production:
+                orgs: Default
+        ansible:
+          rhaap:
+            checkSSL: true
+        auth:
+          providers:
+            rhaap:
+              production:
+                checkSSL: true
