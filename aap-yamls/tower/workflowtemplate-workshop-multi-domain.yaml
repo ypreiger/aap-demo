@@ -11,6 +11,9 @@ spec:
   name: workshop-multi-domain
   organization: Default
   inventory: Demo Inventory
+  labels:
+    - openshift-virtualization
+    - self-service
   description: >-
     OpenShiftVirt foundation + gated VM rollout + NP audit + F5 / VMware / Blue Coat mock integrations.
     Register webhook Approval notification to email-plugin and provide workshop_mock_base_url at launch.

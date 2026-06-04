@@ -21,14 +21,48 @@ self-service-portal/
 ├── helm/
 │   ├── values.yaml           # Cluster-specific values (safe to commit — no secrets)
 │   └── values.example.yaml   # Template for other clusters
+├── catalog/
+│   └── openshift-virtualization-location.yaml  # Red Hat OCP Virt scaffolder templates
 ├── openshift/
 │   ├── secrets-rhaap-portal.example.yaml
 │   └── dynamic-plugins-registry-auth.example.yaml
 └── scripts/
     ├── bootstrap-secrets.sh           # Create secrets in aap (required)
     ├── create-aap-oauth-and-token.sh  # Optional: auto-create OAuth + token
-    └── deploy-gitops.sh               # Apply Application and print URLs
+    ├── create-aap-oauth-and-token.sh  # Optional: auto-create OAuth + token
+    ├── deploy-gitops.sh               # Apply Application and print URLs
+    └── refresh-aap-catalog-sync.sh    # Nudge AAP job-template catalog sync
+
+## OpenShift Virtualization templates
+
+Two template sources appear in the portal after sync:
+
+### 1. AAP Controller workflows (recommended for this demo)
+
+Survey-driven **workflow job templates** from [`aap-yamls/tower/`](../aap-yamls/tower/) sync into **Self-Service → Create Task** when `jobTemplates.enabled` is true (chart default):
+
+| Template | Purpose |
+|----------|---------|
+| `bom-project-deploy` | BOM foundation → approval → Fedora VMs on OpenShift Virtualization |
+| `workshop-multi-domain` | Virt + approval + mock F5/VMware/BlueCoat integrations |
+
+Virt-related tower CRs carry labels `openshift-virtualization` and `self-service` for catalog tags. Re-apply tower manifests after label changes:
+
+```bash
+oc apply -k aap-yamls/tower/
+./self-service-portal/scripts/refresh-aap-catalog-sync.sh
 ```
+
+Survey field reference: [documentation/09_VIRT_WORKFLOW_SURVEY.md](../documentation/09_VIRT_WORKFLOW_SURVEY.md).
+
+### 2. Red Hat RHEL 9 VM scaffolder templates (GitOps)
+
+Reference templates from [rh-mad-workshop/coolstore-software-templates](https://github.com/rh-mad-workshop/coolstore-software-templates/tree/demo-vm/scaffolder-templates) are registered via [`catalog/openshift-virtualization-location.yaml`](catalog/openshift-virtualization-location.yaml) and `helm/values.yaml` catalog locations:
+
+- **RHEL9 VM Medium** / **RHEL9 VM Large** — KubeVirt VM + GitOps repo flow
+- **Tomcat VM** — legacy app on RHEL VM (workshop pattern)
+
+These use `publish:gitlab` and `argocd:create-resources` actions. For a full create flow you need GitLab OAuth in `secrets-scm` and Argo CD integration; otherwise use the AAP workflows above.
 
 ## Prerequisites
 

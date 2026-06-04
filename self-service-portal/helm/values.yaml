@@ -8,5 +8,22 @@ redhat-developer-hub:
     clusterRouterBase: apps.cluster-jx4b7.dynamic.redhatworkshops.io
     pluginMode: oci
     imageTagInfo: "2.2"
-  # Do not override catalog.providers.rhaap here — the chart already sets
-  # orgs: Default under the templated environment key (production).
+  upstream:
+    backstage:
+      appConfig:
+        catalog:
+          # Helm replaces the whole locations array — list every entry you need.
+          locations:
+            - type: url
+              target: https://github.com/ansible/ansible-rhdh-templates/blob/v2.0.0/templates/ee-start-from-scratch.yaml
+              rules:
+                - allow: [Template]
+            - type: url
+              target: https://github.com/ypreiger/aap-demo/blob/main/self-service-portal/catalog/openshift-virtualization-location.yaml
+              rules:
+                - allow: [Location, Template]
+            - type: url
+              target: https://github.com/rh-mad-workshop/coolstore-software-templates/blob/demo-vm/showcase-templates.yaml
+              rules:
+                - allow: [Location, Template]
+  # Do not override catalog.providers.rhaap — chart sets orgs: Default and jobTemplates sync.

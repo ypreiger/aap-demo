@@ -1,0 +1,17 @@
+# Register Red Hat OpenShift Virtualization software templates in the automation portal catalog.
+# Source: Red Hat Developer Hub VM workshop templates (RHEL 9 on KubeVirt via GitOps).
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: openshift-virtualization-templates
+  title: OpenShift Virtualization templates
+  description: >-
+    Red Hat reference scaffolder templates for RHEL 9 virtual machines on
+    OpenShift Virtualization (Helm + Argo CD). Requires GitLab and Argo CD
+    integration for full create flow; see self-service-portal/README.md.
+spec:
+  type: url
+  targets:
+    - https://github.com/rh-mad-workshop/coolstore-software-templates/blob/demo-vm/scaffolder-templates/rhel9-vm-medium/template.yaml
+    - https://github.com/rh-mad-workshop/coolstore-software-templates/blob/demo-vm/scaffolder-templates/rhel9-vm-large/template.yaml
+    - https://github.com/rh-mad-workshop/coolstore-software-templates/blob/demo-vm/scaffolder-templates/tomcat-vm/template.yaml

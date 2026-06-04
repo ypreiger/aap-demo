@@ -10,6 +10,20 @@ redhat-developer-hub:
     pluginMode: oci
     # Match chart 2.2.0 lifecycle tag (see Red Hat Ansible automation portal lifecycle page)
     imageTagInfo: "2.2"
-  # Optional: override AAP organization (chart default is Default). Use helm upgrade --set
-  # only if you know the chart's templated catalog.providers.env key; otherwise edit
-  # upstream.backstage.appConfig.catalog.providers.rhaap.<env>.orgs in a full values export.
+  upstream:
+    backstage:
+      appConfig:
+        catalog:
+          locations:
+            - type: url
+              target: https://github.com/ansible/ansible-rhdh-templates/blob/v2.0.0/templates/ee-start-from-scratch.yaml
+              rules:
+                - allow: [Template]
+            - type: url
+              target: https://github.com/<your-org>/<your-repo>/blob/main/self-service-portal/catalog/openshift-virtualization-location.yaml
+              rules:
+                - allow: [Location, Template]
+            - type: url
+              target: https://github.com/rh-mad-workshop/coolstore-software-templates/blob/demo-vm/showcase-templates.yaml
+              rules:
+                - allow: [Location, Template]
