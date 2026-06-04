@@ -29,9 +29,10 @@ self-service-portal/
 └── scripts/
     ├── bootstrap-secrets.sh           # Create secrets in aap (required)
     ├── create-aap-oauth-and-token.sh  # Optional: auto-create OAuth + token
-    ├── create-aap-oauth-and-token.sh  # Optional: auto-create OAuth + token
     ├── deploy-gitops.sh               # Apply Application and print URLs
+    ├── label-virt-workflow-templates.sh  # API labels on virt workflows
     └── refresh-aap-catalog-sync.sh    # Nudge AAP job-template catalog sync
+```
 
 ## OpenShift Virtualization templates
 
@@ -46,10 +47,12 @@ Survey-driven **workflow job templates** from [`aap-yamls/tower/`](../aap-yamls/
 | `bom-project-deploy` | BOM foundation → approval → Fedora VMs on OpenShift Virtualization |
 | `workshop-multi-domain` | Virt + approval + mock F5/VMware/BlueCoat integrations |
 
-Virt-related tower CRs carry labels `openshift-virtualization` and `self-service` for catalog tags. Re-apply tower manifests after label changes:
+Virt-related **job** templates use tower CR `spec.labels`. **Workflow** templates need API labels (WorkflowTemplate CR does not accept label arrays):
 
 ```bash
 oc apply -k aap-yamls/tower/
+chmod +x self-service-portal/scripts/label-virt-workflow-templates.sh
+./self-service-portal/scripts/label-virt-workflow-templates.sh
 ./self-service-portal/scripts/refresh-aap-catalog-sync.sh
 ```
 

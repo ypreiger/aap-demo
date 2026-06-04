@@ -11,9 +11,6 @@ spec:
   name: bom-project-deploy
   organization: Default
   inventory: Demo Inventory
-  labels:
-    - openshift-virtualization
-    - self-service
   description: >-
     Generic BOM deploy for any Git folder aap-demo/projects/{project_name}/bom (launch survey).
     Order: foundation → manual approval → VM provisioning. Not tied to proj1 or proj2 by name.
