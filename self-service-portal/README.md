@@ -129,6 +129,8 @@ redhat-developer-hub:
 | Init container **ImagePullBackOff** on plugins | Recreate `aap-portal-dynamic-plugins-registry-auth` (`bootstrap-secrets.sh`). |
 | Portal login fails | OAuth redirect URI must match Route host; enable external OAuth2 tokens. |
 | Catalog empty | Check `aap-token` and `orgs` in values; gateway URL in `aap-host-url`. |
+| Backend **password authentication failed for user postgres** | PostgreSQL started after the first backend attempt. Delete `data-aap-portal-postgresql-0` PVC and portal pods; Argo resync recreates a clean DB. |
+| Init container **Evicted** (ephemeral-storage) | Scale portal deployment to 1 replica during install; avoid parallel rollouts on small nodes. |
 | `clusterRouterBase` validation error | Use full apps domain from `ingresscontroller cluster`. |
 
 ## Uninstall
