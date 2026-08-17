@@ -124,6 +124,18 @@ Privileged Container policy is IMPERATIVE with `FAIL_DEPLOYMENT_CREATE_ENFORCEME
 
 Job templates and workflow are defined in `aap-config/` and applied with `scripts/aap-config-apply.py` after this repo is on `main` (project SCM). Personas `alice`/`bob`/`carol`/`sre-approver` are created as AAP users.
 
+### Happy-path E2E (2026-08-17T21:26Z)
+
+`python3 scripts/preflight-demo.py` then `python3 scripts/e2e-happy-path.py`:
+
+- alice launched workflow **98** → JT-01 succeeded → pending **Approval-Node-SRE** **100**
+- sre-approver approved (HTTP 204)
+- JT-02 applied `AAPEX-20260817-c8fad6 demo-app`; JT-04 created `AAPEX-rollback-AAPEX-20260817-c8fad6`
+- `oc exec -n demo-app deploy/nginx -- date` → `Mon Aug 17 21:26:54 UTC 2026`
+- `oc exec -n demo-restricted deploy/nginx -- date` still denied by `k8sevents.stackrox.io`
+
+Preflight also confirmed: AAP local logins, approval template type `workflow_approval`, survey namespaces `demo-app`/`demo-restricted`, required credentials attached, exec enforcement on.
+
 ## AC mapping
 
 | AC | Result | Evidence |
