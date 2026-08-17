@@ -280,10 +280,19 @@ def main():
             payload["unified_job_template"] = jt_ids[node["unified_job_template"]]
         if node.get("extra_data"):
             payload["extra_data"] = node["extra_data"]
-        if node.get("approval_node"):
-            payload["approval_node"] = node["approval_node"]
         created = api("POST", "/workflow_job_template_nodes/", payload, ok=(201, 200))
         node_ids[ident] = created["id"]
+        if node.get("approval_node"):
+            api(
+                "POST",
+                f"/workflow_job_template_nodes/{created['id']}/create_approval_template/",
+                {
+                    "name": node["approval_node"]["name"],
+                    "description": node["approval_node"].get("description", ""),
+                    "timeout": int(node["approval_node"].get("timeout", 3600)),
+                },
+                ok=(201, 200),
+            )
         print("node", ident, created["id"])
 
     for node in wf_cfg["simplified_workflow_nodes"]:
