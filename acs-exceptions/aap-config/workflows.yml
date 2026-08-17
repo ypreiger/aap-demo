@@ -54,7 +54,7 @@ controller_workflows:
       - identifier: approval
         approval_node:
           name: Approval-Node-SRE
-          description: "Approve temporary ACS exception (requester/namespace/policy/duration/justification/ticket in extra vars)"
+          description: "Approve as sre-approver in AAP Approvals. Extra vars: namespace, policy_name, duration_minutes, justification, ticket_id, requesting_user."
           timeout: 3600
         success_nodes: [jt02]
         failure_nodes: [jt05-deny]

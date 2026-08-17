@@ -8,7 +8,8 @@ metadata:
 spec:
   containers:
     - name: pause
-      image: registry.access.redhat.com/ubi9/pause:latest
+      image: registry.access.redhat.com/ubi9/ubi-minimal:latest
+      command: ["sleep", "infinity"]
       securityContext:
         privileged: true
   restartPolicy: Never

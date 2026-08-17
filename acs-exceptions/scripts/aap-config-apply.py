@@ -74,14 +74,51 @@ def upsert(collection: str, name: str, body: dict, extra=""):
     return created["id"]
 
 
-def wait_project(pid: int, timeout=180):
+def wait_project(pid: int, timeout=300):
     deadline = time.time() + timeout
+    last = ""
     while time.time() < deadline:
         p = api("GET", f"/projects/{pid}/")
-        if p.get("status") in ("successful", "ok"):
+        status = p.get("status")
+        if status != last:
+            print(f"project {pid} status={status}")
+            last = status
+        if status in ("successful", "ok"):
             return
+        if status in ("failed", "error"):
+            raise SystemExit(f"project {pid} {status}")
         time.sleep(5)
-    print(f"WARN project {pid} status={p.get('status')}", file=sys.stderr)
+    raise SystemExit(f"project {pid} still {last} after {timeout}s")
+
+
+def mint_ocp_token() -> str:
+    env_tok = os.environ.get("OCP_SA_TOKEN", "")
+    try:
+        import subprocess
+
+        out = subprocess.check_output(
+            ["oc", "create", "token", "aap-rbac-checker", "-n", "aap-demo", "--duration=720h"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+        if out:
+            print("minted 720h OpenShift token for aap-rbac-checker")
+            return out
+    except Exception as exc:
+        print(f"WARN oc create token failed ({exc}); falling back to OCP_SA_TOKEN")
+    if not env_tok:
+        raise SystemExit("OCP_SA_TOKEN is required (run setup-demo-fixtures.yml, oc login, then re-apply)")
+    return env_tok
+
+
+def approval_node_ready(wf_id: int) -> bool:
+    nodes = api("GET", f"/workflow_job_templates/{wf_id}/workflow_nodes/?page_size=200")
+    for n in nodes.get("results", []):
+        if n.get("identifier") != "approval":
+            continue
+        ujt = (n.get("summary_fields") or {}).get("unified_job_template") or {}
+        return ujt.get("unified_job_type") == "workflow_approval"
+    return False
 
 
 def load(name):
@@ -175,9 +212,8 @@ def main():
                 break
     if kube_type_id:
         host = os.environ.get("OCP_API") or os.environ.get("K8S_AUTH_HOST") or "https://kubernetes.default.svc"
-        sa_token = os.environ.get("OCP_SA_TOKEN", "")
-        if sa_token:
-            upsert(
+        sa_token = mint_ocp_token()
+        upsert(
                 "credentials",
                 "openshift-rbac-checker",
                 {
@@ -187,6 +223,8 @@ def main():
                     "inputs": {"host": host, "bearer_token": sa_token, "verify_ssl": False},
                 },
             )
+    else:
+        raise SystemExit("OpenShift or Kubernetes API Bearer Token credential type not found")
 
     proj_cfg = load("projects.yml")["controller_projects"][0]
     proj_id = upsert(
@@ -199,7 +237,7 @@ def main():
             "scm_url": proj_cfg["scm_url"],
             "scm_branch": proj_cfg.get("scm_branch", "main"),
             "scm_update_on_launch": True,
-            "scm_update_cache_timeout": int(proj_cfg.get("scm_update_cache_timeout", 3600)),
+            "scm_update_cache_timeout": int(proj_cfg.get("scm_update_cache_timeout", 300)),
             "allow_override": False,
             "description": proj_cfg.get("description", ""),
         },
@@ -267,40 +305,42 @@ def main():
     api("POST", f"/workflow_job_templates/{wf_id}/survey_spec/", wf_cfg["survey"], ok=(200, 201))
     ensure_labels("workflow_job_templates", wf_id, wf_cfg.get("labels") or ["self-service", "acs-exception"])
 
-    # rebuild nodes
-    existing_nodes = api("GET", f"/workflow_job_templates/{wf_id}/workflow_nodes/?page_size=200")
-    for n in existing_nodes.get("results", []):
-        api("DELETE", f"/workflow_job_template_nodes/{n['id']}/", ok=(204, 200, 202))
+    if approval_node_ready(wf_id):
+        print("workflow nodes already have Approval-Node-SRE — skip rebuild")
+    else:
+        existing_nodes = api("GET", f"/workflow_job_templates/{wf_id}/workflow_nodes/?page_size=200")
+        for n in existing_nodes.get("results", []):
+            api("DELETE", f"/workflow_job_template_nodes/{n['id']}/", ok=(204, 200, 202))
 
-    node_ids = {}
-    for node in wf_cfg["simplified_workflow_nodes"]:
-        ident = node["identifier"]
-        payload = {"identifier": ident, "workflow_job_template": wf_id}
-        if node.get("unified_job_template"):
-            payload["unified_job_template"] = jt_ids[node["unified_job_template"]]
-        if node.get("extra_data"):
-            payload["extra_data"] = node["extra_data"]
-        created = api("POST", "/workflow_job_template_nodes/", payload, ok=(201, 200))
-        node_ids[ident] = created["id"]
-        if node.get("approval_node"):
-            api(
-                "POST",
-                f"/workflow_job_template_nodes/{created['id']}/create_approval_template/",
-                {
-                    "name": node["approval_node"]["name"],
-                    "description": node["approval_node"].get("description", ""),
-                    "timeout": int(node["approval_node"].get("timeout", 3600)),
-                },
-                ok=(201, 200),
-            )
-        print("node", ident, created["id"])
+        node_ids = {}
+        for node in wf_cfg["simplified_workflow_nodes"]:
+            ident = node["identifier"]
+            payload = {"identifier": ident, "workflow_job_template": wf_id}
+            if node.get("unified_job_template"):
+                payload["unified_job_template"] = jt_ids[node["unified_job_template"]]
+            if node.get("extra_data"):
+                payload["extra_data"] = node["extra_data"]
+            created = api("POST", "/workflow_job_template_nodes/", payload, ok=(201, 200))
+            node_ids[ident] = created["id"]
+            if node.get("approval_node"):
+                api(
+                    "POST",
+                    f"/workflow_job_template_nodes/{created['id']}/create_approval_template/",
+                    {
+                        "name": node["approval_node"]["name"],
+                        "description": node["approval_node"].get("description", ""),
+                        "timeout": int(node["approval_node"].get("timeout", 3600)),
+                    },
+                    ok=(201, 200),
+                )
+            print("node", ident, created["id"])
 
-    for node in wf_cfg["simplified_workflow_nodes"]:
-        src = node_ids[node["identifier"]]
-        for rel, key in (("success_nodes", "success_nodes"), ("failure_nodes", "failure_nodes")):
-            for dest_ident in node.get(key, []) or []:
-                dest = node_ids[dest_ident]
-                api("POST", f"/workflow_job_template_nodes/{src}/{rel}/", {"id": dest}, ok=(204, 200, 201, 204, 400))
+        for node in wf_cfg["simplified_workflow_nodes"]:
+            src = node_ids[node["identifier"]]
+            for rel, key in (("success_nodes", "success_nodes"), ("failure_nodes", "failure_nodes")):
+                for dest_ident in node.get(key, []) or []:
+                    dest = node_ids[dest_ident]
+                    api("POST", f"/workflow_job_template_nodes/{src}/{rel}/", {"id": dest}, ok=(204, 200, 201, 204, 400))
 
     for sched in load("schedules.yml")["controller_schedules"]:
         jt = sched["unified_job_template"]
@@ -368,9 +408,27 @@ def main():
     if approve_id:
         api("POST", f"/roles/{approve_id}/teams/", {"id": team_id}, ok=(204, 200, 201, 400))
 
+    missing = []
+    for jt in load("job_templates.yml")["controller_templates"]:
+        want = set(jt.get("credentials") or [])
+        if not want:
+            continue
+        have = {
+            c["name"]
+            for c in api("GET", f"/job_templates/{jt_ids[jt['name']]}/credentials/").get("results", [])
+        }
+        for cred_name in want:
+            if cred_name not in have:
+                missing.append(f"{jt['name']} missing credential {cred_name}")
+    if not approval_node_ready(wf_id):
+        missing.append("workflow approval node has no workflow_approval template")
+    if missing:
+        raise SystemExit("apply verification failed:\n  " + "\n  ".join(missing))
+
     print("aap-config-apply complete")
     print("job_templates", sorted(jt_ids))
     print("workflow", wf_id)
+    print("approvals", f"{(os.environ.get('AAP_URL') or HOST).rstrip('/')}/#/workflow_approvals")
 
 
 if __name__ == "__main__":

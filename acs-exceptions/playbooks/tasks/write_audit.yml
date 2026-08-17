@@ -1,6 +1,7 @@
 ---
-# Writes audit/<request_id>.json. Extra vars:
-#   audit_status, audit_event, failure_reason (optional), merge fields
+# Writes audit/<request_id>.json inside the job workspace (ephemeral on AAP).
+# Job stdout prints the JSON for the demo. Git push only when GIT_TOKEN is set.
+# Optional ConfigMap in aap-demo when the OpenShift credential is attached.
 - name: Require request_id
   ansible.builtin.assert:
     that: request_id is defined and (request_id | length > 0)
@@ -58,6 +59,27 @@
     content: "{{ audit_record | to_nice_json }}"
     mode: "0644"
 
+- name: Show audit record in job output (demo artifact)
+  ansible.builtin.debug:
+    var: audit_record
+
+- name: Best-effort ConfigMap copy in aap-demo
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: "{{ request_id | lower }}"
+        namespace: aap-demo
+        labels:
+          aapex: audit
+          request_id: "{{ request_id }}"
+      data:
+        record.json: "{{ audit_record | to_nice_json }}"
+  failed_when: false
+  register: audit_cm
+
 - name: Commit and push audit record when GIT_TOKEN is set
   when: lookup('env', 'GIT_TOKEN') | length > 0
   block:
@@ -65,17 +87,18 @@
       ansible.builtin.shell: |
         set -euo pipefail
         cd "{{ playbook_dir }}/.."
-        git pull --rebase origin "{{ lookup('env', 'GIT_BRANCH') | default('main') }}" || true
+        git pull --rebase origin "{{ lookup('env', 'GIT_BRANCH') | default('main', true) }}" || true
         git add "audit/{{ request_id }}.json" audit/notifications.log || true
         if git diff --cached --quiet; then
           echo "no audit changes to commit"
           exit 0
         fi
         git commit -m "audit({{ request_id }}): {{ audit_event | default(audit_status) }}"
-        git push "https://x-access-token:${GIT_TOKEN}@github.com/${GIT_REPO_URL#*github.com/}" "HEAD:{{ lookup('env', 'GIT_BRANCH') | default('main') }}"
+        REPO="${GIT_REPO_URL:-https://github.com/ypreiger/aap-demo.git}"
+        git push "https://x-access-token:${GIT_TOKEN}@github.com/${REPO#*github.com/}" "HEAD:{{ lookup('env', 'GIT_BRANCH') | default('main', true) }}"
       environment:
         GIT_TOKEN: "{{ lookup('env', 'GIT_TOKEN') }}"
-        GIT_REPO_URL: "{{ lookup('env', 'GIT_REPO_URL') | default('https://github.com/ypreiger/iso-compliance-platform.git') }}"
+        GIT_REPO_URL: "{{ lookup('env', 'GIT_REPO_URL') | default('https://github.com/ypreiger/aap-demo.git', true) }}"
       no_log: true
       register: audit_git_push
       changed_when: "'no audit changes' not in (audit_git_push.stdout | default(''))"

@@ -63,21 +63,21 @@
       ansible.builtin.uri:
         url: "{{ aap_api_base }}/schedules/?name=AAPEX-rollback-{{ request_id }}"
         user: "{{ controller_user }}"
-        password: "{{ controller_password }}"
+        password: "{{ aap_basic_password }}"
         force_basic_auth: true
         validate_certs: false
         status_code: [200]
       register: sched_lookup
       no_log: true
       failed_when: false
-      when: controller_password | length > 0 or aap_token | length > 0
+      when: aap_basic_password | default('') | length > 0
 
     - name: DELETE schedule if found
       ansible.builtin.uri:
         url: "{{ aap_api_base }}/schedules/{{ item.id }}/"
         method: DELETE
         user: "{{ controller_user }}"
-        password: "{{ controller_password }}"
+        password: "{{ aap_basic_password }}"
         force_basic_auth: true
         validate_certs: false
         status_code: [204, 202, 200]

@@ -8,7 +8,7 @@
 - name: Load admin roles
   ansible.builtin.include_vars: "{{ playbook_dir }}/../vars/admin_roles.yml"
 
-- name: Resolve ACS connection from env
+- name: Resolve ACS and AAP connection from env
   ansible.builtin.set_fact:
     acs_url: "{{ lookup('env', 'ACS_URL') | default(acs_url, true) }}"
     acs_token: "{{ lookup('env', 'ACS_TOKEN') }}"
@@ -18,4 +18,10 @@
     aap_token: "{{ lookup('env', 'AAP_TOKEN') }}"
     controller_user: "{{ lookup('env', 'CONTROLLER_USERNAME') | default('admin', true) }}"
     controller_password: "{{ lookup('env', 'CONTROLLER_PASSWORD') }}"
+  no_log: true
+
+- name: Resolve AAP basic-auth password and default admin user
+  ansible.builtin.set_fact:
+    controller_user: "{{ controller_user if (controller_user | default('') | length) > 0 else 'admin' }}"
+    aap_basic_password: "{{ aap_token if (aap_token | default('') | length) > 0 else controller_password }}"
   no_log: true

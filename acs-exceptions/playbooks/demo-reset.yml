@@ -50,7 +50,7 @@
       environment:
         AAP_API_BASE: "{{ aap_api_base }}"
         CONTROLLER_USERNAME: "{{ controller_user }}"
-        CONTROLLER_PASSWORD: "{{ controller_password }}"
+        CONTROLLER_PASSWORD: "{{ aap_basic_password }}"
       no_log: true
       failed_when: false
 

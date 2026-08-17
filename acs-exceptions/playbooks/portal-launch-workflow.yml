@@ -25,15 +25,10 @@
         msg: "Cannot resolve requester (tower_user_name/awx_user_name). Refusing to continue."
       when: requesting_user | length == 0
 
-    - name: AAP basic-auth password (AAP API credential stores it as AAP_TOKEN)
-      ansible.builtin.set_fact:
-        aap_basic_password: "{{ aap_token if (aap_token | default('') | length) > 0 else controller_password }}"
-      no_log: true
-
     - name: Lookup workflow
       ansible.builtin.uri:
         url: "{{ aap_api_base }}/workflow_job_templates/?name={{ workflow_name | urlencode }}"
-        user: "{{ controller_user if (controller_user | default('') | length) > 0 else 'admin' }}"
+        user: "{{ controller_user }}"
         password: "{{ aap_basic_password }}"
         force_basic_auth: true
         validate_certs: false
@@ -75,7 +70,9 @@
         msg: >-
           Launched {{ workflow_name }} as workflow job
           {{ wf_launch.json.id | default('unknown') }} for {{ requesting_user }}.
-          SRE approval is still required in AAP.
+          Sign in as sre-approver (AAP local user, not OpenShift) and approve at
+          {{ aap_url }}/#/workflow_approvals
+          Justification must be at least 10 characters.
 
     - ansible.builtin.set_stats:
         data:

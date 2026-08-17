@@ -12,16 +12,16 @@
       requester: {{ requester | default(tower_user_name | default(awx_user_name | default('n/a'))) }}
       message: {{ notify_message | default('') }}
       timestamp: {{ ansible_date_time.iso8601 }}
+      approvals_url: {{ aap_url | default('') }}/#/workflow_approvals
 
-- name: Send email when SMTP_HOST is set
+- name: SMTP placeholder (community.general mail is not in the default EE)
   ansible.builtin.debug:
-    msg: "SMTP_HOST set — install community.general to enable mail; message was still logged to audit/notifications.log"
+    msg: "SMTP_HOST is set; message is still written to audit/notifications.log (no mail collection in EE)."
   when: lookup('env', 'SMTP_HOST') | length > 0
 
-- name: Append notification to audit log (SMTP fallback)
+- name: Append notification to audit log
   ansible.builtin.blockinfile:
     path: "{{ playbook_dir }}/../audit/notifications.log"
     create: true
     marker: "# {mark} {{ request_id | default('noid') }} {{ notify_event | default('event') }} {{ ansible_date_time.epoch }}"
     block: "{{ notify_rendered }}"
-  when: lookup('env', 'SMTP_HOST') | length == 0

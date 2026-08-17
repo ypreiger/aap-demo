@@ -65,6 +65,27 @@ After fixtures, enforcement was enabled (original `[]` preserved in the table ab
 
 Fixtures **do not disable or delete** these policies. They only add the listed enforcement action if missing, and may add/remove `AAPEX-*` exclusions.
 
+## Personas and credentials (AAP)
+
+| AAP user | Role | Where they click |
+|----------|------|------------------|
+| `alice` | Execute on portal JT + workflow | Portal Create Task |
+| `bob` | Execute (view-only on `demo-app`) | Negative RBAC demo |
+| `carol` | Execute (no admin namespace) | UC-3 |
+| `sre-approver` | Approve via team `SRE-Approvers` | `{AAP_URL}/#/workflow_approvals` |
+
+Passwords: `AAP_USER_*_PASSWORD` in `.env` (not Git). These are **AAP local accounts**. Cluster IdP remains OpenID (`rhbk`).
+
+AAP credentials that **must** be attached (apply.py verifies):
+
+| Credential | Job templates |
+|------------|----------------|
+| `openshift-rbac-checker` | JT-01, JT-05 |
+| `ACS Central` | JT-02, JT-03, JT-06 |
+| `AAP API token` | portal launcher, JT-00, JT-03, JT-04 |
+
+The OpenShift credential host is `https://kubernetes.default.svc` (EE pods). Token is minted from SA `aap-rbac-checker` in `aap-demo` (`oc create token … --duration=720h`).
+
 ## Notes vs the written instructions
 
 - AAP 2.6 gateway: Controller API is `https://demo-aap-aap.apps.ocp.7hrxw.sandbox880.opentlc.com/api/controller/v2` not `/api/v2` on the gateway host.

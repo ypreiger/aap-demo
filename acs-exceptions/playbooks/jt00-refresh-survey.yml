@@ -6,21 +6,15 @@
   tasks:
     - ansible.builtin.include_tasks: tasks/load_config.yml
 
-    - name: List namespaces
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Namespace
-      register: ns_list
-
-    - name: Build namespace choices
+    - name: Namespace choices stay the demo closed list
       ansible.builtin.set_fact:
-        ns_choices: "{{ (ns_list.resources | map(attribute='metadata.name') | list | sort)[:80] }}"
+        ns_choices: "{{ demo_namespaces }}"
 
     - name: Fetch workflow
       ansible.builtin.uri:
         url: "{{ aap_api_base }}/workflow_job_templates/?name=WF-Temporary-ACS-Policy-Exception"
         user: "{{ controller_user }}"
-        password: "{{ controller_password }}"
+        password: "{{ aap_basic_password }}"
         force_basic_auth: true
         validate_certs: false
         status_code: [200]
@@ -76,7 +70,7 @@
         url: "{{ aap_api_base }}/workflow_job_templates/{{ wf_id }}/survey_spec/"
         method: POST
         user: "{{ controller_user }}"
-        password: "{{ controller_password }}"
+        password: "{{ aap_basic_password }}"
         force_basic_auth: true
         validate_certs: false
         body_format: json
@@ -88,7 +82,7 @@
       ansible.builtin.uri:
         url: "{{ aap_api_base }}/job_templates/?name=Temporary%20ACS%20Policy%20Exception"
         user: "{{ controller_user }}"
-        password: "{{ controller_password }}"
+        password: "{{ aap_basic_password }}"
         force_basic_auth: true
         validate_certs: false
         status_code: [200]
@@ -102,7 +96,7 @@
         url: "{{ aap_api_base }}/job_templates/{{ portal_jt.json.results[0].id }}/survey_spec/"
         method: POST
         user: "{{ controller_user }}"
-        password: "{{ controller_password }}"
+        password: "{{ aap_basic_password }}"
         force_basic_auth: true
         validate_certs: false
         body_format: json

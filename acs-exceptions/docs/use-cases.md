@@ -21,7 +21,7 @@ For each customer use case: what can be delivered with AAP 2.6, what should be r
 | Allowlisted policies | `Kubernetes Actions: Exec into Pod`, `Privileged Container` |
 | Duration list | 5 / 10 / 15 / 30 / 60 minutes |
 | Requesters (Execute) | `alice`, `bob`, `carol` |
-| Approver | `sre-approver` (team `SRE-Approvers`, Approve on this workflow only) |
+| Approver | `sre-approver` (AAP local user; team `SRE-Approvers`; Approve on this workflow only). Approvals: `{AAP_URL}/#/workflow_approvals` — not the portal. Passwords: `acs-exceptions/.env`. |
 
 Identity on this cluster: OpenShift OAuth is OpenID (`rhbk`), not htpasswd. Matching **AAP local users** share the same usernames so JT-01 RBAC is authoritative. Verification can also use `oc --as=<user>`.
 
@@ -47,7 +47,7 @@ To reconsider (avoiding limitations):
 - AAP survey fields are static — the form cannot build a per-user namespace list at render time. Keep the namespace field as a choice list refreshed periodically by a small scheduled job (or free text), and treat the form as convenience: the authoritative checks run inside the workflow (UC-2).
 - Free-text duration is excluded by design: the survey offers only the closed list, and the workflow re-validates it.
 
-**This demo:** JT-00 (`JT-00-Refresh-Survey`) runs hourly (`JT-00-refresh-survey-hourly`). Namespace choices are `demo-app` and `demo-restricted` for everyone who can launch; JT-01 decides eligibility. The portal does **not** query OpenShift live per user (that remains the optional Phase 2 enhancement below).
+**This demo:** JT-00 (`JT-00-Refresh-Survey`) re-applies the **closed** namespace list `demo-app` / `demo-restricted` (it does not dump every cluster namespace). JT-01 decides eligibility. The portal does **not** query OpenShift live per user.
 
 **Best practice.** Re-validate every survey input server-side in the first workflow step — never trust the form alone.
 
@@ -58,7 +58,7 @@ This cluster already has the Ansible automation portal. It catalogs job template
 ### How to demonstrate
 
 1. Open the self-service portal as **alice** → **Create Task** → **Temporary ACS Policy Exception**.
-2. Show the form: namespace (`demo-app` / `demo-restricted`), policy (two allowlisted names only), duration `5/10/15/30/60`, mandatory justification, optional ticket.
+2. Show the form: namespace (`demo-app` / `demo-restricted`), policy (two allowlisted names only), duration `5/10/15/30/60`, mandatory justification (**minimum 10 characters**), optional ticket.
 3. Optionally show the same survey on the AAP gateway under workflow **WF-Temporary-ACS-Policy-Exception**.
 4. Say: *"The form is convenience; the workflow is the control."*
 
@@ -141,7 +141,7 @@ Incident story: production issue in `demo-app`; namespace admin needs `oc exec` 
 2. `oc exec -n demo-app deploy/nginx -- date` is **blocked** (webhook `k8sevents.stackrox.io`).
 3. As **alice**, launch **Temporary ACS Policy Exception**: namespace `demo-app`, policy `Kubernetes Actions: Exec into Pod`, duration **5**, justification filled.
 4. As **sre-approver**, open AAP Approvals (`#/workflow_approvals`) and **Approve**.
-5. ACS shows exclusion `AAPEX-… demo-app`. `oc exec` in `demo-app` **succeeds**. In `demo-restricted` it stays **blocked**.
+5. ACS shows exclusion `AAPEX-… demo-app` with empty `deployment.scope.cluster` and namespace `demo-app`. `oc exec` in `demo-app` **succeeds**. In `demo-restricted` it stays **blocked**.
 6. Wait for expiry (~5 minutes). Schedule `AAPEX-rollback-<id>` fires; exclusion gone; exec blocked again.
 
 ---
@@ -251,7 +251,7 @@ Incident story: production issue in `demo-app`; namespace admin needs `oc exec` 
 
 1. After an approved 5-minute exception, show Controller schedule `AAPEX-rollback-<id>` (not a sleeping job).
 2. Wait until expiry. JT-03 runs; ACS exclusion gone; `oc exec` blocked again. Audit `status=completed`, history includes `rollback_completed`.
-3. **AC-08 (optional):** apply another exception, **delete** its rollback schedule, wait ≤5 minutes for **JT-06** to remove the orphan/expired `AAPEX-*` exclusion.
+3. **AC-08 (optional):** JT-06 (`JT-06-reconcile-every-5-min`) removes `AAPEX-*` exclusions whose `expiration` is in the past. It will **not** delete an unexpired window. To show the safety net, wait until after expiry with the rollback schedule deleted.
 
 ---
 
@@ -263,19 +263,19 @@ Incident story: production issue in `demo-app`; namespace admin needs `oc exec` 
 
 - An audit job (JT-05) called at every lifecycle event, writing all specified fields: Request ID, requester, approver, namespace, policy, start/end time, justification, statuses, failure reason.
 - Backend per the customer's choice: Git repository (immutable, timestamped history — simplest for the pilot) or a database; ServiceNow/CMDB later.
-- **Built here:** JSON files `acs-exceptions/audit/AAPEX-*.json` plus `history[]`. JT-05 is also invoked from JT-01 on reject paths. Git push of audit files happens only when `GIT_TOKEN` is configured in AAP/env (not stored in Git).
+- **Built here:** JSON is printed in the AAP job output (the live demo artifact). A best-effort ConfigMap is written in namespace `aap-demo` (`oc get cm -n aap-demo -l aapex=audit`) when the OpenShift credential is attached. Git push of `acs-exceptions/audit/` happens only when `GIT_TOKEN` is set. AAP job workspaces are ephemeral — do not present `git log -- audit/` unless that token is configured.
 
 ### Limitations
 
 - AAP job logs rotate and are not compliance storage — they stay supplementary, as the customer document itself states. The dedicated audit store must be chosen (and retention defined) before build, because the rollback reconciler also reads it as its state.
 
-**This demo:** Git-backed `audit/` is the pilot store. AAP job logs are not treated as the system of record.
+**This demo:** Git-backed `audit/` is optional (`GIT_TOKEN`). The system of record you can show live is the job output JSON and, when present, ConfigMaps in `aap-demo`.
 
 ### How to demonstrate
 
-1. Open `acs-exceptions/audit/AAPEX-*.json` after a full UC-4 run.
-2. Show fields: requester, approver (when approved), namespace, policy, window, justification, ticket, `status`, `history[]`.
-3. Optionally `git log --oneline -- acs-exceptions/audit/` if those files were committed.
+1. Open the JT-02 or JT-05 job output after a full UC-4 run and show the printed `audit_record` JSON.
+2. Show fields: requester, namespace, policy, window, justification, ticket, `status`, `history[]`.
+3. Optional: `oc get cm -n aap-demo -l aapex=audit`. `git log -- acs-exceptions/audit/` only if `GIT_TOKEN` pushed those files.
 
 ---
 
@@ -294,13 +294,13 @@ Incident story: production issue in `demo-app`; namespace admin needs `oc exec` 
 - AAP notification templates fire on job/workflow status only — the richer lifecycle messages (e.g., “exception applied, actual window 14:02–14:32”) are sent as mail tasks inside the jobs. Same content and recipients; different mechanism than the spec may have assumed.
 - Notifications never replace audit records (customer's own requirement) — every notified event is also written by UC-9.
 
-**This demo:** `SMTP_HOST` is unset, so messages append to `acs-exceptions/audit/notifications.log`. Corporate SMTP is not configured on this cluster.
+**This demo:** `SMTP_HOST` is unset. `playbooks/notify.yml` always appends to `audit/notifications.log` **inside the job workspace** (visible in job output/artifacts). Corporate SMTP is not configured. The AAP notification template `ACS-Exception-approval-pending` is a placeholder, not a live mailbox.
 
 ### How to demonstrate
 
-1. After submitted / applied / rollback events, open `acs-exceptions/audit/notifications.log`.
-2. Point at `event:`, `request_id`, `namespace`, `policy_name`, `message`, `timestamp`.
-3. Say that SMTP would send the same content if `SMTP_HOST` were set; AAP job logs are not the audit store.
+1. After submitted / applied / rollback events, open the job output and find the notification block (`event:`, `request_id`, `namespace`, `policy_name`, `message`, `approvals_url`).
+2. Say that SMTP would send the same content if `SMTP_HOST` were set **and** the EE had a mail collection; it does not today.
+3. AAP job logs still are not the compliance store — the printed `audit_record` JSON is.
 
 ---
 
@@ -381,7 +381,7 @@ These are the cross-cutting alignments from the source and this implementation. 
 
 1. **Survey refresh + server-side validation (UC-1/2/3).** AAP surveys cannot query per-user RBAC. JT-00 refreshes namespace choices hourly; JT-01 re-validates allowlist, duration, justification, and admin RoleBinding + SubjectAccessReview. The form is convenience; the workflow is the control.
 2. **In-AAP approval (UC-6).** There is no anonymous email-link approve. Notifications include a deep link to `{AAP_URL}/#/workflow_approvals`. Every approval is authenticated, RBAC-scoped to `SRE-Approvers`, and timestamped — stronger than a mailto link.
-3. **Schedule + reconciler instead of sleep (UC-8).** Customer guidance forbids a long-running sleep job. JT-04 creates a one-shot Controller schedule at `end_time`; JT-06 reconciles expired `active` audit records and orphan `AAPEX-*` exclusions if AAP was down.
-4. **Git audit, not AAP job logs (UC-9).** Job logs rotate. `audit/AAPEX-*.json` is the pilot system of record; the reconciler reads it as state.
+3. **Schedule + reconciler instead of sleep (UC-8).** Customer guidance forbids a long-running sleep job. JT-04 creates a one-shot Controller schedule at `end_time`; JT-06 removes `AAPEX-*` exclusions whose ACS `expiration` is already past.
+4. **Audit you can show without Git write access (UC-9).** Job workspaces are ephemeral. Show the printed `audit_record` JSON (and optional ConfigMap). Git push is optional (`GIT_TOKEN`).
 5. **Lifecycle mail from jobs (UC-10).** Richer messages are emitted from playbooks (`notify.yml`). On this cluster they land in `audit/notifications.log` because SMTP is unset.
 6. **ACS exclusion matching (this Central).** Namespace-scoped kube-event exclusions use empty `cluster` in scope (ACS 4.11.2). The business outcome remains namespace-only; the API field differs from a naive cluster+namespace object.

@@ -1,65 +1,77 @@
-# Demo runbook — Temporary ACS policy exceptions (20 minutes)
+# Demo runbook — Temporary ACS policy exceptions (~20 minutes)
 
-Per-use-case deliverables, limitations, and presenter steps: [use-cases.md](use-cases.md).
+Read this before presenting. Per-use-case notes: [use-cases.md](use-cases.md).
 
-Prerequisites: `.env` populated (never commit), `oc` logged in as cluster-admin, AAP + ACS already installed.
+## Logins (do not mix these)
 
-Quickstart:
+| Who | Where | Username | Password |
+|-----|--------|----------|----------|
+| Requester | Self-service portal **or** AAP gateway | `alice` | `AAP_USER_ALICE_PASSWORD` in `.env` |
+| Approver | **AAP gateway only** | `sre-approver` | `AAP_USER_SRE_PASSWORD` in `.env` |
+| Cluster admin | `oc` / ACS UI | cluster `admin` | not an AAP persona |
+
+These are **AAP local users**, not the OpenShift IdP (`rhbk`). Signing in to the portal or gateway with OpenShift SSO will not be alice/sre-approver.
+
+Portal: https://aap-portal-rhaap-portal-aap.apps.ocp.7hrxw.sandbox880.opentlc.com/  
+AAP gateway: https://demo-aap-aap.apps.ocp.7hrxw.sandbox880.opentlc.com  
+Approvals (SRE): https://demo-aap-aap.apps.ocp.7hrxw.sandbox880.opentlc.com/#/workflow_approvals  
+ACS Central: https://central-acs.apps.ocp.7hrxw.sandbox880.opentlc.com  
+
+The portal **Create Task** list is job templates only. Item **Temporary ACS Policy Exception** launches workflow `WF-Temporary-ACS-Policy-Exception` and returns immediately. SRE never approves in the portal.
+
+## Pre-demo (workstation, cluster-admin)
 
 ```bash
-./scripts/00-discovery.sh
-python3 -m pip install ansible-core kubernetes pyyaml
-ansible-galaxy collection install -r collections/requirements.yml
-ansible-playbook playbooks/setup-demo-fixtures.yml
-python3 scripts/aap-config-apply.py
-ansible-playbook playbooks/demo-reset.yml   # clean slate; run twice to prove idempotency
+cd acs-exceptions
+set -a && source .env && set +a
+python3 scripts/preflight-demo.py
 ```
 
-AAP gateway: see `docs/environment.md`. Self-service portal: `https://aap-portal-rhaap-portal-aap.<apps-domain>/` → **Create Task** → **Temporary ACS Policy Exception**. Personas: AAP users `alice` / `bob` / `carol` (Execute) and `sre-approver` (Approve via team `SRE-Approvers`).
+If preflight fails: `ansible-playbook playbooks/setup-demo-fixtures.yml` then `python3 scripts/aap-config-apply.py`, then preflight again. Optional clean slate: `ansible-playbook playbooks/demo-reset.yml`.
+
+Form rules that have already bitten this demo:
+
+- Justification **at least 10 characters** (`i want it` is 9 and is rejected).
+- Happy-path namespace is **`demo-app`** (alice is Admin there). `demo-restricted` is the deny/blast-radius namespace.
+- First job after a Git push may spend ~1 minute on SCM update. Later jobs in the same 5 minutes reuse the cache.
 
 ## Act 0 (2 min) — the problem
 
-1. Open ACS → Policy **Kubernetes Actions: Exec into Pod** — enforcement includes `FAIL_KUBE_REQUEST_ENFORCEMENT`.
-2. Show the nginx/sleep pod in `demo-app`.
-3. `oc exec -n demo-app deploy/nginx -- date` (or `deploy/nginx` name from fixtures) is **blocked**.
-4. Same exec into a system pod may still work if excluded; the demo pod is not.
+1. ACS → Policy **Kubernetes Actions: Exec into Pod** → enforcement includes `FAIL_KUBE_REQUEST_ENFORCEMENT`.
+2. `oc get -n demo-app deploy/nginx` — sleep pod (named nginx).
+3. `oc exec -n demo-app deploy/nginx -- date` is **blocked** by webhook `k8sevents.stackrox.io`.
 
-## Act 1 (8 min) — UC-4 terminal access E2E (5-minute window)
+## Act 1 (8 min) — UC-4 terminal access
 
-Incident story: production issue in `demo-app`; namespace admin needs `oc exec` to collect logs.
+1. Portal as **alice** → **Create Task** → **Temporary ACS Policy Exception**.
+2. Namespace `demo-app`, policy **Kubernetes Actions: Exec into Pod**, duration **5**, justification ≥10 chars, optional ticket.
+3. The portal job succeeds in about a minute and prints a workflow job id. It does **not** wait for SRE.
+4. As **sre-approver**, open **AAP Approvals** (`#/workflow_approvals`). Approve **Approval-Node-SRE**. Extra vars on the workflow job include namespace, policy, duration, justification.
+5. ACS exclusions show `AAPEX-<date>-<hex> demo-app`. Scope is **empty `cluster` + namespace `demo-app`** (ACS 4.11 kube-event matching). Do not expect `cluster: ocp-sandbox880`.
+6. `oc exec -n demo-app deploy/nginx -- date` **succeeds**. `oc exec -n demo-restricted deploy/nginx -- date` stays **blocked**.
+7. Controller → Schedules → `AAPEX-rollback-<request_id>` (one-shot, not a sleeping job). After ~5 minutes JT-03 removes only that exclusion; exec is blocked again.
+8. Audit: AAP job output of JT-02/JT-05 prints the JSON. Optional: `oc get cm -n aap-demo -l aapex=audit`. Git `audit/` files are **not** the live store unless `GIT_TOKEN` is set.
 
-1. Login to the **self-service portal** as **alice** → **Create Task** → **Temporary ACS Policy Exception** (same survey as the AAP workflow). You can still launch **WF-Temporary-ACS-Policy-Exception** from the AAP gateway; the portal item is a job template that starts that workflow and returns immediately so the form is not blocked on SRE approval.
-2. Show the form: closed duration list `5/10/15/30/60`, mandatory justification, allowlisted policies only. *"The form is convenience; the workflow is the control."*
-3. Optionally show **bob** launching the same namespace — JT-01 fails before approval (`rejected_rbac`).
-4. As **sre-approver**, open Approvals (`#/workflow_approvals`). Context includes namespace, policy, duration, justification. Approve.
-5. ACS policy exclusions show `AAPEX-<date>-<hex> demo-app` scoped to cluster `ocp-sandbox880` + namespace `demo-app` only.
-6. `oc exec` in `demo-app` **succeeds**. In `demo-restricted` it remains **blocked** (blast radius).
-7. Wait for expiry (5 min). Schedule `AAPEX-rollback-<id>` fires; exclusion gone; exec blocked again.
-8. Show `audit/<request_id>.json` and `git log --oneline -- audit/`.
+Optional negative: as **bob**, same form for `demo-app` → JT-01 fails before approval (`rejected_rbac`).
 
-## Act 2 (4 min) — UC-5 privileged container
+## Act 2 (optional, 4 min) — UC-5 privileged container
 
-1. `oc apply -f demo/privileged-deploy.yaml` → admission **blocked**.
-2. Run the workflow with policy **Privileged Container**, 10 minutes, approve.
-3. Re-apply → pod runs.
-4. After expiry, a **new** apply is blocked; the pod started during the window is still running. JT-03 residual report lists it. Optionally delete the pod as SRE follow-up.
+On this cluster, ACS admission for a raw privileged Pod is **not reliably denying** (PSS may only warn). Prefer UC-4 as the live block/unblock proof. If you still show UC-5: `oc apply -f demo/privileged-deploy.yaml`, then the same request with policy **Privileged Container**.
 
-## Act 3 (3 min) — safety story
+## Act 3 (3 min) — safety
 
-1. **carol** launches the workflow → exact message: `No namespaces with Admin permissions were found. An ACS policy exception request cannot be opened.`
-2. Run `ansible-playbook playbooks/verify-guardrails.yml` — allowlist refusal for `Fixable CVSS >= 7`.
-3. Apply an exception, delete its rollback schedule, wait ≤5 min for **JT-06** to remove the orphan/expired exclusion (AC-08).
+1. **carol** + `demo-app` → `No namespaces with Admin permissions were found. An ACS policy exception request cannot be opened.`
+2. `ansible-playbook playbooks/verify-guardrails.yml` — non-allowlisted policy refused.
+3. JT-06 every 5 minutes removes **expired** `AAPEX-*` exclusions only (uses the `expiration` field). It does not delete live windows.
 
-## Act 4 (3 min) — audit and notifications
+## Act 4 (2 min) — notifications
 
-1. `audit/` JSON fields: requester, approver, window, justification, ticket, history[].
-2. `audit/notifications.log` (or SMTP if configured) for submitted/approved/applied/removed.
+`audit/notifications.log` is written **inside the job workspace**. Show it in the JT-01/JT-02 job output / artifacts. SMTP is not configured (`SMTP_HOST` unset).
 
-## Reset (repeatable)
+## Reset
 
 ```bash
 ansible-playbook playbooks/demo-reset.yml
-ansible-playbook playbooks/demo-reset.yml   # second run: changed=false / no-op exclusions
 ```
 
-Does not delete ACS policies. Restores by stripping `AAPEX-*` exclusions only. Demo enforcement stays on unless you set `RESTORE_ENFORCEMENT=1` (see `docs/manual-steps.md`).
+Strips `AAPEX-*` exclusions only. Does not delete ACS policies.

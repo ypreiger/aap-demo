@@ -38,16 +38,16 @@
     - name: Bob view on demo-app
       ansible.builtin.command: oc adm policy add-role-to-user view bob -n demo-app
 
-    - name: Nginx in demo-app
+    - name: Sleep pods in demo-app and demo-restricted
       ansible.builtin.command: |
-        oc apply -n demo-app -f -
+        oc apply -n {{ item }} -f -
       args:
         stdin: |
           apiVersion: apps/v1
           kind: Deployment
           metadata:
             name: nginx
-            namespace: demo-app
+            namespace: {{ item }}
             labels:
               app: nginx
           spec:
@@ -64,11 +64,11 @@
                   - name: shell
                     image: registry.access.redhat.com/ubi9/ubi-minimal:latest
                     command: ["sleep", "infinity"]
-      register: nginx_apply
-
-    - name: Fallback nginx image if RH registry pull fails later
-      ansible.builtin.debug:
-        msg: "nginx applied; wait for ready in verify"
+      loop:
+        - demo-app
+        - demo-restricted
+      loop_control:
+        label: "{{ item }}"
 
     - name: ServiceAccount aap-rbac-checker
       ansible.builtin.command: oc apply -f -
@@ -97,6 +97,30 @@
             - apiGroups: ["user.openshift.io"]
               resources: ["groups", "users"]
               verbs: ["get", "list"]
+          ---
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: Role
+          metadata:
+            name: aap-rbac-checker-audit
+            namespace: aap-demo
+          rules:
+            - apiGroups: [""]
+              resources: ["configmaps"]
+              verbs: ["get", "list", "create", "update", "patch"]
+          ---
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: RoleBinding
+          metadata:
+            name: aap-rbac-checker-audit
+            namespace: aap-demo
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: Role
+            name: aap-rbac-checker-audit
+          subjects:
+            - kind: ServiceAccount
+              name: aap-rbac-checker
+              namespace: aap-demo
           ---
           apiVersion: rbac.authorization.k8s.io/v1
           kind: ClusterRoleBinding

@@ -1,0 +1,17 @@
+# Portal RBAC: Default org members can open Create Task / History.
+# Casbin CSV for @backstage-community/plugin-rbac-backend
+p, role:default/portal-users, catalog.entity.read, read, allow
+p, role:default/portal-users, catalog-entity, read, allow
+p, role:default/portal-users, scaffolder.template.parameter.read, read, allow
+p, role:default/portal-users, scaffolder.template.step.read, read, allow
+p, role:default/portal-users, scaffolder.action.execute, use, allow
+p, role:default/portal-users, scaffolder.task.create, create, allow
+p, role:default/portal-users, scaffolder.task.read, read, allow
+p, role:default/portal-users, scaffolder.task.cancel, use, allow
+p, role:default/portal-users, ansible.templates.view, use, allow
+p, role:default/portal-users, ansible.history.view, use, allow
+g, group:default/default, role:default/portal-users
+g, user:default/alice, role:default/portal-users
+g, user:default/bob, role:default/portal-users
+g, user:default/carol, role:default/portal-users
+g, user:default/sre-approver, role:default/portal-users
