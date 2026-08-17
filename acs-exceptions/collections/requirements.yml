@@ -1,0 +1,8 @@
+---
+# Installed on AAP project sync. Keep this list Galaxy-resolvable.
+# Controller config collections are optional on the workstation (scripts/aap-config-apply.py uses REST).
+collections:
+  - name: kubernetes.core
+    version: ">=3.0.0"
+  - name: community.general
+    version: ">=8.0.0"

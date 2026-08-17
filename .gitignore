@@ -12,3 +12,11 @@ extras/approval-email.vars.yml
 email-plugin/.venv/
 email-plugin/**/__pycache__/
 email-plugin/.venv-e2e/
+
+# ACS exception demo secrets
+.env
+.env.*
+!.env.example
+acs-exceptions/.env
+*.token
+**/*.token

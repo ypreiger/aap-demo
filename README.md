@@ -9,7 +9,7 @@
 | **`documentation/`** | **[documentation/README.md](documentation/README.md)** — numbered guides (`01`–`10`, UC index); **[documentation/01_INSTALL_OPENSHIFT.md](documentation/01_INSTALL_OPENSHIFT.md)** — **greenfield cluster** |
 | **`aap-yamls/`** | Automation Controller / Tower Kubernetes manifests — **[aap-yamls/README.md](aap-yamls/README.md)** |
 | **`projects/`** | BOM and domain YAML (`proj1`, `proj2`) — **[documentation/08_DOMAIN_INPUT.md](documentation/08_DOMAIN_INPUT.md)** |
-| **`email-plugin/`** | Approval email service — **[email-plugin/README.md](email-plugin/README.md)** |
+| **`acs-exceptions/`** | Temporary **ACS policy exclusions** via AAP (UC-1…UC-12) — **[acs-exceptions/README.md](acs-exceptions/README.md)** |
 
 **Git-driven workflows:** **[documentation/07_EDA_GIT_WEBHOOK.md](documentation/07_EDA_GIT_WEBHOOK.md)** and **`workshop/git-webhook-bridge/`**.
 
