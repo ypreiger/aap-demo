@@ -60,7 +60,9 @@ st, ping = aap("/ping/")
 check(st == 200, f"AAP ping {ping.get('version')}", f"AAP ping HTTP {st}")
 
 meta = acs("/v1/metadata")
-check(True, f"ACS {meta.get('version', {}).get('version', meta)}", "ACS metadata failed")
+ver = meta.get("version")
+ver = ver.get("version") if isinstance(ver, dict) else ver
+check(True, f"ACS {ver}", "ACS metadata failed")
 
 st, _ = aap("/me/", user="alice", password=os.environ.get("AAP_USER_ALICE_PASSWORD", ""))
 check(st == 200, "alice login", f"alice login HTTP {st}")

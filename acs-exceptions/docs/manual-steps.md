@@ -10,7 +10,8 @@ Guardrails in §0 of the implementation brief are never bypassed (no global poli
 | ACS TLS | `ACS_VALIDATE_CERTS=false` for the Central passthrough route. Documented in `docs/environment.md`. | Private CA / demo cluster. |
 | Git audit push | JT-05 pushes when `GIT_TOKEN` is set in AAP/env. Otherwise the JSON is written locally and committed from the workstation. | No PAT in Git. |
 | AAP API basic auth | Apply scripts use admin password from `demo-aap-admin-password` via `.env`, not Git. | Gateway personal tokens can be added later as `AAP_TOKEN`. |
-| Default EE collections | Avoid `json_query` / `community.general` in playbooks. `kubernetes.core` is in the default EE; OpenShift credential injects kubeconfig. | JT-01 originally failed on missing community.general. |
+| AAP project cwd | Controller clones the GitHub **repo root**. `ansible.cfg` at repo root must set `roles_path = acs-exceptions/roles` or `include_role: acs_exception` fails. Workstation playbooks use `acs-exceptions/ansible.cfg`. | JT-02 failed until this was set. |
+| Default EE collections | Avoid `json_query` / `community.general` in playbooks. `kubernetes.core` is in the default EE. | JT-01 originally failed on missing community.general. |
 | Workflow approval node | REST create ignores nested `approval_node`. Apply calls `…/workflow_job_template_nodes/{id}/create_approval_template/`. | Without this, JT-01 success skipped Approvals. |
 | Job template credentials | Apply attaches and **verifies** OpenShift / ACS / AAP API credentials. | Missing kubeconfig → JT-01 never reached SRE. |
 | JT-06 | `scripts/acs-reconcile-expired.py` removes only AAPEX exclusions whose `expiration` is past. `failed_when` is invalid on `include_role`. | Previous playbook crashed every 5 minutes. |
