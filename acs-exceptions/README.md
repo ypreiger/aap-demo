@@ -4,6 +4,8 @@ Self-service, time-bounded **ACS policy exclusions** via Ansible Automation Plat
 
 This directory is the demo root (playbooks, `aap-config/`, roles). The AAP project **ACS-Exception-Demo** clones **this GitHub repo** (`ypreiger/aap-demo`) and runs playbooks at `acs-exceptions/playbooks/…`.
 
+Self-service portal **Create Task** lists **Temporary ACS Policy Exception** (AAP job templates only; that launcher starts `WF-Temporary-ACS-Policy-Exception` and returns so SRE approval is not blocked in the form).
+
 | Doc | |
 |---|---|
 | [docs/demo-runbook.md](docs/demo-runbook.md) | 20-minute customer script |

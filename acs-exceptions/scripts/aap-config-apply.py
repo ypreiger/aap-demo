@@ -206,6 +206,19 @@ def main():
 
     # Attach Galaxy? skip
     jt_ids = {}
+    wf_survey = load("workflows.yml")["controller_workflows"][0].get("survey")
+    aap_cred = get_by_name("credentials", "AAP API token")
+    aap_cred_id = aap_cred["id"] if aap_cred else None
+
+    def ensure_labels(kind, obj_id, labels):
+        for label in labels or []:
+            api(
+                "POST",
+                f"/{kind}/{obj_id}/labels/",
+                {"name": label, "organization": org_id},
+                ok=(200, 201, 204, 400),
+            )
+
     for jt in load("job_templates.yml")["controller_templates"]:
         body = {
             "name": jt["name"],
@@ -215,8 +228,25 @@ def main():
             "playbook": jt["playbook"],
             "ask_variables_on_launch": jt.get("ask_variables_on_launch", False),
             "organization": org_id,
+            "description": jt.get("description", ""),
+            "survey_enabled": bool(jt.get("survey_enabled")),
         }
         jt_ids[jt["name"]] = upsert("job_templates", jt["name"], body)
+        ensure_labels("job_templates", jt_ids[jt["name"]], jt.get("labels"))
+        if aap_cred_id and "AAP API token" in (jt.get("credentials") or []):
+            api(
+                "POST",
+                f"/job_templates/{jt_ids[jt['name']]}/credentials/",
+                {"id": aap_cred_id},
+                ok=(204, 200, 201, 400),
+            )
+        if jt.get("survey_enabled") and wf_survey:
+            api(
+                "POST",
+                f"/job_templates/{jt_ids[jt['name']]}/survey_spec/",
+                wf_survey,
+                ok=(200, 201),
+            )
 
     wf_cfg = load("workflows.yml")["controller_workflows"][0]
     wf_id = upsert(
@@ -232,6 +262,7 @@ def main():
         },
     )
     api("POST", f"/workflow_job_templates/{wf_id}/survey_spec/", wf_cfg["survey"], ok=(200, 201))
+    ensure_labels("workflow_job_templates", wf_id, wf_cfg.get("labels") or ["self-service", "acs-exception"])
 
     # rebuild nodes
     existing_nodes = api("GET", f"/workflow_job_templates/{wf_id}/workflow_nodes/?page_size=200")
@@ -304,6 +335,15 @@ def main():
         rid = role_map.get(role_name) or role_map.get(role_name.lower())
         if user and rid:
             api("POST", f"/roles/{rid}/users/", {"id": user["id"]}, ok=(204, 200, 201, 400))
+    portal_jt_id = jt_ids.get("Temporary ACS Policy Exception")
+    if portal_jt_id:
+        jt_roles = api("GET", f"/job_templates/{portal_jt_id}/object_roles/")
+        jt_role_map = {r["name"]: r["id"] for r in jt_roles.get("results", [])}
+        exec_id = jt_role_map.get("Execute") or jt_role_map.get("execute")
+        for username in ("alice", "bob", "carol"):
+            user = get_by_name("users", username)
+            if user and exec_id:
+                api("POST", f"/roles/{exec_id}/users/", {"id": user["id"]}, ok=(204, 200, 201, 400))
     approve_id = role_map.get("Approval") or role_map.get("Approve")
     if approve_id:
         api("POST", f"/roles/{approve_id}/teams/", {"id": team_id}, ok=(204, 200, 201, 400))

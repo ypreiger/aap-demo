@@ -1,44 +1,64 @@
 ---
 controller_templates:
+  # Visible in the Ansible self-service portal (Create Task). The portal
+  # catalogs Job Templates only — not workflow job templates — so this JT
+  # launches WF-Temporary-ACS-Policy-Exception and returns immediately.
+  - name: Temporary ACS Policy Exception
+    description: Request a time-boxed ACS policy exclusion (SRE approval required)
+    job_type: run
+    inventory: Demo Inventory
+    project: ACS-Exception-Demo
+    playbook: acs-exceptions/playbooks/portal-launch-workflow.yml
+    ask_variables_on_launch: false
+    survey_enabled: true
+    labels: [self-service, acs-exception]
+    credentials: ["AAP API token"]
   - name: JT-00-Refresh-Survey
     job_type: run
     inventory: Demo Inventory
     project: ACS-Exception-Demo
     playbook: acs-exceptions/playbooks/jt00-refresh-survey.yml
     ask_variables_on_launch: false
+    labels: [internal]
   - name: JT-01-Validate-Namespace-RBAC
     job_type: run
     inventory: Demo Inventory
     project: ACS-Exception-Demo
     playbook: acs-exceptions/playbooks/jt01-validate-namespace-rbac.yml
     ask_variables_on_launch: true
+    labels: [internal]
   - name: JT-02-Apply-ACS-Exception
     job_type: run
     inventory: Demo Inventory
     project: ACS-Exception-Demo
     playbook: acs-exceptions/playbooks/jt02-apply-acs-exception.yml
     ask_variables_on_launch: true
+    labels: [internal]
   - name: JT-03-Rollback-ACS-Exception
     job_type: run
     inventory: Demo Inventory
     project: ACS-Exception-Demo
     playbook: acs-exceptions/playbooks/jt03-rollback-acs-exception.yml
     ask_variables_on_launch: true
+    labels: [internal]
   - name: JT-04-Create-Rollback-Schedule
     job_type: run
     inventory: Demo Inventory
     project: ACS-Exception-Demo
     playbook: acs-exceptions/playbooks/jt04-create-rollback-schedule.yml
     ask_variables_on_launch: true
+    labels: [internal]
   - name: JT-05-Write-Audit-Record
     job_type: run
     inventory: Demo Inventory
     project: ACS-Exception-Demo
     playbook: acs-exceptions/playbooks/jt05-write-audit-record.yml
     ask_variables_on_launch: true
+    labels: [internal]
   - name: JT-06-Reconcile-Expired-Exceptions
     job_type: run
     inventory: Demo Inventory
     project: ACS-Exception-Demo
     playbook: acs-exceptions/playbooks/jt06-reconcile-expired-exceptions.yml
     ask_variables_on_launch: false
+    labels: [internal]

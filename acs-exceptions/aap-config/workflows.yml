@@ -3,6 +3,7 @@ controller_workflows:
   - name: WF-Temporary-ACS-Policy-Exception
     description: Request → validate → SRE approval → ACS exclusion → rollback schedule → audit
     organization: Default
+    labels: [self-service, acs-exception]
     inventory: Demo Inventory
     survey_enabled: true
     ask_variables_on_launch: true

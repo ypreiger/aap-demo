@@ -14,7 +14,9 @@
 
     - name: Resolve requester from AAP launch context
       ansible.builtin.set_fact:
-        requester: "{{ tower_user_name | default(awx_user_name | default(lookup('env', 'AAP_REQUESTER') | default(''))) }}"
+        requester: >-
+          {{ requesting_user if (requesting_user | default('') | length) > 0
+             else (tower_user_name | default(awx_user_name | default(lookup('env', 'AAP_REQUESTER') | default('')))) }}
 
     - name: Fail without user context
       ansible.builtin.fail:

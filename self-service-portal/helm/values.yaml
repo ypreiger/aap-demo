@@ -32,6 +32,17 @@ redhat-developer-hub:
               # (that duplicates keys in app-config and can CrashLoop backstage-backend).
               '{{- include "catalog.providers.env" . }}':
                 sync:
+                  # Portal catalogs Job Templates (not workflows). Only
+                  # self-service labeled JTs appear in Create Task.
+                  jobTemplates:
+                    enabled: true
+                    labels:
+                      - self-service
+                    excludeLabels:
+                      - internal
+                    schedule:
+                      frequency: {minutes: 60}
+                      timeout: {minutes: 5}
                   pahCollections:
                     enabled: true
                     repositories:

@@ -17,12 +17,15 @@ controller_roles:
   - user: alice
     role: execute
     workflows: [WF-Temporary-ACS-Policy-Exception]
+    job_templates: [Temporary ACS Policy Exception]
   - user: bob
     role: execute
     workflows: [WF-Temporary-ACS-Policy-Exception]
+    job_templates: [Temporary ACS Policy Exception]
   - user: carol
     role: execute
     workflows: [WF-Temporary-ACS-Policy-Exception]
+    job_templates: [Temporary ACS Policy Exception]
   - team: SRE-Approvers
     role: approve
     workflows: [WF-Temporary-ACS-Policy-Exception]

@@ -13,7 +13,7 @@ python3 scripts/aap-config-apply.py
 ansible-playbook playbooks/demo-reset.yml   # clean slate; run twice to prove idempotency
 ```
 
-AAP gateway: see `docs/environment.md`. Personas: AAP users `alice` / `bob` / `carol` (Execute) and `sre-approver` (Approve via team `SRE-Approvers`).
+AAP gateway: see `docs/environment.md`. Self-service portal: `https://aap-portal-rhaap-portal-aap.<apps-domain>/` → **Create Task** → **Temporary ACS Policy Exception**. Personas: AAP users `alice` / `bob` / `carol` (Execute) and `sre-approver` (Approve via team `SRE-Approvers`).
 
 ## Act 0 (2 min) — the problem
 
@@ -26,7 +26,7 @@ AAP gateway: see `docs/environment.md`. Personas: AAP users `alice` / `bob` / `c
 
 Incident story: production issue in `demo-app`; namespace admin needs `oc exec` to collect logs.
 
-1. Login to AAP as **alice**. Launch **WF-Temporary-ACS-Policy-Exception**.
+1. Login to the **self-service portal** as **alice** → **Create Task** → **Temporary ACS Policy Exception** (same survey as the AAP workflow). You can still launch **WF-Temporary-ACS-Policy-Exception** from the AAP gateway; the portal item is a job template that starts that workflow and returns immediately so the form is not blocked on SRE approval.
 2. Show the form: closed duration list `5/10/15/30/60`, mandatory justification, allowlisted policies only. *"The form is convenience; the workflow is the control."*
 3. Optionally show **bob** launching the same namespace — JT-01 fails before approval (`rejected_rbac`).
 4. As **sre-approver**, open Approvals (`#/workflow_approvals`). Context includes namespace, policy, duration, justification. Approve.

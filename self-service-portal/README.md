@@ -40,12 +40,13 @@ Two template sources appear in the portal after sync:
 
 ### 1. AAP Controller workflows (recommended for this demo)
 
-Survey-driven **workflow job templates** from [`aap-yamls/tower/`](../aap-yamls/tower/) sync into **Self-Service → Create Task** when `jobTemplates.enabled` is true (chart default):
+Survey-driven **workflow job templates** from [`aap-yamls/tower/`](../aap-yamls/tower/) and the ACS exception launcher from [`acs-exceptions/`](../acs-exceptions/) sync into **Self-Service → Create Task** when `jobTemplates.enabled` is true (chart default). This demo filters synced templates with AAP label `self-service` (see `helm/values.yaml`).
 
 | Template | Purpose |
 |----------|---------|
 | `bom-project-deploy` | BOM foundation → approval → Fedora VMs on OpenShift Virtualization |
 | `workshop-multi-domain` | Virt + approval + mock F5/VMware/BlueCoat integrations |
+| `Temporary ACS Policy Exception` | Time-boxed RHACS policy exclusion (launches `WF-Temporary-ACS-Policy-Exception`) |
 
 Virt-related **job** templates use tower CR `spec.labels`. **Workflow** templates need API labels (WorkflowTemplate CR does not accept label arrays):
 

@@ -83,3 +83,29 @@
         body: "{{ survey_spec }}"
         status_code: [200, 201]
       no_log: true
+
+    - name: Lookup portal job template
+      ansible.builtin.uri:
+        url: "{{ aap_api_base }}/job_templates/?name=Temporary%20ACS%20Policy%20Exception"
+        user: "{{ controller_user }}"
+        password: "{{ controller_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        status_code: [200]
+      no_log: true
+      register: portal_jt
+      failed_when: false
+
+    - name: PUT the same survey on the portal job template
+      when: (portal_jt.json.count | default(0) | int) >= 1
+      ansible.builtin.uri:
+        url: "{{ aap_api_base }}/job_templates/{{ portal_jt.json.results[0].id }}/survey_spec/"
+        method: POST
+        user: "{{ controller_user }}"
+        password: "{{ controller_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        body_format: json
+        body: "{{ survey_spec }}"
+        status_code: [200, 201]
+      no_log: true

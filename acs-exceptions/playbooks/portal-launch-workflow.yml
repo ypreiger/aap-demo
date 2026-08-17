@@ -1,0 +1,80 @@
+---
+# Portal-facing job template. The self-service portal syncs Job Templates only
+# (not workflows). This job launches WF-Temporary-ACS-Policy-Exception and
+# returns immediately so Create Task does not block on SRE approval.
+- name: Launch temporary ACS exception workflow
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    namespace: "{{ namespace | default('') }}"
+    policy_name: "{{ policy_name | default('') }}"
+    duration_minutes: "{{ duration_minutes | default('') }}"
+    justification: "{{ justification | default('') }}"
+    ticket_id: "{{ ticket_id | default('') }}"
+    workflow_name: WF-Temporary-ACS-Policy-Exception
+  tasks:
+    - ansible.builtin.include_tasks: tasks/load_config.yml
+
+    - name: Resolve requester from the portal/AAP launch user
+      ansible.builtin.set_fact:
+        requesting_user: "{{ tower_user_name | default(awx_user_name | default('')) }}"
+
+    - name: Fail without user context
+      ansible.builtin.fail:
+        msg: "Cannot resolve requester (tower_user_name/awx_user_name). Refusing to continue."
+      when: requesting_user | length == 0
+
+    - name: AAP basic-auth password (AAP API credential stores it as AAP_TOKEN)
+      ansible.builtin.set_fact:
+        aap_basic_password: "{{ aap_token if (aap_token | default('') | length) > 0 else controller_password }}"
+      no_log: true
+
+    - name: Lookup workflow
+      ansible.builtin.uri:
+        url: "{{ aap_api_base }}/workflow_job_templates/?name={{ workflow_name | urlencode }}"
+        user: "{{ controller_user }}"
+        password: "{{ aap_basic_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        status_code: [200]
+      no_log: true
+      register: wf_lookup
+
+    - ansible.builtin.assert:
+        that: (wf_lookup.json.count | default(0) | int) >= 1
+        fail_msg: "{{ workflow_name }} not found"
+
+    - name: Launch workflow (do not wait for SRE approval)
+      ansible.builtin.uri:
+        url: "{{ aap_api_base }}/workflow_job_templates/{{ wf_lookup.json.results[0].id }}/launch/"
+        method: POST
+        user: "{{ controller_user }}"
+        password: "{{ aap_basic_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        body_format: json
+        body:
+          extra_vars:
+            namespace: "{{ namespace }}"
+            policy_name: "{{ policy_name }}"
+            duration_minutes: "{{ duration_minutes }}"
+            justification: "{{ justification }}"
+            ticket_id: "{{ ticket_id }}"
+            requesting_user: "{{ requesting_user }}"
+        status_code: [201, 200]
+      no_log: true
+      register: wf_launch
+
+    - ansible.builtin.debug:
+        msg: >-
+          Launched {{ workflow_name }} as workflow job
+          {{ wf_launch.json.id | default('unknown') }} for {{ requesting_user }}.
+          SRE approval is still required in AAP.
+
+    - ansible.builtin.set_stats:
+        data:
+          workflow_job_id: "{{ wf_launch.json.id | default('') }}"
+          requesting_user: "{{ requesting_user }}"
+          namespace: "{{ namespace }}"
+          policy_name: "{{ policy_name }}"
