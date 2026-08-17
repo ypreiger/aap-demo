@@ -20,6 +20,7 @@ controller_templates:
     playbook: acs-exceptions/playbooks/jt00-refresh-survey.yml
     ask_variables_on_launch: false
     labels: [internal]
+    credentials: ["openshift-rbac-checker"]
   - name: JT-01-Validate-Namespace-RBAC
     job_type: run
     inventory: Demo Inventory
@@ -27,6 +28,7 @@ controller_templates:
     playbook: acs-exceptions/playbooks/jt01-validate-namespace-rbac.yml
     ask_variables_on_launch: true
     labels: [internal]
+    credentials: ["openshift-rbac-checker"]
   - name: JT-02-Apply-ACS-Exception
     job_type: run
     inventory: Demo Inventory
@@ -34,6 +36,7 @@ controller_templates:
     playbook: acs-exceptions/playbooks/jt02-apply-acs-exception.yml
     ask_variables_on_launch: true
     labels: [internal]
+    credentials: ["ACS Central"]
   - name: JT-03-Rollback-ACS-Exception
     job_type: run
     inventory: Demo Inventory
@@ -41,6 +44,7 @@ controller_templates:
     playbook: acs-exceptions/playbooks/jt03-rollback-acs-exception.yml
     ask_variables_on_launch: true
     labels: [internal]
+    credentials: ["ACS Central"]
   - name: JT-04-Create-Rollback-Schedule
     job_type: run
     inventory: Demo Inventory
@@ -48,6 +52,7 @@ controller_templates:
     playbook: acs-exceptions/playbooks/jt04-create-rollback-schedule.yml
     ask_variables_on_launch: true
     labels: [internal]
+    credentials: ["AAP API token"]
   - name: JT-05-Write-Audit-Record
     job_type: run
     inventory: Demo Inventory
@@ -62,3 +67,4 @@ controller_templates:
     playbook: acs-exceptions/playbooks/jt06-reconcile-expired-exceptions.yml
     ask_variables_on_launch: false
     labels: [internal]
+    credentials: ["ACS Central", "AAP API token"]

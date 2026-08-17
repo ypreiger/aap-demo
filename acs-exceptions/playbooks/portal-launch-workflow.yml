@@ -33,13 +33,18 @@
     - name: Lookup workflow
       ansible.builtin.uri:
         url: "{{ aap_api_base }}/workflow_job_templates/?name={{ workflow_name | urlencode }}"
-        user: "{{ controller_user }}"
+        user: "{{ controller_user if (controller_user | default('') | length) > 0 else 'admin' }}"
         password: "{{ aap_basic_password }}"
         force_basic_auth: true
         validate_certs: false
-        status_code: [200]
+        status_code: [200, 401, 403, 404]
       no_log: true
       register: wf_lookup
+
+    - name: Fail if workflow lookup was not authorized
+      ansible.builtin.fail:
+        msg: "AAP workflow lookup HTTP {{ wf_lookup.status | default('n/a') }} — check AAP API credential (admin user + token/password)."
+      when: (wf_lookup.status | default(0) | int) != 200
 
     - ansible.builtin.assert:
         that: (wf_lookup.json.count | default(0) | int) >= 1

@@ -6,5 +6,6 @@ controller_projects:
     scm_url: https://github.com/ypreiger/aap-demo.git
     scm_branch: main
     scm_update_on_launch: true
+    scm_update_cache_timeout: 3600
     allow_override: false
     description: Temporary ACS policy exceptions demo (this repository)

@@ -36,9 +36,23 @@
       failed_when: false
       no_log: true
 
-    - name: Set residual list (target policy only, compact)
+    - name: Normalize residual alerts
       ansible.builtin.set_fact:
-        residual_violations: "{{ (residual_alerts.json.alerts | default(residual_alerts.json | default([]))) | json_query('[?policy.id==`' + policy_id + '`].{id:id, policy:policy.name, time:time, state:state, deployment:deployment.name}') }}"
+        residual_alert_list: "{{ residual_alerts.json.alerts | default(residual_alerts.json if residual_alerts.json is sequence else []) }}"
+      when: residual_alerts.json is defined
+
+    - name: Initialize residual list
+      ansible.builtin.set_fact:
+        residual_violations: []
+
+    - name: Collect residual alerts for target policy
+      ansible.builtin.set_fact:
+        residual_violations: "{{ residual_violations + [item] }}"
+      loop: "{{ residual_alert_list | default([]) }}"
+      when: (item.policy.id | default('')) == policy_id
+
+    - name: Mark rollback complete
+      ansible.builtin.set_fact:
         rollback_status: completed
         rollback_verification: absent
         audit_status: completed

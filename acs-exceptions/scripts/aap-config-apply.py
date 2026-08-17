@@ -133,6 +133,8 @@ def main():
                     "AAP_TOKEN": "{{ aap_token }}",
                     "AAP_API_BASE": "{{ aap_url }}/api/controller/v2",
                     "CONTROLLER_HOST": "{{ aap_url }}",
+                    "CONTROLLER_USERNAME": "admin",
+                    "CONTROLLER_PASSWORD": "{{ aap_token }}",
                 }
             }
         type_ids[ct["name"]] = upsert("credential_types", ct["name"], body)
@@ -172,7 +174,7 @@ def main():
                 kube_type_id = t["id"]
                 break
     if kube_type_id:
-        host = os.environ.get("OCP_API", "https://kubernetes.default.svc")
+        host = os.environ.get("OCP_API") or os.environ.get("K8S_AUTH_HOST") or "https://kubernetes.default.svc"
         sa_token = os.environ.get("OCP_SA_TOKEN", "")
         if sa_token:
             upsert(
@@ -197,6 +199,7 @@ def main():
             "scm_url": proj_cfg["scm_url"],
             "scm_branch": proj_cfg.get("scm_branch", "main"),
             "scm_update_on_launch": True,
+            "scm_update_cache_timeout": int(proj_cfg.get("scm_update_cache_timeout", 3600)),
             "allow_override": False,
             "description": proj_cfg.get("description", ""),
         },
@@ -207,8 +210,6 @@ def main():
     # Attach Galaxy? skip
     jt_ids = {}
     wf_survey = load("workflows.yml")["controller_workflows"][0].get("survey")
-    aap_cred = get_by_name("credentials", "AAP API token")
-    aap_cred_id = aap_cred["id"] if aap_cred else None
 
     def ensure_labels(kind, obj_id, labels):
         for label in labels or []:
@@ -233,13 +234,15 @@ def main():
         }
         jt_ids[jt["name"]] = upsert("job_templates", jt["name"], body)
         ensure_labels("job_templates", jt_ids[jt["name"]], jt.get("labels"))
-        if aap_cred_id and "AAP API token" in (jt.get("credentials") or []):
-            api(
-                "POST",
-                f"/job_templates/{jt_ids[jt['name']]}/credentials/",
-                {"id": aap_cred_id},
-                ok=(204, 200, 201, 400),
-            )
+        for cred_name in jt.get("credentials") or []:
+            cred = get_by_name("credentials", cred_name)
+            if cred:
+                api(
+                    "POST",
+                    f"/job_templates/{jt_ids[jt['name']]}/credentials/",
+                    {"id": cred["id"]},
+                    ok=(204, 200, 201, 400),
+                )
         if jt.get("survey_enabled") and wf_survey:
             api(
                 "POST",
@@ -314,12 +317,20 @@ def main():
             "sre-approver": "AAP_USER_SRE_PASSWORD",
         }.get(u["username"])
         pw = os.environ.get(env_key or "", "") or os.environ.get("AAP_DEMO_USER_PASSWORD", "ChangeMe123!")
+        body["password"] = pw
         if not existing:
-            body["password"] = pw
-            api("POST", "/users/", body, ok=(201, 200, 400))
+            created = api("POST", "/users/", body, ok=(201, 200, 400))
+            uid = created.get("id") if isinstance(created, dict) else None
             print("user", u["username"])
         else:
-            print("user exists", u["username"])
+            uid = existing["id"]
+            api("PATCH", f"/users/{uid}/", {"password": pw}, ok=(200, 201, 204))
+            print("user exists", u["username"], "(password synced)")
+        if uid:
+            api("POST", f"/organizations/{org_id}/users/", {"id": uid}, ok=(204, 200, 201, 400))
+        gw = (HOST or "").rstrip("/") + "/api/gateway/v1"
+        if gw.startswith("http") and uid:
+            api("PATCH", f"{gw}/users/{uid}/", {"password": pw}, ok=(200, 201, 204, 404))
 
     team_id = upsert("teams", "SRE-Approvers", {"name": "SRE-Approvers", "organization": org_id})
     sre = get_by_name("users", "sre-approver")

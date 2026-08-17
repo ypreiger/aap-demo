@@ -16,6 +16,6 @@
     aap_url: "{{ lookup('env', 'AAP_URL') | default(aap_url, true) }}"
     aap_api_base: "{{ lookup('env', 'AAP_API_BASE') | default(aap_api_base, true) }}"
     aap_token: "{{ lookup('env', 'AAP_TOKEN') }}"
-    controller_user: "{{ lookup('env', 'CONTROLLER_USERNAME') | default('admin') }}"
+    controller_user: "{{ lookup('env', 'CONTROLLER_USERNAME') | default('admin', true) }}"
     controller_password: "{{ lookup('env', 'CONTROLLER_PASSWORD') }}"
   no_log: true

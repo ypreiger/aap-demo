@@ -128,9 +128,34 @@
       register: all_rbs
       failed_when: false
 
+    - name: Initialize eligible namespaces
+      ansible.builtin.set_fact:
+        eligible_namespaces: []
+
     - name: Eligible namespace count from RoleBindings
       ansible.builtin.set_fact:
-        eligible_namespaces: "{{ all_rbs.resources | default([]) | selectattr('roleRef.name', 'defined') | selectattr('roleRef.name', 'in', admin_roles) | selectattr('subjects', 'defined') | json_query('[?subjects[?kind==`User` && name==`' + requester + '`]].metadata.namespace') | unique }}"
+        eligible_namespaces: "{{ (eligible_namespaces + [item.metadata.namespace]) | unique }}"
+      loop: "{{ all_rbs.resources | default([]) }}"
+      loop_control:
+        label: "{{ item.metadata.namespace | default('?') }}/{{ item.metadata.name | default('?') }}"
+      when:
+        - item.roleRef.name | default('') in admin_roles
+        - >
+          (
+            item.subjects | default([])
+            | selectattr('kind', 'defined')
+            | selectattr('kind', 'equalto', 'User')
+            | selectattr('name', 'defined')
+            | selectattr('name', 'equalto', requester)
+            | list | length > 0
+          ) or (
+            item.subjects | default([])
+            | selectattr('kind', 'defined')
+            | selectattr('kind', 'equalto', 'Group')
+            | selectattr('name', 'defined')
+            | selectattr('name', 'in', requester_groups)
+            | list | length > 0
+          )
 
     - name: Handle zero eligible namespaces (UC-3)
       when: eligible_namespaces | length == 0
