@@ -5,7 +5,7 @@
 redhat-developer-hub:
   nameOverride: rhaap-portal
   global:
-    clusterRouterBase: apps.cluster-jx4b7.dynamic.redhatworkshops.io
+    clusterRouterBase: apps.ocp.7hrxw.sandbox880.opentlc.com
     pluginMode: oci
     imageTagInfo: "2.2"
   upstream:
