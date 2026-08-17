@@ -1,6 +1,8 @@
 ---
-# Installed on AAP project sync. Keep this list Galaxy-resolvable.
-# Controller config collections are optional on the workstation (scripts/aap-config-apply.py uses REST).
+# Workstation installs. Automation Controller installs
+# collections/requirements.yml from the **repository root** (AAP project cwd).
+# Keep this list a subset; the full previous-demo BOM is in
+# ../../collections/requirements.yml (Hub community sync + project install_collections).
 collections:
   - name: kubernetes.core
     version: ">=3.0.0"

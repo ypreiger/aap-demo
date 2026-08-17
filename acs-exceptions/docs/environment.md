@@ -84,6 +84,10 @@ AAP credentials that **must** be attached (apply.py verifies):
 | `ACS Central` | JT-02, JT-03, JT-06 |
 | `AAP API token` | portal launcher, JT-00, JT-03, JT-04 |
 
+**Execution environments (Default organization):** `AAP Demo EE` (supported) and `AAP Demo Minimal EE`. Console: **Automation Execution → Infrastructure → Execution Environments** (filter **Default**). Job templates are pinned to **AAP Demo EE**.
+
+**Collections:** Automation Hub → **Collections**, repository filter **Community** (Published starts empty). Synced from repo [`collections/requirements.yml`](../../collections/requirements.yml) (kubernetes, kubevirt, okd, netcommon, VMware, F5, EDA, community.general). Controller also installs that file on **ACS-Exception-Demo** project sync.
+
 The OpenShift credential host is `https://kubernetes.default.svc` (EE pods). Token is minted from SA `aap-rbac-checker` in `aap-demo` (`oc create token … --duration=720h`).
 
 ## Notes vs the written instructions

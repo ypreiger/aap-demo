@@ -1,0 +1,12 @@
+---
+# Org-scoped EEs so they appear when the console is filtered to Default.
+# Images are copied from the platform Default/Minimal EEs at apply time if omitted.
+controller_execution_environments:
+  - name: AAP Demo EE
+    description: Supported EE for aap-demo (ACS exceptions, virt, F5, VMware collections)
+    copy_from: Default execution environment
+    pull: missing
+  - name: AAP Demo Minimal EE
+    description: Minimal EE for aap-demo
+    copy_from: Minimal execution environment
+    pull: missing

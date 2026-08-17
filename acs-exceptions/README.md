@@ -28,3 +28,8 @@ python3 scripts/preflight-demo.py
 Personas are **AAP local users** (`alice` / `bob` / `carol` / `sre-approver`), not OpenShift SSO. Passwords live in `.env` only.
 
 Portal **Create Task** lists job template **Temporary ACS Policy Exception** (not the workflow). SRE approves in AAP `#/workflow_approvals`.
+
+**Where collections and EEs show in the AAP console (admin):**
+
+- **Execution Environments:** Automation Execution → Infrastructure → Execution Environments. Filter organization **Default**. You should see **AAP Demo EE** and **AAP Demo Minimal EE** (the platform Default/Minimal EEs are global and easy to miss).
+- **Collections:** Automation Hub → Collections, repository **Community** (not Published). Content is [`collections/requirements.yml`](../collections/requirements.yml). Re-sync with `HUB_GATEWAY_URL=https://<gateway> ./scripts/hub-sync-community-from-requirements.sh`.

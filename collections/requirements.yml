@@ -42,3 +42,7 @@ collections:
   # Event-Driven Ansible (rulebooks, plugins, event filters).
   - name: ansible.eda
     source: https://galaxy.ansible.com
+
+  # Filters and general modules (json_query, mail helpers). Used by ACS exception playbooks.
+  - name: community.general
+    source: https://galaxy.ansible.com

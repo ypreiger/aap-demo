@@ -134,6 +134,32 @@ def main():
         raise SystemExit("Default organization missing")
     org_id = org["id"]
 
+    existing_ees = {e["name"]: e for e in api("GET", "/execution_environments/?page_size=200").get("results") or []}
+    demo_ee_id = None
+    for ee in load("execution_environments.yml")["controller_execution_environments"]:
+        src = existing_ees.get(ee.get("copy_from") or "")
+        image = ee.get("image") or (src or {}).get("image")
+        if not image:
+            raise SystemExit(f"no image for execution environment {ee['name']} (copy_from={ee.get('copy_from')})")
+        eid = upsert(
+            "execution_environments",
+            ee["name"],
+            {
+                "name": ee["name"],
+                "description": ee.get("description", ""),
+                "image": image,
+                "organization": org_id,
+                "pull": ee.get("pull", "missing"),
+            },
+        )
+        existing_ees[ee["name"]] = {"id": eid, "image": image, "name": ee["name"]}
+        if ee["name"] == "AAP Demo EE":
+            demo_ee_id = eid
+    if demo_ee_id:
+        api("PATCH", f"/organizations/{org_id}/", {"default_environment": demo_ee_id})
+        api("PATCH", "/settings/jobs/", {"DEFAULT_EXECUTION_ENVIRONMENT": demo_ee_id, "GALAXY_IGNORE_CERTS": True})
+        print("default execution environment", demo_ee_id)
+
     inv = get_by_name("inventories", "Demo Inventory")
     if not inv:
         inv_id = upsert(
@@ -270,6 +296,8 @@ def main():
             "description": jt.get("description", ""),
             "survey_enabled": bool(jt.get("survey_enabled")),
         }
+        if demo_ee_id:
+            body["execution_environment"] = demo_ee_id
         jt_ids[jt["name"]] = upsert("job_templates", jt["name"], body)
         ensure_labels("job_templates", jt_ids[jt["name"]], jt.get("labels"))
         for cred_name in jt.get("credentials") or []:
