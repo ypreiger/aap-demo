@@ -1,5 +1,7 @@
 # Demo runbook — Temporary ACS policy exceptions (20 minutes)
 
+Per-use-case deliverables, limitations, and presenter steps: [use-cases.md](use-cases.md).
+
 Prerequisites: `.env` populated (never commit), `oc` logged in as cluster-admin, AAP + ACS already installed.
 
 Quickstart:

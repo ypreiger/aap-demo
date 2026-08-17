@@ -8,6 +8,7 @@ Self-service portal **Create Task** lists **Temporary ACS Policy Exception** (AA
 
 | Doc | |
 |---|---|
+| [docs/use-cases.md](docs/use-cases.md) | UC-1…UC-12: deliverables, limitations, how to demonstrate |
 | [docs/demo-runbook.md](docs/demo-runbook.md) | 20-minute customer script |
 | [docs/acs-exception-architecture.md](docs/acs-exception-architecture.md) | Flow + design choices |
 | [docs/environment.md](docs/environment.md) | Live cluster discovery |
